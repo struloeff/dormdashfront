@@ -1,0 +1,48 @@
+{
+  "name": "DormDash - Campus Delivery",
+  "short_name": "DormDash",
+  "description": "Fast food and rideshare delivery for Pepperdine students",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#FD2D00",
+  "theme_color": "#FD2D00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "lifestyle", "shopping"],
+  "shortcuts": [
+    {
+      "name": "Order Food",
+      "short_name": "Food",
+      "description": "Order food delivery",
+      "url": "/",
+      "icons": [{ "src": "/static/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Request Ride",
+      "short_name": "Ride",
+      "description": "Request a rideshare",
+      "url": "/rideshare",
+      "icons": [{ "src": "/static/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Track Order",
+      "short_name": "Track",
+      "description": "Track your order",
+      "url": "/tracking",
+      "icons": [{ "src": "/static/pwa-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
