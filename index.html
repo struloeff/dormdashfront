@@ -1,0 +1,3150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#FD2D00" />
+<meta name="description" content="Fast food and rideshare delivery for Pepperdine students">
+<title>DormDash — Campus Food Delivery Reimagined</title>
+<link rel="icon" type="image/x-icon" href="/static/icon.ico">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  
+  :root {
+    --brand-primary: #FD2D00;
+    --brand-secondary: #FD2D00;
+    --brand-dark: #e55d00;
+    --bg-dark: #0a0e1a;
+    --bg-darker: #050810;
+    --surface: #131824;
+    --surface-elevated: #1a2332;
+    --text-primary: #ffffff;
+    --text-secondary: #a0aec0;
+    --text-muted: #6b7280;
+    --border: rgba(255, 255, 255, 0.08);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --spacing: clamp(20px, 5vw, 40px);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 0;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Animated Background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 106, 0, 0.15), transparent),
+      radial-gradient(ellipse 60% 50% at 80% 50%, rgba(59, 130, 246, 0.08), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--spacing);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(10, 14, 26, 0.3);
+    backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  header.scrolled {
+    background: rgba(10, 14, 26, 0.6);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px var(--spacing);
+    gap: 20px;
+    min-height: 80px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-icon {
+    width: 48px;
+    height: 48px;
+    background: url('/static/dormdash.png') center/contain no-repeat;
+  }
+
+  .nav-links {
+    display: none;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+    position: relative;
+  }
+
+  .nav-links a:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--brand-primary);
+    transition: width 0.3s;
+  }
+
+  .nav-links a:hover::after {
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .nav-links {
+      display: flex;
+    }
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    color: white;
+    box-shadow: 0 4px 20px rgba(255, 106, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255, 106, 0, 0.6);
+  }
+
+  /* Ride button variant with purple glow */
+  .btn-ride {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4) !important;
+  }
+
+  .btn-ride:hover {
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.6) !important;
+  }
+
+  /* Pricing Toggle */
+  .pricing-toggle-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .pricing-toggle-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+  }
+
+  .pricing-toggle-btn:hover:not(.active) {
+    color: var(--text-secondary);
+  }
+
+  /* Direction Toggle for Estimator */
+  .direction-toggle-btn {
+    flex: 1;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .direction-toggle-btn.active {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    border-color: #06b6d4;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
+  }
+
+  .direction-toggle-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Estimator Styles */
+  .estimator-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .estimator-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+  }
+
+  .estimator-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .estimator-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+
+  .estimator-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .estimator-toggle {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px;
+    border-radius: 16px;
+  }
+
+  .direction-toggle-btn {
+    flex: 1;
+    padding: 14px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+  }
+
+  .direction-toggle-btn.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  }
+
+  .direction-toggle-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+  }
+
+  .estimator-form {
+    margin-bottom: 0;
+  }
+
+  .estimator-section {
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .estimator-input-group {
+    margin-bottom: 20px;
+  }
+
+  .estimator-label {
+    display: block;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+  }
+
+  .estimator-search-wrapper {
+    position: relative;
+  }
+
+  .estimator-search-box {
+    width: 100%;
+    padding: 16px 100px 16px 20px;
+    background: var(--background);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    font-size: 15px;
+    color: var(--text-primary);
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+
+  .estimator-search-box:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  }
+
+  .estimator-search-box::placeholder {
+    color: var(--text-muted);
+  }
+
+  .estimator-search-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .estimator-search-btn:hover {
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  .estimator-location-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 12px;
+  }
+
+  .estimator-location-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .estimator-search-results {
+    margin-top: 16px;
+    background: var(--surface-elevated);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .estimator-search-results:empty {
+    display: none;
+  }
+
+  .estimator-result-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .estimator-result-item:last-child {
+    border-bottom: none;
+  }
+
+  .estimator-result-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .estimator-result-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+
+  .estimator-result-address {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .estimator-selected-location {
+    display: none;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+
+  .estimator-selected-location.active {
+    display: block;
+  }
+
+  .estimator-selected-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .estimator-selected-info {
+    flex: 1;
+  }
+
+  .estimator-selected-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .estimator-selected-address {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .estimator-clear-btn {
+    padding: 8px 16px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ff6b6b;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .estimator-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+
+  .estimator-search-container {
+    display: block;
+  }
+
+  .estimator-search-container.hidden {
+    display: none;
+  }
+
+  .estimator-searching {
+    display: none;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .estimator-searching.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .estimator-results {
+    display: none;
+    margin-top: 32px;
+    animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .estimator-total {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 32px 24px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.08));
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .estimator-total-label {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .estimator-total-amount {
+    font-size: 56px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .estimator-breakdown {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+
+  .estimator-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    padding: 10px 0;
+  }
+
+  .estimator-breakdown-row span:first-child {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .estimator-breakdown-row span:last-child {
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .estimator-breakdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 14px 0;
+  }
+
+  .estimator-book-btn {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  .estimator-book-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.6);
+  }
+
+  .estimator-error {
+    display: none;
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    color: #ff6b6b;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  /* Turnstile Verification Modal */
+  .turnstile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 14, 26, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .turnstile-modal.active {
+    display: flex;
+  }
+
+  .turnstile-modal-content {
+    background: linear-gradient(145deg, rgba(26, 35, 50, 0.95), rgba(19, 24, 36, 0.95));
+    border: 1px solid rgba(253, 45, 0, 0.2);
+    border-radius: 24px;
+    padding: 40px 32px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(253, 45, 0, 0.1);
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .turnstile-modal-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .turnstile-modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(253, 45, 0, 0.2), rgba(253, 45, 0, 0.1));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+  }
+
+  .turnstile-modal-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .turnstile-modal-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .turnstile-widget-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .turnstile-modal-note {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-secondary {
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover {
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+
+  /* Hero Section - Completely Redesigned */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 0 80px;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  /* Subtle Scroll-Responsive Gradient Background */
+  :root {
+    --scroll-x: 0%;
+    --scroll-y: 0%;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse 600px 400px at calc(30% + var(--scroll-x)) calc(20% + var(--scroll-y)), rgba(253, 45, 0, 0.18), transparent),
+      radial-gradient(ellipse 500px 600px at calc(70% - var(--scroll-x)) calc(60% + var(--scroll-y) * 0.5), rgba(139, 92, 246, 0.15), transparent),
+      radial-gradient(ellipse 400px 500px at calc(50% + var(--scroll-x) * 0.5) calc(80% - var(--scroll-y) * 0.3), rgba(59, 130, 246, 0.12), transparent);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+  }
+
+  .hero-text {
+    max-width: 780px;
+    overflow: visible;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    animation: fadeInUp 0.6s ease-out 0.1s backwards;
+  }
+
+  .badge::before {
+    content: '●';
+    color: #10b981;
+    font-size: 8px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  h1 {
+    font-size: clamp(56px, 14vw, 88px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.06em;
+    margin-bottom: 32px;
+    padding: 0;
+    color: #ffffff;
+    text-shadow: 0 2px 40px rgba(0, 0, 0, 0.3);
+    animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+    overflow: visible;
+    display: block;
+  }
+
+  h1 .highlight {
+    background: linear-gradient(135deg, #FD2D00 0%, #ff6a00 50%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    animation: gradientShift 3s ease-in-out infinite;
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+  }
+
+  .hero-description {
+    font-size: 20px;
+    line-height: 1.55;
+    color: #94a3b8;
+    margin-bottom: 36px;
+    max-width: 600px;
+    font-weight: 400;
+    animation: fadeInUp 0.8s ease-out 0.4s backwards;
+  }
+
+  .hero-description strong {
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+
+  /* Feature Pills - Minimal Design */
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 48px;
+    margin-bottom: 40px;
+    animation: fadeInUp 1s ease-out 0.6s backwards;
+  }
+
+  .feature-list li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e2e8f0;
+    transition: all 0.3s ease;
+  }
+
+  .feature-list li:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .feature-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* In-N-Out Logo Style */
+  .innout-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #DC1E28 0%, #C41E3A 100%);
+    font-size: 14px;
+    border-radius: 6px;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(220, 30, 40, 0.5);
+    border: 2px solid #FFEB3B;
+  }
+
+  /* CTA Buttons - Mobile Optimized */
+  .cta-buttons {
+    display: flex;
+    gap: 12px;
+    flex-direction: column;
+    animation: fadeInUp 0.9s ease-out 0.5s backwards;
+  }
+
+  .cta-buttons .btn {
+    position: relative;
+    padding: 20px 32px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .cta-buttons .btn-primary {
+    background: linear-gradient(135deg, #FD2D00 0%, #ff4500 100%);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .cta-buttons .btn-primary:hover {
+    box-shadow: 0 8px 30px rgba(253, 45, 0, 0.5);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .cta-buttons .btn-primary::after {
+    content: '→';
+    position: absolute;
+    right: 28px;
+    transition: transform 0.3s ease;
+  }
+
+  .cta-buttons .btn-primary:hover::after {
+    transform: translateX(4px);
+  }
+
+  .cta-buttons .btn-ride {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .cta-buttons .btn-ride:hover {
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .cta-buttons .btn-ride::after {
+    content: '→';
+    position: absolute;
+    right: 28px;
+    transition: transform 0.3s ease;
+  }
+
+  .cta-buttons .btn-ride:hover::after {
+    transform: translateX(4px);
+  }
+
+  /* Social Proof */
+  .social-proof {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 36px;
+    padding-top: 36px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    animation: fadeInUp 1.1s ease-out 0.7s backwards;
+  }
+
+  .social-proof-avatars {
+    display: flex;
+    margin-left: -8px;
+  }
+
+  .social-proof-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-dark);
+    background: linear-gradient(135deg, #FD2D00, #8b5cf6);
+    margin-left: -8px;
+    position: relative;
+  }
+
+  .social-proof-avatar:nth-child(1) {
+    background: linear-gradient(135deg, #FD2D00, #ff6a00);
+  }
+
+  .social-proof-avatar:nth-child(2) {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  }
+
+  .social-proof-avatar:nth-child(3) {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .social-proof-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .social-proof-text strong {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  @media (min-width: 640px) {
+    .cta-buttons {
+      flex-direction: row;
+    }
+
+    .cta-buttons .btn {
+      flex: 1;
+      max-width: 240px;
+    }
+  }
+
+  /* Card */
+  .card {
+    background: linear-gradient(135deg, rgba(26, 35, 50, 0.8), rgba(19, 24, 36, 0.8));
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: fadeInUp 0.8s ease-out 0.2s backwards;
+  }
+
+  .card h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Calculator */
+  .calculator-form {
+    display: grid;
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  @media (min-width: 640px) {
+    .form-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.1);
+  }
+
+  .results {
+    display: grid;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  .result-row.total {
+    background: rgba(255, 106, 0, 0.1);
+    border: 1px solid rgba(255, 106, 0, 0.3);
+    font-weight: 700;
+    font-size: 18px;
+    margin-top: 8px;
+  }
+
+  .result-row strong {
+    color: var(--brand-secondary);
+  }
+
+  /* Section */
+  section {
+    padding: 100px 0;
+    position: relative;
+  }
+
+  .section-header {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 60px;
+  }
+
+  .section-badge {
+    display: inline-flex;
+    padding: 6px 14px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #60a5fa;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .section-description {
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    gap: 24px;
+  }
+
+  @media (min-width: 768px) {
+    .grid-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Service Card */
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+    transform: scaleX(0);
+    transition: transform 0.4s;
+  }
+
+  .service-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .service-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(255, 106, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  .service-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, rgba(255, 106, 0, 0.2), rgba(255, 140, 58, 0.2));
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+
+  .service-card h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .service-card p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  /* Pricing */
+  .pricing-grid {
+    display: grid;
+    gap: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .price-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    transition: all 0.3s;
+  }
+
+  .price-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .price-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .price-value {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-primary);
+  }
+
+  .price-value.success {
+    color: var(--success);
+  }
+
+  /* Driver Section */
+  .driver-card {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 48px;
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+    transition: all 0.3s;
+  }
+
+  .driver-card:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .driver-card h3 {
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  .driver-benefits {
+    list-style: none;
+    display: grid;
+    gap: 16px;
+    text-align: left;
+    margin: 32px 0;
+  }
+
+  .driver-benefits li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s;
+  }
+
+  .driver-benefits li:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .driver-benefits li::before {
+    content: '✓';
+    width: 32px;
+    height: 32px;
+    background: var(--success);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .driver-cta-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+  }
+
+  .driver-cta-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 60px var(--spacing) 40px;
+    margin-top: 100px;
+    margin-bottom: 80px;
+  }
+
+  .footer-content {
+    display: grid;
+    gap: 40px;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .footer-content {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .footer-links h4 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    font-size: 15px;
+  }
+
+  .footer-links a:hover {
+    color: var(--text-primary);
+  }
+
+  .footer-bottom {
+    margin-top: 60px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* Sticky CTA */
+  .sticky-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px var(--spacing) calc(20px + env(safe-area-inset-bottom));
+    background: transparent;
+    backdrop-filter: none;
+    border-top: none;
+    z-index: 999;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sticky-cta.visible {
+    transform: translateY(0);
+  }
+
+  .sticky-cta .btn-primary {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    font-size: 18px;
+    padding: 18px 32px;
+  }
+
+  /* Animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .float-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Loading State */
+  .calculating {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    nav {
+      padding: 20px var(--spacing);
+      min-height: 72px;
+    }
+
+    .logo {
+      font-size: 20px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      font-size: 14px;
+    }
+
+    .hero {
+      min-height: auto;
+      padding: 110px 0 70px;
+    }
+
+    h1 {
+      font-size: clamp(56px, 13vw, 88px);
+      line-height: 1.05;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .hero-description {
+      font-size: 18px;
+      margin-bottom: 32px;
+    }
+
+    .feature-list {
+      gap: 8px;
+      margin-top: 40px;
+    }
+
+    .feature-list li {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+
+    .feature-icon {
+      font-size: 14px;
+    }
+
+    .innout-logo {
+      width: 20px;
+      height: 20px;
+      font-size: 13px;
+    }
+
+    .cta-buttons {
+      gap: 10px;
+    }
+
+    .cta-buttons .btn {
+      padding: 18px 28px;
+      font-size: 17px;
+      max-width: 100%;
+    }
+
+    .social-proof {
+      margin-top: 28px;
+      padding-top: 28px;
+    }
+
+    section {
+      padding: 60px 0;
+    }
+
+    h2 {
+      font-size: 38px;
+    }
+
+    .card {
+      padding: 24px;
+    }
+
+    .calculator-form {
+      gap: 16px;
+    }
+
+    .grid-2, .grid-3 {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .service-card {
+      padding: 28px;
+    }
+
+    .pricing-grid {
+      gap: 12px;
+    }
+
+    .price-item {
+      padding: 18px 20px;
+    }
+
+    .driver-card {
+      padding: 32px 24px;
+    }
+
+    .driver-benefits {
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    nav {
+      padding: 16px 20px;
+      min-height: 68px;
+    }
+
+    .logo {
+      font-size: 18px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      font-size: 13px;
+    }
+
+    .hero {
+      padding: 100px 0 60px;
+    }
+
+    h1 {
+      font-size: clamp(52px, 14vw, 72px);
+      margin-bottom: 24px;
+      line-height: 1.05;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      font-size: 10px;
+      margin-bottom: 20px;
+    }
+
+    .hero-description {
+      font-size: 17px;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .feature-list {
+      gap: 8px;
+      margin-top: 36px;
+      margin-bottom: 28px;
+    }
+
+    .feature-list li {
+      padding: 9px 14px;
+      font-size: 13px;
+    }
+
+    .feature-icon {
+      font-size: 13px;
+    }
+
+    .innout-logo {
+      width: 18px;
+      height: 18px;
+      font-size: 12px;
+    }
+
+    .cta-buttons {
+      gap: 10px;
+      width: 100%;
+    }
+
+    .cta-buttons .btn {
+      width: 100%;
+      padding: 19px 26px;
+      font-size: 17px;
+      max-width: 100%;
+    }
+
+    .cta-buttons .btn::after {
+      right: 24px;
+    }
+
+    .social-proof {
+      margin-top: 24px;
+      padding-top: 24px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .social-proof-text {
+      font-size: 13px;
+    }
+
+    .card {
+      padding: 20px;
+      border-radius: 20px;
+    }
+
+    .card h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .calculator-form {
+      gap: 14px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+    }
+
+    .input {
+      padding: 12px 14px;
+      font-size: 15px;
+    }
+
+    #calcBtn {
+      padding: 13px 20px;
+      font-size: 15px;
+    }
+
+    .estimator-card {
+      padding: 28px 20px;
+      border-radius: 20px;
+    }
+
+    .estimator-title {
+      font-size: 26px;
+    }
+
+    .estimator-subtitle {
+      font-size: 15px;
+    }
+
+    .direction-toggle-btn {
+      padding: 12px 16px;
+      font-size: 14px;
+    }
+
+    .estimator-search-box {
+      padding: 14px 80px 14px 16px;
+      font-size: 14px;
+    }
+
+    .estimator-search-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      right: 6px;
+    }
+
+    .estimator-total {
+      padding: 24px 20px;
+    }
+
+    .estimator-total-amount {
+      font-size: 44px;
+    }
+
+    .estimator-breakdown {
+      padding: 16px;
+    }
+
+    .estimator-book-btn {
+      padding: 16px;
+      font-size: 16px;
+    }
+
+    .results {
+      gap: 10px;
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+
+    .result-row {
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+
+    .result-row.total {
+      font-size: 16px;
+    }
+
+    section {
+      padding: 50px 0;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .section-badge {
+      font-size: 12px;
+      padding: 5px 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-description {
+      font-size: 16px;
+    }
+
+    .section-header {
+      margin-bottom: 40px;
+    }
+
+    .grid {
+      gap: 16px;
+    }
+
+    .service-card {
+      padding: 24px 20px;
+    }
+
+    .service-icon {
+      width: 56px;
+      height: 56px;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .service-card h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .service-card p {
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .pricing-grid {
+      gap: 10px;
+    }
+
+    .price-item {
+      padding: 16px 18px;
+    }
+
+    .price-label {
+      font-size: 14px;
+    }
+
+    .price-value {
+      font-size: 16px;
+    }
+
+    .driver-card {
+      padding: 28px 20px;
+    }
+
+    .driver-card h3 {
+      font-size: 38px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .driver-benefits {
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .driver-benefits li {
+      padding: 14px;
+      font-size: 15px;
+    }
+
+    .driver-benefits li::before {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+
+    .driver-cta-buttons {
+      flex-direction: column;
+    }
+
+    .driver-cta-btn {
+      width: 100%;
+    }
+
+    .sticky-cta {
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+    }
+
+    .sticky-cta .btn-primary {
+      font-size: 16px;
+      padding: 16px 28px;
+    }
+
+    footer {
+      padding: 50px 20px 30px;
+      margin-top: 60px;
+    }
+
+    .footer-content {
+      gap: 32px;
+    }
+
+    .footer-links h4 {
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      font-size: 14px;
+    }
+
+    .footer-bottom {
+      margin-top: 40px;
+      padding-top: 24px;
+      font-size: 13px;
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .hero {
+      padding: 90px 0 55px;
+    }
+
+    h1 {
+      font-size: clamp(48px, 15vw, 64px);
+      line-height: 1.05;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .hero-description {
+      font-size: 16px;
+    }
+
+    .feature-list {
+      margin-top: 32px;
+    }
+
+    .feature-list li {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    .feature-icon {
+      font-size: 12px;
+    }
+
+    .innout-logo {
+      width: 16px;
+      height: 16px;
+      font-size: 11px;
+    }
+
+    .cta-buttons .btn {
+      padding: 17px 24px;
+      font-size: 16px;
+    }
+
+    h2 {
+      font-size: 26px;
+    }
+
+    .card {
+      padding: 18px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+    }
+
+    .service-card {
+      padding: 20px 16px;
+    }
+
+    .driver-card {
+      padding: 24px 16px;
+    }
+
+    .driver-card h3 {
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .price-item {
+      padding: 14px 16px;
+    }
+
+    .price-label {
+      font-size: 13px;
+    }
+
+    .price-value {
+      font-size: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header id="header">
+  <nav class="container">
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <span>DormDash</span>
+    </div>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#drivers">Become a Driver</a>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <a href="/404.html" class="btn btn-primary order-btn">🍕 Food</a>
+      <a href="/404.html" class="btn btn-primary btn-ride order-btn">🚗 Rides</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="badge">Live on Campus</div>
+          <h1>Food<br><span class="highlight">Delivered.</span><br>Rides<br><span class="highlight">Anywhere.</span></h1>
+          <p class="hero-description">
+            Get <strong>any restaurant</strong> delivered to your dorm. Book <strong>affordable rides anywhere</strong> (like Uber, but way cheaper). Built for Waves.
+          </p>
+
+          <div class="cta-buttons">
+            <a href="/404.html" class="btn btn-primary order-btn">Order Food Now</a>
+            <a href="/404.html" class="btn btn-primary btn-ride order-btn">Book a Ride</a>
+          </div>
+
+          <ul class="feature-list">
+            <li><span class="feature-icon">🎯</span> Direct to Your Dorm</li>
+            <li><span class="feature-icon">⚡</span> Fast & Reliable</li>
+            <li><span class="innout-logo">🍔</span> In-N-Out, Chick-fil-A & More</li>
+            <li><span class="feature-icon">🚗</span> Affordable Rides (Like Uber, but Cheaper)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIDESHARE SECTION -->
+  <section id="services">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">CAMPUS RIDESHARE</div>
+        <h2 style="font-size: 46px; line-height: 1.1;">Need a ride?</h2>
+        <p class="section-description">
+          Need a ride to the airport? Car broke down? Headed to the beach? We got you.
+        </p>
+      </div>
+
+      <!-- Rideshare Estimator in Services Section -->
+      <div class="estimator-wrapper">
+        <div class="estimator-card">
+          <div class="estimator-header">
+            <h3 class="estimator-title">See How Much Cheaper</h3>
+            <p class="estimator-subtitle">Quickly estimate your ride cost.</p>
+          </div>
+
+          <!-- Direction Toggle -->
+          <div class="estimator-toggle">
+            <button id="toCampusBtn" class="direction-toggle-btn" onclick="toggleEstimatorDirection('to')">
+              🏛️ To Campus
+            </button>
+            <button id="fromCampusBtn" class="direction-toggle-btn active" onclick="toggleEstimatorDirection('from')">
+              🏠 From Campus
+            </button>
+          </div>
+
+          <div class="estimator-form">
+            <!-- To Campus Flow -->
+            <div id="toCampusSection" class="estimator-section" style="display: none;">
+              <div class="estimator-input-group">
+                <label class="estimator-label">📍 Where are you now?</label>
+
+                <!-- Selected Location Display -->
+                <div class="estimator-selected-location estimator-selected-display">
+                  <div class="estimator-selected-header">
+                    <div class="estimator-selected-info">
+                      <div class="estimator-selected-name"></div>
+                      <div class="estimator-selected-address"></div>
+                    </div>
+                    <button class="estimator-clear-btn" onclick="clearEstimatorLocation()">Change</button>
+                  </div>
+                </div>
+
+                <!-- Search Container -->
+                <div class="estimator-search-container estimator-search-input">
+                  <div class="estimator-search-wrapper">
+                    <input type="text" id="estimatorPickupInput" class="estimator-search-box" placeholder="Search for your location..." onkeypress="if(event.key==='Enter') searchEstimatorLocation()">
+                    <button class="estimator-search-btn" onclick="searchEstimatorLocation()">Search</button>
+                  </div>
+                  <button class="estimator-location-pill" onclick="useEstimatorLocation()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M8 1a3 3 0 0 1 3 3c0 1.657-1.343 3-3 3S5 5.657 5 4a3 3 0 0 1 3-3zm0 1a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 7c3.314 0 6 2.686 6 6v1H2v-1c0-3.314 2.686-6 6-6zm0 1c-2.761 0-5 2.239-5 5h10c0-2.761-2.239-5-5-5z"/>
+                    </svg>
+                    Use My Location
+                  </button>
+                  <div class="estimator-search-results"></div>
+                  <div class="estimator-searching" style="display: none;">
+                    <div class="spinner"></div>
+                    <span>Searching...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- From Campus Flow -->
+            <div id="fromCampusSection" class="estimator-section">
+              <div class="estimator-input-group">
+                <label class="estimator-label">Where do you want to go?</label>
+
+                <!-- Selected Location Display -->
+                <div class="estimator-selected-location estimator-selected-display">
+                  <div class="estimator-selected-header">
+                    <div class="estimator-selected-info">
+                      <div class="estimator-selected-name"></div>
+                      <div class="estimator-selected-address"></div>
+                    </div>
+                    <button class="estimator-clear-btn" onclick="clearEstimatorLocation()">Change</button>
+                  </div>
+                </div>
+
+                <!-- Search Container -->
+                <div class="estimator-search-container estimator-search-input">
+                  <div class="estimator-search-wrapper">
+                    <input type="text" id="estimatorDropoffInput" class="estimator-search-box" placeholder="Search for your destination..." onkeypress="if(event.key==='Enter') searchEstimatorLocation()">
+                    <button class="estimator-search-btn" onclick="searchEstimatorLocation()">Search</button>
+                  </div>
+                  <div class="estimator-search-results"></div>
+                  <div class="estimator-searching" style="display: none;">
+                    <div class="spinner"></div>
+                    <span>Searching...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Turnstile Widget - Hidden until needed -->
+          <div id="estimatorTurnstileContainer" style="display: none; justify-content: center; margin: 24px 0; padding: 20px; background: rgba(255, 255, 255, 0.02); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div id="estimatorTurnstileWidget"></div>
+          </div>
+
+          <div id="estimateResults" class="estimator-results">
+            <div class="estimator-total">
+              <div class="estimator-total-label">Estimated Fare</div>
+              <div class="estimator-total-amount" id="estimateTotal">$0.00</div>
+            </div>
+
+            <div class="estimator-breakdown">
+              <div class="estimator-breakdown-row">
+                <span>Distance</span>
+                <span id="estimateDistance">-</span>
+              </div>
+              <div class="estimator-breakdown-row">
+                <span>Time to Arrival</span>
+                <span id="estimateDuration">-</span>
+              </div>
+              <div class="estimator-breakdown-divider"></div>
+              <div class="estimator-breakdown-row">
+                <span>Base Fare</span>
+                <span>$4.99</span>
+              </div>
+              <div class="estimator-breakdown-row">
+                <span>Mileage</span>
+                <span id="estimateMileage">$0.00</span>
+              </div>
+              <div class="estimator-breakdown-row">
+                <span>Time</span>
+                <span id="estimateTime">$0.00</span>
+              </div>
+            </div>
+
+            <button class="estimator-book-btn" onclick="bookEstimatedRide()">
+              🚗 Book This Ride Now →
+            </button>
+          </div>
+
+          <div id="estimateError" class="estimator-error"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING SECTION -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">TRANSPARENT PRICING</div>
+        <h2>Simple, Honest Pricing</h2>
+        <p class="section-description">
+          No hidden fees, no surge pricing, no surprises. What you see is what you pay.
+        </p>
+      </div>
+
+      <!-- Pricing Toggle -->
+      <div style="display: flex; justify-content: center; margin-bottom: 32px;">
+        <div style="display: inline-flex; background: rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 4px; gap: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
+          <button id="foodPricingBtn" class="pricing-toggle-btn active" onclick="showPricing('food')">
+            🍕 Food
+          </button>
+          <button id="ridesharePricingBtn" class="pricing-toggle-btn" onclick="showPricing('rideshare')">
+            🚗 Rides
+          </button>
+        </div>
+      </div>
+
+      <!-- Food Pricing -->
+      <div id="foodPricing" class="pricing-grid">
+        <div class="price-item">
+          <span class="price-label">Base Delivery Fee</span>
+          <span class="price-value">$5.99</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Service Fee</span>
+          <span class="price-value">15% of order</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Distance Fee</span>
+          <span class="price-value">$0.39 / mile</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Far-Away Fee (10+ miles)</span>
+          <span class="price-value">$7.99</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Platform Fee</span>
+          <span class="price-value">$0.49</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Small Order Fee</span>
+          <span class="price-value success">$0 — None!</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Surge / Busy Hour Fees</span>
+          <span class="price-value success">$0 — None!</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Hidden Fees</span>
+          <span class="price-value success">$0 — None!</span>
+        </div>
+      </div>
+
+      <!-- Rideshare Pricing -->
+      <div id="ridesharePricing" class="pricing-grid" style="display: none;">
+        <div class="price-item">
+          <span class="price-label">Base Fare</span>
+          <span class="price-value">$4.99</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Distance Fee</span>
+          <span class="price-value">$0.89 / mile</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Time Fee</span>
+          <span class="price-value">$0.39 / minute</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Surge Pricing</span>
+          <span class="price-value success">$0 — None!</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Booking Fees</span>
+          <span class="price-value success">$0 — None!</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Cancellation Fees</span>
+          <span class="price-value success">$0 — None!</span>
+        </div>
+        <div class="price-item">
+          <span class="price-label">Hidden Fees</span>
+          <span class="price-value success">$0 — None!</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DRIVER SECTION -->
+  <section id="drivers">
+    <div class="container">
+      <div class="driver-card">
+        <h3>Become a Driver</h3>
+        <p style="color: var(--text-secondary); font-size: 18px; margin-bottom: 0;">
+          Earn money between classes while helping your fellow Waves. Flexible hours, easy work, and fast pay.
+        </p>
+
+        <ul class="driver-benefits">
+          <li>
+            <div>
+              <strong>Earn $18–$25/hour</strong><br>
+              <span style="color: var(--text-muted);">Make money on your schedule with flexible shifts</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Work Between Classes</strong><br>
+              <span style="color: var(--text-muted);">Choose your hours and fit deliveries around your schedule</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Join Our Community</strong><br>
+              <span style="color: var(--text-muted);">Be part of a trusted student-run network on campus</span>
+            </div>
+          </li>
+        </ul>
+
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;" class="driver-cta-buttons">
+          <a href="/driver/become" class="btn btn-primary driver-cta-btn">Learn More About Driving</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- TURNSTILE VERIFICATION MODAL -->
+<div id="turnstileModal" class="turnstile-modal">
+  <div class="turnstile-modal-content">
+    <div class="turnstile-modal-header">
+      <div class="turnstile-modal-icon">🛡️</div>
+      <h3 class="turnstile-modal-title">Quick Security Check</h3>
+      <p class="turnstile-modal-subtitle">Please verify you're human to search for locations</p>
+    </div>
+
+    <div class="turnstile-widget-container">
+      <div id="estimatorTurnstile"></div>
+    </div>
+
+    <div class="turnstile-modal-note">
+      This helps us prevent automated abuse and keeps our service reliable
+    </div>
+  </div>
+</div>
+
+<!-- STICKY CTA -->
+<div class="sticky-cta" id="stickyCta">
+  <a href="/404.html" class="btn btn-primary order-btn">🍔 Order Now — Fast & Easy</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-icon"></div>
+          <span>DormDash</span>
+        </div>
+        <p style="color: var(--text-muted); max-width: 300px;">
+          Student-powered delivery service bringing food, rides, and more to the Pepperdine community.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Services</h4>
+        <a href="/404.html">Food Delivery</a>
+        <a href="/404.html">Campus Rides</a>
+        <a href="/404.html">Moving Help</a>
+      </div>
+
+      <div class="footer-links">
+        <h4>Company</h4>
+        <a href="/driver/become">Become a Driver</a>
+        <a href="/404.html">Pricing</a>
+        <a href="/404.html">Contact Support</a>
+        <a href="/404.html">Privacy & Terms</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© <span id="year"></span> DormDash. All rights reserved.</div>
+      <div>Not affiliated with Pepperdine University</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Estimator State - Declare at top to avoid temporal dead zone
+let currentEstimatorDirection = 'from';
+let estimatorSelectedLocation = null;
+let estimatorSearchResults = [];
+let lastSearchTime = 0;
+const SEARCH_RATE_LIMIT_MS = 2000; // 2 seconds between searches (increased)
+let estimatorTurnstileToken = null;
+let turnstileWidgetId = null;
+let searchAttempts = 0;
+const MAX_SEARCHES_BEFORE_VERIFICATION = 3; // Require verification after 3 searches
+
+// Header scroll effect + Gradient parallax
+const header = document.getElementById('header');
+let ticking = false;
+
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      const scrollY = window.scrollY;
+
+      // Header scroll effect
+      if (scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+
+      // Gradient parallax effect - subtle movement
+      const gradientElement = document.querySelector('body::after') || document.body;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = scrollY / maxScroll;
+
+      // Move gradient dots very slightly (max 2% in each direction)
+      const translateX = Math.sin(scrollPercent * Math.PI) * 2;
+      const translateY = scrollPercent * 3;
+
+      document.body.style.setProperty('--scroll-x', `${translateX}%`);
+      document.body.style.setProperty('--scroll-y', `${translateY}%`);
+
+      ticking = false;
+    });
+    ticking = true;
+  }
+});
+
+// Force scroll to top on page load to prevent animation spacing issues
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+// Immediate scroll to top
+window.scrollTo(0, 0);
+document.documentElement.scrollTop = 0;
+document.body.scrollTop = 0;
+
+// Force scroll on load event
+window.addEventListener('load', () => {
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+});
+
+// Force scroll on DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.scrollTo(0, 0);
+  });
+}
+
+// Sticky CTA visibility
+const stickyCta = document.getElementById('stickyCta');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 800) {
+    stickyCta.classList.add('visible');
+  } else {
+    stickyCta.classList.remove('visible');
+  }
+});
+
+// Order buttons now redirect to /order page
+
+// Cost Calculator
+const RATES = {
+  base: 5.99,
+  service: 0.15,
+  perMile: 0.39,
+  farAway: 7.99,
+  farLimit: 10,
+  platformFee: 0.49
+};
+
+const milesInput = document.getElementById('miles');
+const orderTotalInput = document.getElementById('orderTotal');
+const calcBtn = document.getElementById('calcBtn');
+const resultsDiv = document.getElementById('results');
+
+function formatCurrency(amount) {
+  return `$${amount.toFixed(2)}`;
+}
+
+// Browser fingerprinting for security
+function generateBrowserFingerprint() {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.textBaseline = 'top';
+  ctx.font = '14px Arial';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#f60';
+  ctx.fillRect(125, 1, 62, 20);
+  ctx.fillStyle = '#069';
+  ctx.fillText('DormDash Security', 2, 15);
+  ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+  ctx.fillText('DormDash Security', 4, 17);
+
+  const canvasFingerprint = canvas.toDataURL();
+
+  let webglVendor = '';
+  let webglRenderer = '';
+  try {
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (gl) {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+        webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      }
+    }
+  } catch (e) {
+    console.log('WebGL not available');
+  }
+
+  return {
+    userAgent: navigator.userAgent,
+    language: navigator.language,
+    platform: navigator.platform,
+    screenWidth: screen.width,
+    screenHeight: screen.height,
+    colorDepth: screen.colorDepth,
+    timezone: new Date().getTimezoneOffset(),
+    cookieEnabled: navigator.cookieEnabled,
+    canvasFingerprint: canvasFingerprint,
+    webglVendor: webglVendor,
+    webglRenderer: webglRenderer,
+    hardwareConcurrency: navigator.hardwareConcurrency || 0,
+    deviceMemory: navigator.deviceMemory || 0,
+    plugins: Array.from(navigator.plugins || []).map(p => p.name).join(','),
+    touchSupport: 'ontouchstart' in window
+  };
+}
+
+function calculateCost() {
+  const miles = Math.max(0, parseFloat(milesInput.value) || 0);
+  const subtotal = Math.max(0, parseFloat(orderTotalInput.value) || 0);
+
+  const baseFee = RATES.base;
+  const serviceFee = subtotal * RATES.service;
+  const distanceFee = miles * RATES.perMile;
+  const farAwayFee = miles > RATES.farLimit ? RATES.farAway : 0;
+  const platformFee = RATES.platformFee;
+  const total = subtotal + baseFee + serviceFee + distanceFee + farAwayFee + platformFee;
+
+  resultsDiv.innerHTML = '';
+
+  const addRow = (label, value, isTotal = false) => {
+    const row = document.createElement('div');
+    row.className = isTotal ? 'result-row total' : 'result-row';
+    row.innerHTML = `
+      <span>${label}</span>
+      <strong>${formatCurrency(value)}</strong>
+    `;
+    resultsDiv.appendChild(row);
+  };
+
+  addRow('Base Delivery Fee', baseFee);
+  if (serviceFee > 0) addRow('Service Fee (15%)', serviceFee);
+  if (distanceFee > 0) addRow(`Distance (${miles.toFixed(1)} mi × $0.39)`, distanceFee);
+  if (farAwayFee > 0) addRow('Far-Away Fee', farAwayFee);
+  addRow('Platform Fee', platformFee);
+  addRow('Order Subtotal', subtotal);
+  addRow('Total (before tax & tip)', total, true);
+}
+
+calcBtn.addEventListener('click', calculateCost);
+milesInput.addEventListener('input', calculateCost);
+orderTotalInput.addEventListener('input', calculateCost);
+
+// Initial calculation
+calculateCost();
+
+// Pricing Toggle
+function showPricing(type) {
+  const foodPricing = document.getElementById('foodPricing');
+  const ridesharePricing = document.getElementById('ridesharePricing');
+  const foodBtn = document.getElementById('foodPricingBtn');
+  const rideshareBtn = document.getElementById('ridesharePricingBtn');
+
+  if (type === 'food') {
+    foodPricing.style.display = 'grid';
+    ridesharePricing.style.display = 'none';
+    foodBtn.classList.add('active');
+    rideshareBtn.classList.remove('active');
+  } else {
+    foodPricing.style.display = 'none';
+    ridesharePricing.style.display = 'grid';
+    foodBtn.classList.remove('active');
+    rideshareBtn.classList.add('active');
+  }
+}
+
+// Toggle Direction
+function toggleEstimatorDirection(direction) {
+  currentEstimatorDirection = direction;
+  const toSection = document.getElementById('toCampusSection');
+  const fromSection = document.getElementById('fromCampusSection');
+  const toBtn = document.getElementById('toCampusBtn');
+  const fromBtn = document.getElementById('fromCampusBtn');
+
+  if (direction === 'to') {
+    toSection.style.display = 'block';
+    fromSection.style.display = 'none';
+    toBtn.classList.add('active');
+    fromBtn.classList.remove('active');
+  } else {
+    toSection.style.display = 'none';
+    fromSection.style.display = 'block';
+    toBtn.classList.remove('active');
+    fromBtn.classList.add('active');
+  }
+
+  // Clear state in both sections
+  estimatorSelectedLocation = null;
+
+  // Clear both sections
+  [toSection, fromSection].forEach(section => {
+    const resultsDiv = section.querySelector('.estimator-search-results');
+    const selectedDisplay = section.querySelector('.estimator-selected-display');
+    const searchInput = section.querySelector('.estimator-search-input');
+
+    if (resultsDiv) resultsDiv.innerHTML = '';
+    if (selectedDisplay) selectedDisplay.classList.remove('active');
+    if (searchInput) searchInput.style.display = 'block';
+  });
+
+  document.getElementById('estimateError').style.display = 'none';
+  document.getElementById('estimateResults').style.display = 'none';
+}
+
+// Use My Location
+async function useEstimatorLocation() {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser');
+    return;
+  }
+
+  const errorDiv = document.getElementById('estimateError');
+  errorDiv.style.display = 'none';
+
+  // Get the active section
+  const activeSection = currentEstimatorDirection === 'to' ?
+    document.getElementById('toCampusSection') :
+    document.getElementById('fromCampusSection');
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      try {
+        // Generate browser fingerprint for security
+        const fingerprint = generateBrowserFingerprint();
+
+        const response = await fetch('/api/reverse-geocode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lat: lat,
+            lng: lng,
+            browser_fingerprint: fingerprint
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.address) {
+          estimatorSelectedLocation = {
+            name: 'Your Location',
+            address: data.address,
+            lat: lat,
+            lng: lng
+          };
+
+          // Get elements from active section
+          const selectedDisplay = activeSection.querySelector('.estimator-selected-display');
+          const searchInput = activeSection.querySelector('.estimator-search-input');
+          const selectedNameEl = activeSection.querySelector('.estimator-selected-name');
+          const selectedAddressEl = activeSection.querySelector('.estimator-selected-address');
+
+          // Show selected location, hide search
+          selectedNameEl.textContent = 'Your Location';
+          selectedAddressEl.textContent = data.address;
+          selectedDisplay.classList.add('active');
+          searchInput.style.display = 'none';
+
+          // Auto-calculate
+          await calculateEstimate();
+        } else {
+          errorDiv.textContent = 'Could not determine your address';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Location error:', error);
+        errorDiv.textContent = 'Error getting your location';
+        errorDiv.style.display = 'block';
+      }
+    },
+    (error) => {
+      errorDiv.textContent = 'Unable to access your location. Please check permissions.';
+      errorDiv.style.display = 'block';
+    }
+  );
+}
+
+// Turnstile Callbacks
+function onEstimatorTurnstileSuccess(token) {
+  console.log('✅ Estimator Turnstile verified');
+  estimatorTurnstileToken = token;
+
+  // Hide Turnstile container
+  const container = document.getElementById('estimatorTurnstileContainer');
+  container.style.display = 'none';
+
+  // Automatically execute the search
+  performEstimatorSearch();
+}
+
+function showTurnstileModal() {
+  const modal = document.getElementById('turnstileModal');
+  modal.classList.add('active');
+
+  // Render Turnstile widget if not already rendered
+  if (turnstileWidgetId === null && typeof turnstile !== 'undefined') {
+    turnstileWidgetId = turnstile.render('#estimatorTurnstile', {
+      sitekey: '{{ turnstile_site_key }}',
+      callback: onEstimatorTurnstileSuccess,
+      theme: 'dark'
+    });
+  } else if (turnstileWidgetId !== null) {
+    // Reset existing widget
+    turnstile.reset(turnstileWidgetId);
+  }
+}
+
+// Search Location (with Turnstile verification)
+async function searchEstimatorLocation() {
+  // Rate limiting
+  const now = Date.now();
+  if (now - lastSearchTime < SEARCH_RATE_LIMIT_MS) {
+    const errorDiv = document.getElementById('estimateError');
+    errorDiv.textContent = 'Please wait a moment before searching again';
+    errorDiv.style.display = 'block';
+    setTimeout(() => {
+      errorDiv.style.display = 'none';
+    }, 2000);
+    return; // Ignore rapid requests
+  }
+
+  // Require Turnstile verification for all searches
+  if (!estimatorTurnstileToken) {
+    // Show Turnstile container
+    const container = document.getElementById('estimatorTurnstileContainer');
+    container.style.display = 'flex';
+
+    // Render Turnstile widget if not already rendered
+    if (turnstileWidgetId === null && typeof turnstile !== 'undefined') {
+      turnstileWidgetId = turnstile.render('#estimatorTurnstileWidget', {
+        sitekey: '{{ turnstile_site_key }}',
+        callback: onEstimatorTurnstileSuccess,
+        theme: 'dark'
+      });
+    } else if (turnstileWidgetId !== null) {
+      // Reset existing widget
+      turnstile.reset(turnstileWidgetId);
+    }
+    return;
+  }
+
+  // Proceed with search
+  await performEstimatorSearch();
+}
+
+// Actual search implementation
+async function performEstimatorSearch() {
+  lastSearchTime = Date.now();
+
+  const inputId = currentEstimatorDirection === 'to' ? 'estimatorPickupInput' : 'estimatorDropoffInput';
+  const query = document.getElementById(inputId).value.trim();
+
+  // Get the active section
+  const activeSection = currentEstimatorDirection === 'to' ?
+    document.getElementById('toCampusSection') :
+    document.getElementById('fromCampusSection');
+
+  const resultsDiv = activeSection.querySelector('.estimator-search-results');
+  const searchingDiv = activeSection.querySelector('.estimator-searching');
+  const errorDiv = document.getElementById('estimateError');
+
+  errorDiv.style.display = 'none';
+  resultsDiv.innerHTML = '';
+
+  if (!query) {
+    errorDiv.textContent = 'Please enter a location to search';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  // Show searching animation with enhanced loading state
+  searchingDiv.classList.add('active');
+  resultsDiv.style.display = 'none';
+
+  try {
+    // Use Pepperdine coordinates for search center
+    const pepperdineCoords = { lat: 34.0407, lng: -118.7108 };
+
+    // Generate browser fingerprint for security
+    const fingerprint = generateBrowserFingerprint();
+
+    const requestBody = {
+      query: query,
+      lat: pepperdineCoords.lat,
+      lng: pepperdineCoords.lng,
+      service_type: 'rideshare',
+      browser_fingerprint: fingerprint
+    };
+
+    // Include Turnstile token if we have one
+    if (estimatorTurnstileToken) {
+      requestBody.cf_turnstile_response = estimatorTurnstileToken;
+    }
+
+    const response = await fetch('/api/restaurants/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = await response.json();
+
+    // Hide searching animation
+    searchingDiv.classList.remove('active');
+    resultsDiv.style.display = 'block';
+
+    // Check for errors
+    if (!response.ok || data.error) {
+      errorDiv.textContent = data.error || 'Search failed. Please try again.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    const results = Array.isArray(data) ? data : [];
+
+    if (!results || results.length === 0) {
+      errorDiv.textContent = 'No locations found. Try a different search.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    // Show top 5 results with time/distance info
+    estimatorSearchResults = results.slice(0, 5);
+
+    resultsDiv.innerHTML = estimatorSearchResults.map((result, idx) => `
+      <div class="estimator-result-item" data-index="${idx}">
+        <div class="estimator-result-name">${result.name}</div>
+        <div class="estimator-result-address">${result.address}</div>
+        ${result.duration_text || result.distance_text ? `
+          <div style="margin-top:6px;font-size:11px;color:#999;">
+            <span style="margin-right:12px;">🚗 Pickup in 2 mins</span>
+            ${result.duration_text ? `<span style="margin-right:12px;">⏱️ ${result.duration_text} drive</span>` : ''}
+            ${result.distance_text ? `<span>📍 ${result.distance_text}</span>` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+
+    // Add click handlers
+    resultsDiv.querySelectorAll('.estimator-result-item').forEach((item, idx) => {
+      item.onclick = () => selectEstimatorLocation(estimatorSearchResults[idx]);
+    });
+
+  } catch (error) {
+    console.error('Search error:', error);
+    searchingDiv.classList.remove('active');
+    resultsDiv.style.display = 'block';
+    errorDiv.textContent = 'Search failed. Please try again.';
+    errorDiv.style.display = 'block';
+  }
+}
+
+// Select Location from Results
+async function selectEstimatorLocation(location) {
+  estimatorSelectedLocation = location;
+
+  // Get the active section
+  const activeSection = currentEstimatorDirection === 'to' ?
+    document.getElementById('toCampusSection') :
+    document.getElementById('fromCampusSection');
+
+  // Clear results
+  const resultsDiv = activeSection.querySelector('.estimator-search-results');
+  resultsDiv.innerHTML = '';
+
+  // Clear input
+  const inputId = currentEstimatorDirection === 'to' ? 'estimatorPickupInput' : 'estimatorDropoffInput';
+  document.getElementById(inputId).value = '';
+
+  // Get elements from active section
+  const selectedDisplay = activeSection.querySelector('.estimator-selected-display');
+  const searchInput = activeSection.querySelector('.estimator-search-input');
+  const selectedNameEl = activeSection.querySelector('.estimator-selected-name');
+  const selectedAddressEl = activeSection.querySelector('.estimator-selected-address');
+
+  // Build address with time/distance info
+  let addressHTML = location.address;
+  if (location.duration_text || location.distance_text) {
+    addressHTML += '<br><span style="font-size:11px;color:#999;margin-top:4px;display:block;">';
+    addressHTML += '🚗 Pickup in 2 mins';
+    if (location.duration_text) {
+      addressHTML += ` • ⏱️ ${location.duration_text} drive`;
+    }
+    if (location.distance_text) {
+      addressHTML += ` • 📍 ${location.distance_text}`;
+    }
+    addressHTML += '</span>';
+  }
+
+  // Show selected location, hide search
+  selectedNameEl.textContent = location.name;
+  selectedAddressEl.innerHTML = addressHTML;
+  selectedDisplay.classList.add('active');
+  searchInput.style.display = 'none';
+
+  // Auto-calculate
+  await calculateEstimate();
+}
+
+// Clear Selected Location
+function clearEstimatorLocation() {
+  estimatorSelectedLocation = null;
+
+  // Get the active section
+  const activeSection = currentEstimatorDirection === 'to' ?
+    document.getElementById('toCampusSection') :
+    document.getElementById('fromCampusSection');
+
+  // Get elements from active section
+  const selectedDisplay = activeSection.querySelector('.estimator-selected-display');
+  const searchInput = activeSection.querySelector('.estimator-search-input');
+
+  // Hide selected location, show search
+  selectedDisplay.classList.remove('active');
+  searchInput.style.display = 'block';
+
+  // Clear results
+  document.getElementById('estimateResults').style.display = 'none';
+  document.getElementById('estimateError').style.display = 'none';
+}
+
+// Calculate Estimate
+async function calculateEstimate() {
+  const errorDiv = document.getElementById('estimateError');
+  const resultsDiv = document.getElementById('estimateResults');
+
+  if (!estimatorSelectedLocation) {
+    errorDiv.textContent = 'Please select a location first';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  errorDiv.style.display = 'none';
+
+  let pickupLat, pickupLng, dropoffLat, dropoffLng;
+
+  // Pepperdine coordinates
+  const pepperdineCoords = { lat: 34.0407, lng: -118.7108 };
+
+  if (currentEstimatorDirection === 'to') {
+    pickupLat = estimatorSelectedLocation.lat;
+    pickupLng = estimatorSelectedLocation.lng;
+    dropoffLat = pepperdineCoords.lat;
+    dropoffLng = pepperdineCoords.lng;
+  } else {
+    pickupLat = pepperdineCoords.lat;
+    pickupLng = pepperdineCoords.lng;
+    dropoffLat = estimatorSelectedLocation.lat;
+    dropoffLng = estimatorSelectedLocation.lng;
+  }
+
+  try {
+    // Generate browser fingerprint for security
+    const fingerprint = generateBrowserFingerprint();
+
+    const requestBody = {
+      origin_lat: pickupLat,
+      origin_lng: pickupLng,
+      dest_lat: dropoffLat,
+      dest_lng: dropoffLng,
+      use_traffic: true,  // Request real-time traffic data (uses Google API instead of free OSRM)
+      browser_fingerprint: fingerprint
+    };
+
+    // Include Turnstile token if we have one
+    if (estimatorTurnstileToken) {
+      requestBody.cf_turnstile_response = estimatorTurnstileToken;
+    }
+
+    const distanceResponse = await fetch('/api/directions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    const distanceData = await distanceResponse.json();
+
+    if (distanceData.error) {
+      errorDiv.textContent = 'Could not calculate route. Please try again.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    // Calculate fare
+    const distanceMiles = distanceData.distance_meters / 1609.344;
+    const durationMinutes = Math.round(distanceData.duration_in_traffic_seconds / 60);
+
+    const baseFare = 4.99;
+    const mileageCost = distanceMiles * 0.89;
+    const timeCost = durationMinutes * 0.39;
+    const totalFare = baseFare + mileageCost + timeCost;
+
+    // Display results
+    document.getElementById('estimateTotal').textContent = formatCurrency(totalFare);
+    document.getElementById('estimateDistance').textContent = `${distanceMiles.toFixed(1)} miles`;
+    document.getElementById('estimateDuration').textContent = `${durationMinutes} min`;
+    document.getElementById('estimateMileage').textContent = formatCurrency(mileageCost);
+    document.getElementById('estimateTime').textContent = formatCurrency(timeCost);
+
+    resultsDiv.style.display = 'block';
+  } catch (error) {
+    console.error('Calculation error:', error);
+    errorDiv.textContent = 'An error occurred. Please try again.';
+    errorDiv.style.display = 'block';
+  }
+}
+
+// Book Estimated Ride
+function bookEstimatedRide() {
+  if (!estimatorSelectedLocation) {
+    alert('Please calculate an estimate first');
+    return;
+  }
+
+  // Store data in sessionStorage to pass to rideshare page
+  const estimateData = {
+    direction: currentEstimatorDirection,
+    location: estimatorSelectedLocation
+  };
+
+  sessionStorage.setItem('rideshareEstimate', JSON.stringify(estimateData));
+  window.location.href = '/404.html';
+}
+
+// Year
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href !== '#' && href.length > 1) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+});
+
+// PWA: Smart redirect to active order tracking
+// Execute immediately, before DOMContentLoaded
+(function() {
+  // Check if running in PWA mode
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true;
+
+  if (isPWA) {
+    console.log('📱 Running in PWA mode');
+
+    // Service suspended for summer — clear any stale tracking URL
+    // and stay on the suspension notice instead of redirecting.
+    localStorage.removeItem('pwa-active-order-url');
+    console.log('⏸️ Service suspended — staying on notice page');
+  }
+})();
+
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/static/service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker registered:', registration.scope);
+      })
+      .catch(error => {
+        console.log('ServiceWorker registration failed:', error);
+      });
+  });
+}
+
+</script>
+
+</body>
+</html>
