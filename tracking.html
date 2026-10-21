@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#FD2D00">
+  <meta name="description" content="Track your DormDash order">
+  <title>Find Your Order</title>
+  <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+  <link rel="stylesheet" href="/static/demo.css">
+  <script src="/static/geo.js"></script>
+  <script src="/static/demo-api.js"></script>
+  <style>
+    :root {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 32px 24px;
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 100%);
+      color: #e4e4e7;
+      min-height: 100vh;
+    }
+    .card {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 0%, #e4e4e7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    p.hint {
+      margin: 0 0 32px;
+      color: #a0a0a0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .row { 
+      display: flex; 
+      gap: 12px; 
+      align-items: stretch; 
+      margin-bottom: 16px; 
+      flex-wrap: wrap; 
+    }
+    .seg { 
+      display: inline-flex; 
+      background: #1e1e1e; 
+      border: 1px solid #2a2a2a;
+      border-radius: 10px; 
+      padding: 3px; 
+    }
+    .seg button {
+      background: transparent; 
+      border: none; 
+      padding: 10px 18px; 
+      border-radius: 8px; 
+      cursor: pointer;
+      font-weight: 600; 
+      color: #888;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+    .seg button:hover {
+      color: #b0b0b0;
+    }
+    .seg button.active { 
+      background: #2a2a2a; 
+      color: #fff; 
+    }
+    input[type="text"] {
+      flex: 1; 
+      padding: 14px 16px; 
+      border-radius: 10px; 
+      border: 1px solid #2a2a2a; 
+      font-size: 15px;
+      background: #1e1e1e;
+      color: #e8e8e8;
+      min-width: 200px;
+      transition: border-color 0.2s ease;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #404040;
+    }
+    input[type="text"]::placeholder {
+      color: #666;
+    }
+    button.primary {
+      padding: 14px 24px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #FD2D00, #FD2D00);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(253, 45, 0, 0.3);
+    }
+    button.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(253, 45, 0, 0.5);
+    }
+    button.primary:active {
+      transform: translateY(0);
+    }
+    .results { 
+      margin-top: 24px; 
+    }
+    .order {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 28px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%);
+      margin-bottom: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .order::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #FD2D00 0%, #ff6b45 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .order:hover {
+      border-color: rgba(253, 45, 0, 0.5);
+      box-shadow: 0 12px 32px rgba(253, 45, 0, 0.25);
+      transform: translateY(-3px);
+    }
+    .order:hover::before {
+      opacity: 1;
+    }
+    .order-header {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .order-id {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .order-status {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(253, 45, 0, 0.15);
+      color: #FD2D00;
+      border: 1px solid rgba(253, 45, 0, 0.3);
+    }
+    .muted {
+      color: #a0a0a0;
+      font-size: 14px;
+      line-height: 1.8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .muted::before {
+      content: '🍔';
+      font-size: 16px;
+    }
+    .actions { 
+      display: flex; 
+      gap: 10px; 
+      margin-top: 16px; 
+      flex-wrap: wrap; 
+    }
+    .linkbtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #FD2D00, #ff4520);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      border: none;
+      font-size: 14px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(253, 45, 0, 0.3);
+    }
+    .linkbtn::before {
+      content: '📍';
+      font-size: 16px;
+    }
+    .linkbtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(253, 45, 0, 0.5);
+    }
+    .linkbtn:active {
+      transform: translateY(0);
+    }
+    .empty {
+      padding: 32px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%);
+      border: 1px solid #2a2a2a;
+      color: #a0a0a0;
+      text-align: center;
+      font-size: 15px;
+    }
+    .empty::before {
+      content: '🔍';
+      display: block;
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .error {
+      padding: 20px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+      border: 2px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .error::before {
+      content: '⚠️';
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: #a0a0a0;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #2a2a2a;
+      border-top: 4px solid #FD2D00;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    button.primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .dd-archive-bar { margin: -32px -24px 32px; }
+  </style>
+</head>
+<body>
+<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
+  <div class="card">
+    <h1>Find Your Order</h1>
+    <p class="hint">Search by <strong>Phone Number</strong>. In the demo this finds orders placed in this browser.</p>
+
+    <div class="row">
+      <input id="query" type="text" inputmode="numeric" placeholder="e.g. (555) 123-4567" style="flex: 1;" />
+      <button id="go" class="primary">Search</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="results" class="results"></div>
+  </div>
+
+  <script>
+    const queryEl = document.getElementById('query');
+    const goBtn = document.getElementById('go');
+    const resultsEl = document.getElementById('results');
+    const statusEl = document.getElementById('status');
+
+    function phoneDigits(s) { return (s || '').replace(/\D+/g, ''); }
+
+    async function search() {
+      resultsEl.innerHTML = '';
+      statusEl.innerHTML = '';
+      const q = queryEl.value.trim();
+      if (!q) {
+        statusEl.innerHTML = '<div class="error">Please enter a phone number.</div>';
+        return;
+      }
+
+      try {
+        const digits = phoneDigits(q);
+        if (!digits) {
+          statusEl.innerHTML = '<div class="error">Enter a valid phone number.</div>';
+          return;
+        }
+
+        // Show loading state
+        goBtn.disabled = true;
+        goBtn.textContent = 'Searching...';
+        statusEl.innerHTML = '<div class="loading"><div class="spinner"></div><div>Searching for your orders...</div></div>';
+
+        const resp = await fetch(`/api/orders/search?type=phone&value=${encodeURIComponent(digits)}`);
+
+        // Reset button
+        goBtn.disabled = false;
+        goBtn.textContent = 'Search';
+
+        if (!resp.ok) {
+          statusEl.innerHTML = '<div class="error">Search failed. Please try again.</div>';
+          return;
+        }
+        const body = await resp.json();
+        const data = Array.isArray(body) ? body : (body.orders || []);
+        console.log('Search results:', data); // Debug: see what the API returns
+        if (!Array.isArray(data) || data.length === 0) {
+          statusEl.innerHTML = '<div class="empty">No orders found for that phone number.</div>';
+          return;
+        }
+        resultsEl.innerHTML = data.map(o => {
+          console.log('Order token for #' + o.id + ':', o.order_token); // Debug: check each order's token
+          return `
+          <div class="order">
+            <div class="order-header">
+              <span class="order-id">Order #${o.id}</span>
+              <span class="order-status">${o.status || 'Pending'}</span>
+            </div>
+            <div class="muted">${o.restaurant_name || '—'} → ${o.delivery_address || '—'}</div>
+            <div class="actions">
+              ${o.order_token ?
+                `<a class="linkbtn" href="${o.service_type === 'rideshare' ? '/ride-tracking.html' : '/track.html'}?token=${encodeURIComponent(o.order_token)}">Track Order</a>` :
+                `<span style="color: #ef4444; font-size: 13px;">⚠️ Cannot track - order missing token (see <a href="/support.html" style="color:#fca5a5">support</a>)</span>`
+              }
+            </div>
+          </div>
+        `;
+        }).join('');
+        statusEl.innerHTML = ''; // Clear loading state
+      } catch (err) {
+        console.error(err);
+        goBtn.disabled = false;
+        goBtn.textContent = 'Search';
+        statusEl.innerHTML = '<div class="error">Unexpected error. Please try again.</div>';
+      }
+    }
+
+    goBtn.addEventListener('click', search);
+    queryEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') search();
+    });
+
+  </script>
+</body>
+</html>

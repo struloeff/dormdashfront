@@ -1,341 +1,2712 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<meta name="theme-color" content="#0a0e1a" />
-<title>DormDash — Live Tracking Demo</title>
-<link rel="icon" type="image/x-icon" href="/static/icon.ico">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<style>
-  :root{--brand:#FD2D00;--ride:#8b5cf6;--bg:#0a0e1a;--text:#fff;--text-2:#a0aec0;--muted:#6b7280;--border:rgba(255,255,255,.08);--ok:#10b981}
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-  .dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px}
-  .dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:2px}
-  header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;text-decoration:none;color:#fff}
-  .logo i{width:34px;height:34px;background:url('/static/dormdash.png') center/contain no-repeat}
-  .back{color:var(--text-2);text-decoration:none;font-weight:600;font-size:14px}
-  .layout{display:grid}
-  #map{height:46vh;min-height:280px;background:#0d111c}
-  @media(min-width:900px){.layout{grid-template-columns:1fr 420px;height:calc(100vh - 106px)}#map{height:100%}.panel{overflow-y:auto}}
-  .panel{padding:22px 20px 40px}
-  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-  h1{font-size:26px;font-weight:900;letter-spacing:-.03em;line-height:1.15;margin-top:4px}
-  .sub{color:var(--text-2);font-size:14px;margin-top:4px}
-  .eta{display:flex;gap:12px;margin:18px 0}
-  .eta div{flex:1;border:1px solid var(--border);border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.02)}
-  .eta b{display:block;font-size:24px;font-weight:900;letter-spacing:-.02em}
-  .eta span{font-size:12px;color:var(--muted)}
-  .bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:20px}
-  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),#ff8a3d);transition:width .3s linear}
-  .ride .bar i{background:linear-gradient(90deg,#6366f1,var(--ride))}
-  ol{list-style:none;position:relative}
-  ol li{position:relative;padding:0 0 18px 34px;color:var(--muted)}
-  ol li::before{content:'';position:absolute;left:8px;top:6px;width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:var(--bg)}
-  ol li::after{content:'';position:absolute;left:13px;top:22px;bottom:0;width:2px;background:rgba(255,255,255,.08)}
-  ol li:last-child::after{display:none}
-  ol li b{display:block;font-weight:700;font-size:15px}
-  ol li small{font-size:13px}
-  ol li.done{color:var(--text-2)}
-  ol li.done::before{background:var(--ok);border-color:var(--ok)}
-  ol li.now{color:#fff}
-  ol li.now::before{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 6px rgba(253,45,0,.2);animation:pulse 1.4s ease-in-out infinite}
-  .ride ol li.now::before{background:var(--ride);border-color:var(--ride);box-shadow:0 0 0 6px rgba(139,92,246,.22)}
-  @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(253,45,0,.05)}}
-  .action{display:none;margin:4px 0 20px;padding:16px;border-radius:14px;border:1px solid rgba(253,45,0,.35);background:rgba(253,45,0,.08)}
-  .action.on{display:block}
-  .action p{font-size:14px;color:var(--text-2);margin:4px 0 12px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;border:none;font:700 14px Inter,system-ui,sans-serif;color:#fff;background:linear-gradient(135deg,#FD2D00,#ff4500);cursor:pointer;text-decoration:none}
-  .btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
-  .btns{display:flex;gap:8px;flex-wrap:wrap}
-  .photo{height:120px;border-radius:12px;margin:10px 0 12px;display:grid;place-items:center;text-align:center;font-size:13px;color:var(--text-2);background:repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0 12px,rgba(255,255,255,.06) 12px 24px);border:1px solid var(--border)}
-  .stars button{background:none;border:none;font-size:26px;cursor:pointer;filter:grayscale(1);opacity:.5}
-  .stars button.on{filter:none;opacity:1}
-  .receipt{margin-top:22px;border-top:1px solid var(--border);padding-top:16px;font-size:14px}
-  .receipt .r{display:flex;justify-content:space-between;gap:10px;padding:4px 0;color:var(--text-2)}
-  .receipt .r span:last-child{color:#fff}
-  .receipt .r.t{font-weight:800;color:#fff;font-size:16px;padding-top:8px}
-  .speed{margin-top:18px;font-size:12px;color:var(--muted)}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:#1a2332;border:1px solid rgba(255,255,255,.12);padding:12px 18px;border-radius:12px;font-size:14px;transition:transform .3s;z-index:2000;max-width:calc(100% - 32px)}
-  .toast.on{transform:translateX(-50%) translateY(0)}
-  .pin{font-size:24px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
-  .car{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:#fff;box-shadow:0 0 0 4px rgba(253,45,0,.45),0 4px 12px rgba(0,0,0,.5)}
-  .ride .car{box-shadow:0 0 0 4px rgba(139,92,246,.5),0 4px 12px rgba(0,0,0,.5)}
-  .leaflet-container{font-family:Inter,system-ui,sans-serif;background:#0d111c}
-  .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6)}
-  .leaflet-control-attribution{background:rgba(10,14,26,.75)!important;color:#8b93a7!important}
-  .leaflet-control-attribution a{color:#c3c9d6!important}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FD2D00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Track your DormDash delivery in real-time">
+    <title>Track Your Order - DormDash (Demo)</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <script>
+        // The home-page ride estimator links here as /track.html?type=ride&dir=&name=&addr=&lat=&lng=.
+        // Rides are booked and tracked on their own pages, so hand those off to the ride flow.
+        (function () {
+            var qs = new URLSearchParams(location.search);
+            if (qs.get('type') === 'ride') {
+                var p = new URLSearchParams();
+                ['dir', 'name', 'addr', 'lat', 'lng'].forEach(function (k) { if (qs.get(k)) p.set(k, qs.get(k)); });
+                location.replace('/ride.html' + (p.toString() ? '?' + p.toString() : ''));
+            }
+        })();
+    </script>
+    <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+    <link rel="stylesheet" href="/static/demo.css">
+    <script src="/static/geo.js"></script>
+    <script src="/static/demo-api.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            color: #e4e4e7;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .order-card {
+            background: #0a0a0a;
+            border: 1px solid #ffffff;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .order-id {
+            font-size: 16px;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+        }
+
+        .order-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 24px;
+        }
+
+        .status-section {
+            text-align: center;
+            padding: 32px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .status-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .status-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .status-description {
+            font-size: 14px;
+            color: #a1a1aa;
+            line-height: 1.6;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 16px;
+        }
+
+        .status-pending {
+            background: #fbbf24;
+            color: #000000;
+        }
+
+        .status-claimed {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        .status-picked-up, .status-in-progress {
+            background: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .status-delivered, .status-completed {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .status-cancelled {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .status-awaiting-payment {
+            background: #f59e0b;
+            color: #ffffff;
+        }
+
+        .status-payment-successful {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .status-heading-to-restaurant {
+            background: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+
+        .timeline {
+            margin-top: 32px;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            width: 2px;
+            height: calc(100% + 8px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .timeline-dot.active {
+            border-color: #ffffff;
+            background: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .timeline-dot.completed {
+            border-color: #10b981;
+            background: #10b981;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding-top: 4px;
+        }
+
+        .timeline-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #a1a1aa;
+        }
+
+        .alert-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 4px;
+        }
+
+        .alert-text {
+            font-size: 13px;
+            color: #93c5fd;
+            line-height: 1.5;
+        }
+
+        .button-group {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 20px rgba(253, 45, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(253, 45, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            color: #ef4444;
+        }
+
+        .driver-info {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .driver-info-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 12px;
+        }
+
+        .driver-info-text {
+            font-size: 14px;
+            color: #6ee7b7;
+            line-height: 1.6;
+        }
+
+        .bill-section {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .bill-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f59e0b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bill-items {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #fbbf24;
+        }
+
+        .bill-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .bill-subtotal {
+            font-size: 13px;
+            color: #a1a1aa;
+            margin: 12px 0;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bill-total {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f59e0b;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #f59e0b;
+        }
+
+        .payment-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+            box-shadow: 0 4px 20px rgba(253, 45, 0, 0.3);
+        }
+
+        .payment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(253, 45, 0, 0.5);
+        }
+
+        .payment-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .payment-status {
+            text-align: center;
+            padding: 12px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 8px;
+            color: #fbbf24;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .order-card {
+                padding: 20px;
+            }
+
+            .order-number {
+                font-size: 36px;
+            }
+
+            .status-icon {
+                font-size: 48px;
+            }
+
+            .status-text {
+                font-size: 20px;
+            }
+        }
+
+        /* PWA Install Banner */
+        .pwa-install-banner {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, #FD2D00 0%, #FF6B35 100%);
+            padding: 20px 24px;
+            display: none;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(253, 45, 0, 0.4);
+            animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .pwa-install-banner.show {
+            display: flex;
+        }
+
+        .pwa-banner-icon {
+            font-size: 48px;
+            flex-shrink: 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .pwa-banner-content {
+            flex: 1;
+        }
+
+        .pwa-banner-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .pwa-banner-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.5;
+        }
+
+        .ios-instructions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .ios-share-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .ios-instructions-text {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .pwa-banner-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .pwa-install-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            color: #FD2D00;
+        }
+
+        .pwa-install-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+        }
+
+        .pwa-install-btn:active {
+            transform: translateY(0) scale(1);
+        }
+
+        .pwa-banner-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-weight: 700;
+            line-height: 1;
+            z-index: 10000 !important;
+            pointer-events: auto !important;
+        }
+
+        .pwa-banner-close:hover {
+            background: rgba(0, 0, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .pwa-install-banner {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px 16px;
+                gap: 16px;
+            }
+
+            .pwa-banner-icon {
+                font-size: 56px;
+            }
+
+            .pwa-banner-buttons {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .pwa-install-btn {
+                width: 100%;
+            }
+
+            .ios-instructions {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+        .dd-archive-bar { margin: -20px -20px 20px; }
+    </style>
 </head>
 <body>
-<div class="dd-archive-bar">Simulated tracking: the routes are real, the driver isn't. DormDash wound down in spring 2026. <a href="/#about">About the project</a></div>
-<header>
-  <a class="logo" href="/"><i></i><span>DormDash</span></a>
-  <a class="back" id="backLink" href="/order.html">← New order</a>
-</header>
-
-<div class="layout">
-  <div id="map" role="img" aria-label="Map showing the delivery route"></div>
-  <div class="panel">
-    <div class="eyebrow" id="eyebrow">Order #DD-0000</div>
-    <h1 id="title">Loading…</h1>
-    <p class="sub" id="sub"></p>
-
-    <div class="eta">
-      <div><b id="etaMin">–</b><span id="etaLabel">min to delivery</span></div>
-      <div><b id="distLeft">–</b><span>miles left</span></div>
-    </div>
-    <div class="bar"><i id="progress"></i></div>
-
-    <div class="action" id="payCard">
-      <b>Receipt confirmed: <span id="billAmt"></span></b>
-      <p>Your driver entered the real prices from the receipt. On the live service you'd pay through Stripe Checkout here.</p>
-      <div class="btns"><button class="btn" id="payBtn" type="button">Pay (demo) →</button></div>
-    </div>
-
-    <div class="action" id="doneCard">
-      <b id="doneTitle">Delivered!</b>
-      <div class="photo" id="photo">📸<br>Delivery photo uploaded by your driver</div>
-      <p id="doneText">How did it go?</p>
-      <div class="stars" id="stars"></div>
-      <div class="btns" style="margin-top:10px">
-        <button class="btn" type="button" onclick="toast('Delivery confirmed. In production this released the driver\'s payout.')">Confirm delivery</button>
-        <button class="btn btn-ghost" type="button" onclick="toast('Disputes went to the admin panel for a refund or credit.')">Report a problem</button>
-      </div>
+<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
+    <!-- PWA Install Banner -->
+    <div id="pwaInstallBanner" class="pwa-install-banner">
+        <button class="pwa-banner-close" id="pwaCloseBtn">&times;</button>
+        <div class="pwa-banner-icon">📱</div>
+        <div class="pwa-banner-content">
+            <div class="pwa-banner-title">Never lose your order</div>
+            <div class="pwa-banner-text" id="pwaBannerText">Add to home screen</div>
+            <div id="iosInstructions" class="ios-instructions" style="display: none;">
+                <div class="ios-share-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 1L8 10M8 1L5 4M8 1L11 4M3 11V13C3 13.5304 3.21071 14.0391 3.58579 14.4142C3.96086 14.7893 4.46957 15 5 15H11C11.5304 15 12.0391 14.7893 12.4142 14.4142C12.7893 14.0391 13 13.5304 13 13V11" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="ios-instructions-text">
+                    Tap <strong>Share</strong> → <strong>"Add to Home Screen"</strong>
+                </div>
+            </div>
+        </div>
+        <div class="pwa-banner-buttons" id="pwaBannerButtons">
+            <button class="pwa-install-btn" id="pwaInstallBtn">Add Now</button>
+        </div>
     </div>
 
-    <ol id="steps"></ol>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px;">
+                <img src="/static/icon.ico" alt="DormDash" style="width: 64px; height: 64px;">
+                <h1 style="margin: 0;">DormDash</h1>
+            </div>
+            <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; border-radius: 10px; padding: 12px; margin-top: 16px; text-align: center;">
+                <span style="color: #3b82f6; font-size: 14px; font-weight: 600;">
+                    📱 Keep this page open to receive live updates on your order
+                </span>
+            </div>
+        </div>
 
-    <div class="receipt" id="receipt"></div>
-    <p class="speed">Running at demo speed. Distances and drive times come from a real OSRM route; the timing is compressed so the whole trip takes about 40 seconds.</p>
-  </div>
-</div>
-<div class="toast" id="toast" role="status"></div>
+        <div id="loadingState" class="loading">
+            <div class="loading-spinner"></div>
+            <p style="color: #a1a1aa;">Loading your order...</p>
+        </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="/static/geo.js"></script>
-<script>
-const $ = id => document.getElementById(id);
-const qs = new URLSearchParams(location.search);
-const type = qs.get('type') === 'ride' ? 'ride' : 'food';
-const C = DD.CAMPUS;
-document.body.classList.toggle('ride', type === 'ride');
+        <div id="errorState" class="error" style="display: none;">
+            <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+            <h2 style="margin-bottom: 8px;">Order Not Found</h2>
+            <p id="errorMessage">We couldn't find your order. Please check your order ID.</p>
+        </div>
 
-function toast(msg) {
-  const t = $('toast'); t.textContent = msg; t.classList.add('on');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 3200);
-}
+        <div id="orderContent" style="display: none;">
+            <div class="order-card">
+                <div class="order-id">Order ID</div>
+                <div class="order-number">#<span id="orderId"></span></div>
 
-// Place from the URL, or a sensible default so the page still works if opened directly
-const lat = parseFloat(qs.get('lat')), lng = parseFloat(qs.get('lng'));
-const place = Number.isFinite(lat) && Number.isFinite(lng)
-  ? { name: qs.get('name') || 'Selected place', address: qs.get('addr') || '', lat, lng }
-  : type === 'ride'
-    ? { name: 'Santa Monica Pier', address: 'Santa Monica, CA', lat: 34.0092, lng: -118.4976 }
-    : { name: 'Chick-fil-A', address: 'Calabasas, CA', lat: 34.1446, lng: -118.6981 };
+                <div class="status-section">
+                    <div class="status-icon" id="statusIcon">⏳</div>
+                    <div class="status-text" id="statusText">Waiting for Driver</div>
+                    <div class="status-description" id="statusDescription">
+                        Your order is waiting to be claimed by a driver. We'll notify you once a driver accepts your order!
+                    </div>
+                    <div class="status-badge" id="statusBadge">Pending</div>
+                </div>
 
-let order = null;
-try { order = JSON.parse(sessionStorage.getItem('dd-demo-order') || 'null'); } catch (e) {}
-if (order && (order.type !== 'food' || order.restaurant.name !== place.name)) order = null;
-const dorm = qs.get('dorm') || (order && order.dorm) || 'Seaside';
-const orderNo = 'DD-' + String(1000 + Math.floor(Math.random() * 9000));
+                <div id="alertBox" class="alert-box">
+                    <div class="alert-icon">💬</div>
+                    <div class="alert-content">
+                        <div class="alert-title">Driver Will Contact You</div>
+                        <div class="alert-text">Once a driver claims your order, they will contact you via <span id="contactMethodText">text</span> for any details or updates.</div>
+                    </div>
+                </div>
 
-// Map
-const map = L.map('map', { zoomControl: false, attributionControl: true });
-L.control.zoom({ position: 'bottomright' }).addTo(map);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · routes <a href="https://project-osrm.org/">OSRM</a>'
-}).addTo(map);
-const pin = (emoji) => L.divIcon({ className: '', html: `<div class="pin">${emoji}</div>`, iconSize: [26, 26], iconAnchor: [13, 24] });
-const car = L.marker([C.lat, C.lng], { icon: L.divIcon({ className: '', html: `<div class="car">${type === 'ride' ? '🚗' : '🛵'}</div>`, iconSize: [34, 34], iconAnchor: [17, 17] }), zIndexOffset: 1000 });
+                <div id="driverInfo" class="driver-info" style="display: none;">
+                    <div class="driver-info-title" id="driverInfoTitle">✅ Driver Assigned</div>
+                    <div class="driver-info-text" id="driverInfoText">
+                        Your order has been claimed by <strong id="driverName"></strong>. They will contact you shortly!
+                    </div>
+                </div>
 
-// Walk a polyline by distance fraction
-function prepare(coords) {
-  const cum = [0];
-  for (let i = 1; i < coords.length; i++) {
-    cum.push(cum[i - 1] + DD.haversineMiles({ lat: coords[i - 1][0], lng: coords[i - 1][1] }, { lat: coords[i][0], lng: coords[i][1] }));
-  }
-  return { coords, cum, len: cum[cum.length - 1] || 1 };
-}
-function pointAt(p, f) {
-  const d = f * p.len;
-  let i = p.cum.findIndex(c => c >= d);
-  if (i <= 0) return p.coords[Math.max(0, i)];
-  const seg = p.cum[i] - p.cum[i - 1] || 1, t = (d - p.cum[i - 1]) / seg;
-  const a = p.coords[i - 1], b = p.coords[i];
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-}
+                <div id="billSection" class="bill-section" style="display: none;">
+                    <div class="bill-title">💳 Your Bill</div>
+                    <div class="bill-items" id="billItems"></div>
+                    <div class="bill-subtotal" id="billBreakdown"></div>
+                    <div class="bill-total">
+                        <span>Total Due:</span>
+                        <span id="billTotal">$0.00</span>
+                    </div>
+                    <button class="payment-btn" id="paymentBtn" onclick="processPayment()">
+                        Pay Now (demo, no charge)
+                    </button>
+                    <div id="paymentStatus" class="payment-status" style="display: none;"></div>
+                </div>
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-let steps = [];
-function setSteps(list) {
-  steps = list;
-  $('steps').innerHTML = list.map(s => `<li><b>${s[0]}</b><small>${s[1]}</small></li>`).join('');
-}
-function markStep(i) {
-  [...$('steps').children].forEach((li, k) => { li.className = k < i ? 'done' : k === i ? 'now' : ''; });
-}
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Restaurant</div>
+                        <div class="info-value" id="restaurantName"></div>
+                    </div>
 
-let legs = [], totalMiles = 0, totalMin = 0;
-function updateEta(legIdx, f) {
-  let miles = 0, min = 0;
-  legs.forEach((l, k) => {
-    const rem = k < legIdx ? 0 : k === legIdx ? 1 - f : 1;
-    miles += l.miles * rem; min += l.minutes * rem;
-  });
-  $('etaMin').textContent = Math.max(0, Math.ceil(min));
-  $('distLeft').textContent = miles.toFixed(1);
-  const done = 1 - (totalMiles ? miles / totalMiles : 0);
-  $('progress').style.width = (done * 100).toFixed(1) + '%';
-}
+                    <div class="info-item">
+                        <div class="info-label">Delivery Location</div>
+                        <div class="info-value" id="deliveryAddress"></div>
+                    </div>
 
-function animate(legIdx, ms) {
-  const p = legs[legIdx].path;
-  return new Promise(resolve => {
-    const t0 = performance.now();
-    function frame(now) {
-      const f = Math.min(1, (now - t0) / ms);
-      const e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
-      car.setLatLng(pointAt(p, e));
-      updateEta(legIdx, e);
-      if (f < 1) requestAnimationFrame(frame); else resolve();
-    }
-    requestAnimationFrame(frame);
-  });
-}
-const legTime = l => Math.min(16000, Math.max(6000, l.minutes * 600));
+                    <div class="info-item" id="orderDetailsItem">
+                        <div class="info-label">Order Details</div>
+                        <div class="info-value" id="orderDetails"></div>
+                    </div>
 
-function receipt(rows) {
-  $('receipt').innerHTML = rows.map(([l, v, t]) => `<div class="r${t ? ' t' : ''}"><span>${DD.esc(l)}</span><span>${v}</span></div>`).join('');
-}
+                    <div class="info-item">
+                        <div class="info-label">Order Time</div>
+                        <div class="info-value" id="orderTime"></div>
+                    </div>
 
-function stars() {
-  $('stars').innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-label="${n} star">⭐</button>`).join('');
-  $('stars').querySelectorAll('button').forEach(b => b.onclick = () => {
-    $('stars').querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.n <= +b.dataset.n));
-    toast('Thanks! Ratings fed each driver\'s profile on the live service.');
-  });
-}
+                    <div class="info-item" id="estimatedTimeItem" style="display: none;">
+                        <div class="info-label">Estimated Delivery</div>
+                        <div class="info-value" id="estimatedTime">Calculating...</div>
+                    </div>
+                </div>
 
-async function runFood() {
-  $('eyebrow').textContent = `Order #${orderNo} · demo`;
-  $('title').textContent = place.name;
-  $('sub').textContent = `To ${dorm}${order && order.room ? ', ' + order.room : ''}`;
-  $('etaLabel').textContent = 'min to delivery';
-  setSteps([
-    ['Order placed', 'Sent to the DormDash driver channel on Discord'],
-    ['Driver claimed it', 'First verified driver to tap Claim gets the job'],
-    ['Heading to the restaurant', place.address || 'Driving from campus'],
-    ['Ordering & confirming the receipt', 'Driver enters the real prices, bill is sent to you'],
-    ['On the way to campus', `Up PCH to ${dorm}`],
-    ['Delivered', 'Photo at drop-off, then confirm or dispute']
-  ]);
-  markStep(0);
+                <div class="timeline">
+                    <div class="timeline-title">Order Progress</div>
 
-  const [toRest, toDorm] = await Promise.all([DD.route(C, place), DD.route(place, C)]);
-  legs = [toRest, toDorm].map(l => ({ ...l, path: prepare(l.coords) }));
-  totalMiles = legs.reduce((s, l) => s + l.miles, 0);
-  totalMin = legs.reduce((s, l) => s + l.minutes, 0) + 6;
-  L.polyline(toRest.coords, { color: '#ffffff', weight: 3, opacity: .35, dashArray: '6 8' }).addTo(map);
-  const line = L.polyline(toDorm.coords, { color: '#FD2D00', weight: 5, opacity: .9 }).addTo(map);
-  L.marker([place.lat, place.lng], { icon: pin('🍔') }).addTo(map).bindTooltip(place.name);
-  L.marker([C.lat, C.lng], { icon: pin('🏠') }).addTo(map).bindTooltip(dorm);
-  map.fitBounds(line.getBounds(), { padding: [40, 40] });
-  car.addTo(map);
-  updateEta(0, 0);
+                    <div class="timeline-item">
+                        <div class="timeline-dot completed" id="dot-placed">✓</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Order Placed</div>
+                            <div class="timeline-time" id="time-placed"></div>
+                        </div>
+                    </div>
 
-  const items = order ? order.items : [];
-  const subtotal = order ? order.subtotal : parseFloat(qs.get('total')) || 0;
-  const rows = items.map(i => [`${i.qty}× ${i.name}`, DD.money(i.qty * i.price)]);
-  if (order) rows.push(['Fees', DD.money(order.fees)], ['Sales tax (est.)', DD.money(order.tax)], ['Tip', DD.money(order.tip)]);
-  rows.push(['Total', DD.money(order ? order.total : subtotal), true]);
-  receipt(rows);
+                    <div class="timeline-item">
+                        <div class="timeline-dot" id="dot-claimed">👤</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Driver Claimed</div>
+                            <div class="timeline-time" id="time-claimed">Waiting...</div>
+                        </div>
+                    </div>
 
-  await sleep(2200); markStep(1);
-  await sleep(2200); markStep(2);
-  await animate(0, legTime(toRest));
-  markStep(3);
-  await sleep(2000);
-  $('billAmt').textContent = DD.money(order ? order.total : subtotal);
-  $('payCard').classList.add('on');
-  await new Promise(res => {
-    const go = () => { clearTimeout(auto); $('payCard').classList.remove('on'); toast('Paid (demo). Stripe would now hold the charge until delivery.'); res(); };
-    const auto = setTimeout(go, 9000);
-    $('payBtn').onclick = go;
-  });
-  markStep(4);
-  await animate(1, legTime(toDorm));
-  markStep(6);
-  $('doneTitle').textContent = 'Delivered!';
-  $('photo').innerHTML = `📸<br>Left at ${DD.esc(dorm)}${order && order.room ? ', ' + DD.esc(order.room) : ''}`;
-  $('doneCard').classList.add('on');
-  stars();
-}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" id="dot-awaiting-payment">💳</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Awaiting Payment</div>
+                            <div class="timeline-time" id="time-awaiting-payment">Waiting...</div>
+                        </div>
+                    </div>
 
-async function runRide() {
-  const dir = qs.get('dir') === 'to' ? 'to' : 'from';
-  const pickup = dir === 'to' ? place : { ...C, name: 'Pepperdine University' };
-  const dropoff = dir === 'to' ? { ...C, name: 'Pepperdine University' } : place;
-  $('backLink').href = '/#rides'; $('backLink').textContent = '← New ride';
-  $('eyebrow').textContent = `Ride #${orderNo} · demo`;
-  $('title').textContent = `To ${dropoff.name}`;
-  $('sub').textContent = `Pickup at ${pickup.name}`;
-  $('etaLabel').textContent = 'min to arrival';
-  setSteps([
-    ['Ride requested', 'Posted to drivers with the upfront fare'],
-    ['Driver accepted', 'A student driver nearby took the ride'],
-    ['Driver on the way', `Heading to ${pickup.name}`],
-    ['Driver arrived', 'Meet at the pickup spot'],
-    ['On your trip', `To ${dropoff.name}`],
-    ['Arrived', 'Fare charged as quoted, no surge']
-  ]);
-  markStep(0);
+                    <div class="timeline-item">
+                        <div class="timeline-dot" id="dot-payment-successful">✅</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Payment Successful</div>
+                            <div class="timeline-time" id="time-payment-successful">Waiting...</div>
+                        </div>
+                    </div>
 
-  const start = { lat: pickup.lat + 0.012, lng: pickup.lng - 0.018 };
-  const [approach, trip] = await Promise.all([DD.route(start, pickup), DD.route(pickup, dropoff)]);
-  legs = [approach, trip].map(l => ({ ...l, path: prepare(l.coords) }));
-  totalMiles = legs.reduce((s, l) => s + l.miles, 0);
-  L.polyline(approach.coords, { color: '#ffffff', weight: 3, opacity: .35, dashArray: '6 8' }).addTo(map);
-  const line = L.polyline(trip.coords, { color: '#8b5cf6', weight: 5, opacity: .95 }).addTo(map);
-  L.marker([pickup.lat, pickup.lng], { icon: pin('📍') }).addTo(map).bindTooltip('Pickup: ' + pickup.name);
-  L.marker([dropoff.lat, dropoff.lng], { icon: pin('🏁') }).addTo(map).bindTooltip(dropoff.name);
-  map.fitBounds(line.getBounds(), { padding: [40, 40] });
-  car.setLatLng([start.lat, start.lng]).addTo(map);
-  updateEta(0, 0);
+                    <div class="timeline-item">
+                        <div class="timeline-dot" id="dot-heading-to-restaurant">🏪</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Heading to Restaurant</div>
+                            <div class="timeline-time" id="time-heading-to-restaurant">Waiting...</div>
+                        </div>
+                    </div>
 
-  const R = DD.RATES.ride;
-  const mileage = trip.miles * R.perMile, time = trip.minutes * R.perMinute;
-  receipt([
-    ['Base fare', DD.money(R.base)],
-    [`Mileage (${trip.miles.toFixed(1)} mi × $0.89)`, DD.money(mileage)],
-    [`Time (${trip.minutes} min × $0.39)`, DD.money(time)],
-    ['Surge', '$0.00'],
-    ['Fare', DD.money(R.base + mileage + time), true]
-  ]);
+                    <div class="timeline-item">
+                        <div class="timeline-dot" id="dot-picked-up">📦</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Picked Up from Restaurant</div>
+                            <div class="timeline-time" id="time-picked-up">Waiting...</div>
+                        </div>
+                    </div>
 
-  await sleep(2200); markStep(1);
-  await sleep(1800); markStep(2);
-  await animate(0, 6000);
-  markStep(3);
-  await sleep(2500); markStep(4);
-  await animate(1, legTime(trip));
-  markStep(6);
-  $('doneTitle').textContent = `You've arrived at ${dropoff.name}`;
-  $('photo').style.display = 'none';
-  $('doneText').textContent = 'Rate your driver';
-  $('doneCard').querySelector('.btns').innerHTML = `<a class="btn" href="/#rides">Estimate another ride</a><a class="btn btn-ghost" href="/order.html">Order food instead</a>`;
-  $('doneCard').classList.add('on');
-  stars();
-}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" id="dot-in-progress">🚗</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Out for Delivery</div>
+                            <div class="timeline-time" id="time-in-progress">Waiting...</div>
+                        </div>
+                    </div>
 
-(type === 'ride' ? runRide() : runFood()).catch(err => {
-  $('title').textContent = 'Could not load the route';
-  $('sub').textContent = (err && err.message) || 'Try again in a moment.';
-});
-</script>
+                    <div class="timeline-item">
+                        <div class="timeline-dot" id="dot-delivered">✨</div>
+                        <div class="timeline-content">
+                            <div class="timeline-label">Delivered</div>
+                            <div class="timeline-time" id="time-delivered">Waiting...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <a href="/order.html" class="btn btn-primary">Place Another Order</a>
+                    <button class="btn btn-secondary" onclick="refreshOrder()">🔄 Refresh Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';  // demo: /api/* is answered by static/demo-api.js
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');  // Legacy support
+        const orderToken = urlParams.get('token');  // New secure method
+        let currentOrder = null;
+
+        const socket = io(API_URL, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 30000, // Max 30 seconds between reconnection attempts
+            reconnectionAttempts: Infinity, // Never stop trying - connection is stateless and token-based
+            timeout: 20000
+        });
+
+        socket.on('connect', () => {
+            console.log('✅ Connected to WebSocket');
+            // Reload order data when reconnecting to get latest status
+            if (currentOrder) {
+                console.log('Reconnected - refreshing order data');
+                loadOrder();
+            }
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log(`❌ Disconnected from WebSocket: ${reason} - will auto-reconnect`);
+        });
+
+        socket.on('connect_error', (error) => {
+            console.log(`❌ WebSocket connection error: ${error.message} - will retry`);
+        });
+
+        socket.on('reconnect_attempt', (attemptNumber) => {
+            console.log(`🔄 Reconnection attempt #${attemptNumber}`);
+        });
+
+        socket.on('reconnect', (attemptNumber) => {
+            console.log(`✅ Reconnected after ${attemptNumber} attempts`);
+        });
+
+        socket.on('order_update', (data) => {
+            // Check against currentOrder.id since orderId may be null when using token
+            const orderIdToCheck = currentOrder ? currentOrder.id : orderId;
+            if (data.id == orderIdToCheck) {
+                console.log('📦 Order updated via WebSocket:', data);
+                loadOrder();
+            }
+        });
+
+        // Also refresh when page becomes visible again (user returns to tab)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && currentOrder) {
+                console.log('Page visible again - refreshing order data');
+                loadOrder();
+            }
+        });
+
+        const statusConfig = {
+            'Pending': {
+                icon: '⏳',
+                text: 'Waiting for Driver',
+                description: 'Your order is waiting to be claimed by a driver. Please check this page for updates. If your order is not picked up within 15 minutes, it will be automatically cancelled.',
+                class: 'status-pending'
+            },
+            'Claimed': {
+                icon: '👤',
+                text: 'Driver Assigned',
+                description: 'A driver has claimed your order and will contact you shortly. Please check this page for updates.',
+                class: 'status-claimed'
+            },
+            'Awaiting Payment': {
+                icon: '💳',
+                text: 'Awaiting Payment',
+                description: 'Your bill is ready! Please review and complete payment below to proceed with your order.',
+                class: 'status-awaiting-payment'
+            },
+            'Payment Successful': {
+                icon: '✅',
+                text: 'Payment Successful',
+                description: 'Payment confirmed! Your driver will now head to the restaurant to pick up your order.',
+                class: 'status-payment-successful'
+            },
+            'Heading to Restaurant': {
+                icon: '🏪',
+                text: 'Heading to Restaurant',
+                description: 'Your driver is on their way to the restaurant to pick up your food.',
+                class: 'status-heading-to-restaurant'
+            },
+            'Picked Up': {
+                icon: '📦',
+                text: 'Picked Up from Restaurant',
+                description: 'Your food has been picked up from the restaurant and your driver is ready to deliver it to you.',
+                class: 'status-picked-up'
+            },
+            'In Progress': {
+                icon: '🚗',
+                text: 'Out for Delivery',
+                description: 'Your order is on the way! Your driver is heading to your delivery location now.',
+                class: 'status-in-progress'
+            },
+            'Delivered': {
+                icon: '✨',
+                text: 'Order Delivered',
+                description: 'Your order has been delivered! We hope you enjoy your meal. Thanks for using DormDash!',
+                class: 'status-delivered'
+            },
+            'Completed': {
+                icon: '✅',
+                text: 'Order Completed',
+                description: 'Your order has been completed successfully! Thanks for using DormDash!',
+                class: 'status-completed'
+            },
+            'Cancelled': {
+                icon: '❌',
+                text: 'Order Cancelled',
+                description: 'This order has been cancelled. If you have questions, please contact support.',
+                class: 'status-cancelled'
+            }
+        };
+
+        function formatTime(dateString) {
+            // Handle null/undefined
+            if (!dateString) return 'N/A';
+
+            try {
+                // Convert to string if it's not already
+                const dateStr = typeof dateString === 'string' ? dateString : String(dateString);
+
+                // Parse as local time (Malibu time) - DO NOT add 'Z' suffix
+                // The backend sends timestamps in local Malibu time without timezone indicator
+                let date = new Date(dateStr);
+
+                // Final check
+                if (isNaN(date.getTime())) {
+                    console.warn('Could not parse date:', dateString);
+                    return 'Recently';
+                }
+
+                return date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: 'America/Los_Angeles',
+                    timeZoneName: 'short'
+                });
+            } catch (e) {
+                console.error('Error formatting time:', e, dateString);
+                return 'Recently';
+            }
+        }
+
+        function calculateEstimatedDelivery(status, createdAt) {
+            const created = new Date(createdAt);
+            let minutesToAdd = 45;
+
+            switch(status) {
+                case 'Claimed':
+                    minutesToAdd = 35;
+                    break;
+                case 'Picked Up':
+                    minutesToAdd = 15;
+                    break;
+                case 'In Progress':
+                    minutesToAdd = 10;
+                    break;
+                case 'Delivered':
+                case 'Completed':
+                    return 'Delivered';
+            }
+
+            const estimated = new Date(created.getTime() + minutesToAdd * 60000);
+            return formatTime(estimated);
+        }
+
+        function handleCancelledTimeline(order) {
+            // Get the timeline container
+            const timeline = document.querySelector('.timeline');
+            if (!timeline) return;
+
+            // Clear the timeline and rebuild it with only completed steps + cancellation
+            const timelineTitle = timeline.querySelector('.timeline-title');
+            timeline.innerHTML = '';
+            if (timelineTitle) {
+                timeline.appendChild(timelineTitle);
+            } else {
+                const title = document.createElement('div');
+                title.className = 'timeline-title';
+                title.textContent = 'Order Progress';
+                timeline.appendChild(title);
+            }
+
+            // Always show Order Placed
+            const placedItem = document.createElement('div');
+            placedItem.className = 'timeline-item';
+            placedItem.innerHTML = `
+                <div class="timeline-dot completed">✓</div>
+                <div class="timeline-content">
+                    <div class="timeline-label">Order Placed</div>
+                    <div class="timeline-time">${formatTime(order.created_at)}</div>
+                </div>
+            `;
+            timeline.appendChild(placedItem);
+
+            // Show Driver Claimed if it happened
+            if (order.claimed_at || order.claimed_by) {
+                const claimedItem = document.createElement('div');
+                claimedItem.className = 'timeline-item';
+                claimedItem.innerHTML = `
+                    <div class="timeline-dot completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">Driver Claimed</div>
+                        <div class="timeline-time">${order.claimed_at ? formatTime(order.claimed_at) : 'Completed'}</div>
+                    </div>
+                `;
+                timeline.appendChild(claimedItem);
+            }
+
+            // Show Awaiting Payment if it happened
+            if (order.awaiting_payment_at) {
+                const awaitingItem = document.createElement('div');
+                awaitingItem.className = 'timeline-item';
+                awaitingItem.innerHTML = `
+                    <div class="timeline-dot completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">Awaiting Payment</div>
+                        <div class="timeline-time">${formatTime(order.awaiting_payment_at)}</div>
+                    </div>
+                `;
+                timeline.appendChild(awaitingItem);
+            }
+
+            // Show Payment Successful if it happened
+            if (order.payment_confirmed_at) {
+                const paymentItem = document.createElement('div');
+                paymentItem.className = 'timeline-item';
+                paymentItem.innerHTML = `
+                    <div class="timeline-dot completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">Payment Successful</div>
+                        <div class="timeline-time">${formatTime(order.payment_confirmed_at)}</div>
+                    </div>
+                `;
+                timeline.appendChild(paymentItem);
+            }
+
+            // Show Heading to Restaurant if it happened
+            if (order.heading_to_restaurant_at) {
+                const headingItem = document.createElement('div');
+                headingItem.className = 'timeline-item';
+                headingItem.innerHTML = `
+                    <div class="timeline-dot completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">Heading to Restaurant</div>
+                        <div class="timeline-time">${formatTime(order.heading_to_restaurant_at)}</div>
+                    </div>
+                `;
+                timeline.appendChild(headingItem);
+            }
+
+            // Show Picked Up if it happened
+            if (order.picked_up_at) {
+                const pickedUpItem = document.createElement('div');
+                pickedUpItem.className = 'timeline-item';
+                pickedUpItem.innerHTML = `
+                    <div class="timeline-dot completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">Picked Up from Restaurant</div>
+                        <div class="timeline-time">${formatTime(order.picked_up_at)}</div>
+                    </div>
+                `;
+                timeline.appendChild(pickedUpItem);
+            }
+
+            // Show In Progress if it happened
+            if (order.in_progress_at) {
+                const inProgressItem = document.createElement('div');
+                inProgressItem.className = 'timeline-item';
+                inProgressItem.innerHTML = `
+                    <div class="timeline-dot completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-label">Out for Delivery</div>
+                        <div class="timeline-time">${formatTime(order.in_progress_at)}</div>
+                    </div>
+                `;
+                timeline.appendChild(inProgressItem);
+            }
+
+            // Always show Cancelled as the final step
+            const cancelledItem = document.createElement('div');
+            cancelledItem.className = 'timeline-item';
+
+            // Format cancelled time - handle both cases with and without timezone
+            let cancelledTime = 'Just now';
+            if (order.cancelled_at) {
+                try {
+                    cancelledTime = formatTime(order.cancelled_at);
+                } catch (e) {
+                    console.warn('Error formatting cancelled_at:', e);
+                    cancelledTime = 'Recently';
+                }
+            }
+
+            cancelledItem.innerHTML = `
+                <div class="timeline-dot" style="border-color: #ef4444; background: #ef4444;">❌</div>
+                <div class="timeline-content">
+                    <div class="timeline-label">Cancelled</div>
+                    <div class="timeline-time">${cancelledTime}</div>
+                </div>
+            `;
+            timeline.appendChild(cancelledItem);
+        }
+
+        function updateTimeline(status, order) {
+            console.log('Updating timeline with status:', status, 'Order:', order);
+
+            // Map statuses to timeline positions (0-7)
+            const statusMap = {
+                'Pending': 0,
+                'Claimed': 1,
+                'Awaiting Payment': 2,
+                'Payment Successful': 3,
+                'Heading to Restaurant': 4,
+                'Picked Up': 5,
+                'In Progress': 6,
+                'Delivered': 7,
+                'Completed': 7,
+                'Cancelled': -1  // Special handling for cancelled
+            };
+
+            const currentIndex = statusMap[status] !== undefined ? statusMap[status] : 0;
+
+            // Special handling for cancelled orders
+            if (status === 'Cancelled') {
+                handleCancelledTimeline(order);
+                return;
+            }
+
+            // Update "Order Placed" - always completed
+            const placedDot = document.getElementById('dot-placed');
+            const placedTime = document.getElementById('time-placed');
+            if (placedDot) {
+                placedDot.classList.add('completed');
+                placedDot.classList.remove('active');
+                if (placedTime && order.created_at) {
+                    placedTime.textContent = formatTime(order.created_at);
+                }
+            }
+
+            // Update "Driver Claimed"
+            const claimedDot = document.getElementById('dot-claimed');
+            const claimedTime = document.getElementById('time-claimed');
+            if (claimedDot && claimedTime) {
+                if (currentIndex > 1) {
+                    claimedDot.classList.add('completed');
+                    claimedDot.classList.remove('active');
+                    if (order.claimed_at) {
+                        claimedTime.textContent = formatTime(order.claimed_at);
+                    } else {
+                        claimedTime.textContent = 'Completed';
+                    }
+                } else if (currentIndex === 1) {
+                    claimedDot.classList.add('active');
+                    claimedDot.classList.remove('completed');
+                    if (order.claimed_at) {
+                        claimedTime.textContent = formatTime(order.claimed_at);
+                    } else {
+                        claimedTime.textContent = 'Just now';
+                    }
+                } else {
+                    claimedDot.classList.remove('completed', 'active');
+                    claimedTime.textContent = 'Waiting...';
+                }
+            }
+
+            // Update "Awaiting Payment"
+            const awaitingPaymentDot = document.getElementById('dot-awaiting-payment');
+            const awaitingPaymentTime = document.getElementById('time-awaiting-payment');
+            if (awaitingPaymentDot && awaitingPaymentTime) {
+                if (currentIndex > 2) {
+                    awaitingPaymentDot.classList.add('completed');
+                    awaitingPaymentDot.classList.remove('active');
+                    if (order.awaiting_payment_at) {
+                        awaitingPaymentTime.textContent = formatTime(order.awaiting_payment_at);
+                    } else {
+                        awaitingPaymentTime.textContent = 'Completed';
+                    }
+                } else if (currentIndex === 2) {
+                    awaitingPaymentDot.classList.add('active');
+                    awaitingPaymentDot.classList.remove('completed');
+                    if (order.awaiting_payment_at) {
+                        awaitingPaymentTime.textContent = formatTime(order.awaiting_payment_at);
+                    } else {
+                        awaitingPaymentTime.textContent = 'Processing...';
+                    }
+                } else {
+                    awaitingPaymentDot.classList.remove('completed', 'active');
+                    awaitingPaymentTime.textContent = 'Waiting...';
+                }
+            }
+
+            // Update "Payment Successful"
+            const paymentSuccessfulDot = document.getElementById('dot-payment-successful');
+            const paymentSuccessfulTime = document.getElementById('time-payment-successful');
+            if (paymentSuccessfulDot && paymentSuccessfulTime) {
+                if (currentIndex > 3) {
+                    paymentSuccessfulDot.classList.add('completed');
+                    paymentSuccessfulDot.classList.remove('active');
+                    if (order.payment_confirmed_at) {
+                        paymentSuccessfulTime.textContent = formatTime(order.payment_confirmed_at);
+                    } else {
+                        paymentSuccessfulTime.textContent = 'Completed';
+                    }
+                } else if (currentIndex === 3) {
+                    paymentSuccessfulDot.classList.add('active');
+                    paymentSuccessfulDot.classList.remove('completed');
+                    if (order.payment_confirmed_at) {
+                        paymentSuccessfulTime.textContent = formatTime(order.payment_confirmed_at);
+                    } else {
+                        paymentSuccessfulTime.textContent = 'Just now';
+                    }
+                } else {
+                    paymentSuccessfulDot.classList.remove('completed', 'active');
+                    paymentSuccessfulTime.textContent = 'Waiting...';
+                }
+            }
+
+            // Update "Heading to Restaurant"
+            const headingToRestaurantDot = document.getElementById('dot-heading-to-restaurant');
+            const headingToRestaurantTime = document.getElementById('time-heading-to-restaurant');
+            if (headingToRestaurantDot && headingToRestaurantTime) {
+                if (currentIndex > 4) {
+                    headingToRestaurantDot.classList.add('completed');
+                    headingToRestaurantDot.classList.remove('active');
+                    if (order.heading_to_restaurant_at) {
+                        headingToRestaurantTime.textContent = formatTime(order.heading_to_restaurant_at);
+                    } else {
+                        headingToRestaurantTime.textContent = 'Completed';
+                    }
+                } else if (currentIndex === 4) {
+                    headingToRestaurantDot.classList.add('active');
+                    headingToRestaurantDot.classList.remove('completed');
+                    if (order.heading_to_restaurant_at) {
+                        headingToRestaurantTime.textContent = formatTime(order.heading_to_restaurant_at);
+                    } else {
+                        headingToRestaurantTime.textContent = 'On the way';
+                    }
+                } else {
+                    headingToRestaurantDot.classList.remove('completed', 'active');
+                    headingToRestaurantTime.textContent = 'Waiting...';
+                }
+            }
+
+            // Update "Picked Up from Restaurant"
+            const pickedUpDot = document.getElementById('dot-picked-up');
+            const pickedUpTime = document.getElementById('time-picked-up');
+            if (pickedUpDot && pickedUpTime) {
+                if (currentIndex > 5) {
+                    pickedUpDot.classList.add('completed');
+                    pickedUpDot.classList.remove('active');
+                    if (order.picked_up_at) {
+                        pickedUpTime.textContent = formatTime(order.picked_up_at);
+                    } else {
+                        pickedUpTime.textContent = 'Completed';
+                    }
+                } else if (currentIndex === 5) {
+                    pickedUpDot.classList.add('active');
+                    pickedUpDot.classList.remove('completed');
+                    if (order.picked_up_at) {
+                        pickedUpTime.textContent = formatTime(order.picked_up_at);
+                    } else {
+                        pickedUpTime.textContent = 'Just now';
+                    }
+                } else {
+                    pickedUpDot.classList.remove('completed', 'active');
+                    pickedUpTime.textContent = 'Waiting...';
+                }
+            }
+
+            // Update "Out for Delivery"
+            const inProgressDot = document.getElementById('dot-in-progress');
+            const inProgressTime = document.getElementById('time-in-progress');
+            if (inProgressDot && inProgressTime) {
+                if (currentIndex > 6) {
+                    inProgressDot.classList.add('completed');
+                    inProgressDot.classList.remove('active');
+                    if (order.in_progress_at) {
+                        inProgressTime.textContent = formatTime(order.in_progress_at);
+                    } else {
+                        inProgressTime.textContent = 'Completed';
+                    }
+                } else if (currentIndex === 6) {
+                    inProgressDot.classList.add('active');
+                    inProgressDot.classList.remove('completed');
+                    if (order.in_progress_at) {
+                        inProgressTime.textContent = formatTime(order.in_progress_at);
+                    } else {
+                        inProgressTime.textContent = 'Just now';
+                    }
+                } else {
+                    inProgressDot.classList.remove('completed', 'active');
+                    inProgressTime.textContent = 'Waiting...';
+                }
+            }
+
+            // Update "Delivered"
+            const deliveredDot = document.getElementById('dot-delivered');
+            const deliveredTime = document.getElementById('time-delivered');
+            if (deliveredDot && deliveredTime) {
+                if (currentIndex >= 7) {
+                    deliveredDot.classList.add('completed');
+                    deliveredDot.classList.remove('active');
+                    if (order.delivered_at) {
+                        deliveredTime.textContent = formatTime(order.delivered_at);
+                    } else {
+                        deliveredTime.textContent = 'Just now';
+                    }
+                } else {
+                    deliveredDot.classList.remove('completed', 'active');
+                    deliveredTime.textContent = 'Waiting...';
+                }
+            }
+        }
+
+        // Notification support
+        let notificationsEnabled = false;
+        let lastNotifiedStatus = null;
+
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('This browser does not support notifications');
+                return false;
+            }
+
+            if (Notification.permission === 'granted') {
+                notificationsEnabled = true;
+                return true;
+            }
+
+            if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                notificationsEnabled = permission === 'granted';
+                return notificationsEnabled;
+            }
+
+            return false;
+        }
+
+        function showNotification(title, body, url) {
+            if (!notificationsEnabled || Notification.permission !== 'granted') {
+                return;
+            }
+
+            // Check if we're in a service worker context
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                // Use service worker notification for better persistence
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification(title, {
+                        body: body,
+                        icon: '/static/pwa-icon-192.png',
+                        badge: '/static/icon.ico',
+                        tag: 'order-status',
+                        requireInteraction: true,
+                        vibrate: [200, 100, 200],
+                        data: { url: url || window.location.href }
+                    });
+                });
+            } else {
+                // Fallback to regular notification
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: '/static/pwa-icon-192.png',
+                    badge: '/static/icon.ico',
+                    tag: 'order-status',
+                    requireInteraction: true,
+                    vibrate: [200, 100, 200]
+                });
+
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+            }
+        }
+
+        function checkAndNotifyStatusChange(newStatus) {
+            // Only notify for specific statuses
+            const notifiableStatuses = ['Awaiting Payment', 'Delivered'];
+
+            if (!notifiableStatuses.includes(newStatus)) {
+                return;
+            }
+
+            // Don't notify if we already notified for this status
+            if (lastNotifiedStatus === newStatus) {
+                return;
+            }
+
+            // Don't notify if page is visible (user is already watching)
+            if (!document.hidden) {
+                lastNotifiedStatus = newStatus;
+                return;
+            }
+
+            lastNotifiedStatus = newStatus;
+
+            // Send appropriate notification
+            if (newStatus === 'Awaiting Payment') {
+                showNotification(
+                    '💳 Payment Ready - DormDash',
+                    'Your bill is ready! Complete payment to proceed with your order.',
+                    window.location.href
+                );
+            } else if (newStatus === 'Delivered') {
+                showNotification(
+                    '✨ Order Delivered - DormDash',
+                    'Your order has been delivered! Enjoy your meal!',
+                    window.location.href
+                );
+            }
+        }
+
+        async function loadOrder() {
+            if (!orderId && !orderToken) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                document.getElementById('errorMessage').textContent = 'No order ID or token provided in URL';
+                return;
+            }
+
+            try {
+                // Use token endpoint if available (secure), otherwise fall back to ID (requires login)
+                const url = orderToken
+                    ? `${API_URL}/api/orders/by-token/${orderToken}`
+                    : `${API_URL}/api/orders/${orderId}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Order not found');
+                }
+
+                currentOrder = await response.json();
+                if (currentOrder.service_type === 'rideshare') {
+                    location.replace('/ride-tracking.html?token=' + encodeURIComponent(currentOrder.order_token));
+                    return;
+                }
+                displayOrder(currentOrder);
+
+            } catch (error) {
+                console.error('Error loading order:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+            }
+        }
+
+        function displayOrder(order) {
+            // Hide loading, show content
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const orderContent = document.getElementById('orderContent');
+
+            if (loadingState) loadingState.style.display = 'none';
+            if (errorState) errorState.style.display = 'none';
+            if (orderContent) orderContent.style.display = 'block';
+
+            // Set order ID
+            const orderIdEl = document.getElementById('orderId');
+            if (orderIdEl) orderIdEl.textContent = order.id;
+
+            // Check for status change and send notification if needed
+            checkAndNotifyStatusChange(order.status);
+
+            // Update status
+            const config = statusConfig[order.status] || statusConfig['Pending'];
+
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const statusDescription = document.getElementById('statusDescription');
+            const statusBadge = document.getElementById('statusBadge');
+
+            if (statusIcon) statusIcon.textContent = config.icon;
+            if (statusText) statusText.textContent = config.text;
+            if (statusDescription) statusDescription.textContent = config.description;
+
+            if (statusBadge) {
+                statusBadge.textContent = order.status;
+                statusBadge.className = 'status-badge ' + config.class;
+            }
+
+            // Show cancellation reason if order is cancelled
+            if (order.status === 'Cancelled' && order.cancellation_reason) {
+                // Update status description to include cancellation reason
+                if (statusDescription) {
+                    let message = `<strong>Reason:</strong> ${order.cancellation_reason}`;
+
+                    // If payment was confirmed, show refund contact info
+                    if (order.payment_confirmed) {
+                        message += `<br><br><div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); padding: 12px; border-radius: 8px; margin-top: 8px;">
+                            <strong style="color: #f59e0b;">💳 Payment Received</strong><br>
+                            <span style="color: #fcd34d; font-size: 14px;">Please contact support to request a refund.</span><br>
+                            <a href="/support.html" style="display: inline-block; margin-top: 8px; padding: 8px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 13px;">Contact Support</a>
+                        </div>`;
+                    }
+
+                    statusDescription.innerHTML = message;
+                }
+            }
+
+            // Update contact method
+            const contactMethod = order.contact_method === 'text' ? 'text message' : 'phone call';
+            const contactMethodText = document.getElementById('contactMethodText');
+            if (contactMethodText) contactMethodText.textContent = contactMethod;
+
+            // Show driver info only when status is "Claimed"
+            const driverInfo = document.getElementById('driverInfo');
+            const driverName = document.getElementById('driverName');
+            const driverInfoTitle = document.getElementById('driverInfoTitle');
+            const driverInfoText = document.getElementById('driverInfoText');
+            const alertBox = document.getElementById('alertBox');
+
+            // Only show driver info when status is exactly "Claimed"
+            const showDriverInfo = order.claimed_by && order.status === 'Claimed';
+
+            if (showDriverInfo && driverInfo && driverName && alertBox) {
+                driverInfo.style.display = 'block';
+                driverName.textContent = order.claimed_by;
+                alertBox.style.display = 'none';
+
+                // Driver assigned message
+                if (driverInfoTitle) driverInfoTitle.textContent = '✅ Driver Assigned';
+                if (driverInfoText) {
+                    driverInfoText.innerHTML = `Your order has been claimed! Your driver will contact you shortly!`;
+                }
+                // Green styling
+                driverInfo.style.background = 'rgba(16, 185, 129, 0.1)';
+                driverInfo.style.borderColor = '#10b981';
+                if (driverInfoTitle) driverInfoTitle.style.color = '#10b981';
+                if (driverInfoText) driverInfoText.style.color = '#6ee7b7';
+            } else {
+                // Hide driver info for other statuses, show alert box only if pending
+                if (driverInfo) driverInfo.style.display = 'none';
+                if (alertBox) {
+                    alertBox.style.display = order.status === 'Pending' ? 'flex' : 'none';
+                }
+            }
+
+            // Show bill if status is "Awaiting Payment"
+            const billSection = document.getElementById('billSection');
+            if (order.status === 'Awaiting Payment' && billSection) {
+                displayBill(order);
+                billSection.style.display = 'block';
+            } else if (billSection) {
+                billSection.style.display = 'none';
+            }
+
+            // Restaurant info
+            const restaurantName = document.getElementById('restaurantName');
+            if (restaurantName) restaurantName.textContent = order.restaurant_name;
+
+            // Delivery and order info
+            const deliveryAddress = document.getElementById('deliveryAddress');
+            const orderDetails = document.getElementById('orderDetails');
+            const orderDetailsItem = document.getElementById('orderDetailsItem');
+            const orderTime = document.getElementById('orderTime');
+
+            if (deliveryAddress) deliveryAddress.textContent = order.delivery_address;
+
+            // Hide order details section if empty
+            if (orderDetails && orderDetailsItem) {
+                if (order.order_details && order.order_details.trim() !== '') {
+                    orderDetails.textContent = order.order_details;
+                    orderDetailsItem.style.display = 'block';
+                } else {
+                    orderDetailsItem.style.display = 'none';
+                }
+            }
+
+            if (orderTime) orderTime.textContent = formatTime(order.created_at);
+
+            // Set order placed time
+            const timePlaced = document.getElementById('time-placed');
+            if (timePlaced) timePlaced.textContent = formatTime(order.created_at);
+
+            // Show estimated delivery if not pending
+            const estimatedTimeItem = document.getElementById('estimatedTimeItem');
+            const estimatedTime = document.getElementById('estimatedTime');
+            
+            if (order.status !== 'Pending' && order.status !== 'Cancelled' && estimatedTimeItem && estimatedTime) {
+                estimatedTimeItem.style.display = 'block';
+                estimatedTime.textContent = calculateEstimatedDelivery(order.status, order.created_at);
+            }
+
+            // Update timeline
+            updateTimeline(order.status, order);
+
+            // Show delivery photo and receipt button if order is delivered/completed
+            if (order.status === 'Delivered' || order.status === 'Completed') {
+                showPaymentSuccessElements();
+                // Clear saved tracking URL since order is complete
+                localStorage.removeItem('active-order-url');
+            }
+        }
+
+        async function confirmDelivery(wasDelivered) {
+            const messageDiv = document.getElementById('deliveryConfirmMessage');
+            const confirmSection = document.getElementById('deliveryConfirmSection');
+
+            if (!messageDiv) return;
+
+            // Check if feedback already submitted
+            if (currentOrder && currentOrder.customer_feedback) {
+                messageDiv.style.display = 'block';
+                messageDiv.style.background = 'rgba(16, 185, 129, 0.2)';
+                messageDiv.style.color = '#10b981';
+                messageDiv.style.padding = '20px';
+                messageDiv.innerHTML = `
+                    <div style="text-align: center; font-size: 18px; font-weight: 700; color: #10b981;">✅ Thank you for your feedback!</div>
+                    <div style="text-align: center; color: #a1a1aa; font-size: 14px; margin-top: 8px;">
+                        We appreciate you taking the time to share your experience.
+                    </div>
+                `;
+                // Hide the Yes/No buttons
+                if (confirmSection) {
+                    const buttons = confirmSection.querySelectorAll('button');
+                    buttons.forEach(btn => btn.style.display = 'none');
+                }
+                return;
+            }
+
+            // First, save the delivery confirmation to the database
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${currentOrder.id}/confirm-delivery`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        was_delivered: wasDelivered,
+                        order_token: orderToken
+                    })
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    console.error('Failed to save delivery confirmation:', data);
+                    // Continue anyway to show UI
+                }
+            } catch (error) {
+                console.error('Error saving delivery confirmation:', error);
+                // Continue anyway to show UI
+            }
+
+            if (wasDelivered) {
+                // Customer confirmed delivery - show feedback form
+                messageDiv.style.display = 'block';
+                messageDiv.style.background = 'rgba(16, 185, 129, 0.2)';
+                messageDiv.style.color = '#10b981';
+                messageDiv.innerHTML = `
+                    <div style="text-align: left;">
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Great! How was your experience?</div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 8px;">Rate your experience:</div>
+                            <div id="starRating" style="display: flex; gap: 8px; font-size: 32px; cursor: pointer;">
+                                <span class="star" data-rating="1" onclick="setRating(1)" style="color: #666;">★</span>
+                                <span class="star" data-rating="2" onclick="setRating(2)" style="color: #666;">★</span>
+                                <span class="star" data-rating="3" onclick="setRating(3)" style="color: #666;">★</span>
+                                <span class="star" data-rating="4" onclick="setRating(4)" style="color: #666;">★</span>
+                                <span class="star" data-rating="5" onclick="setRating(5)" style="color: #666;">★</span>
+                            </div>
+                            <input type="hidden" id="ratingValue" value="0">
+                        </div>
+                        <textarea id="feedbackText" placeholder="Tell us about your experience... (optional)" style="width: 100%; min-height: 80px; padding: 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #ffffff; font-size: 14px; font-family: inherit; resize: vertical; box-sizing: border-box;"></textarea>
+                        <button id="submitFeedbackBtn" onclick="submitFeedback()" style="display: none; width: 100%; margin-top: 12px; padding: 12px; background: #10b981; color: #ffffff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                            Submit Feedback
+                        </button>
+                    </div>
+                `;
+
+                // Hide the Yes/No buttons after confirmation
+                if (confirmSection) {
+                    const buttons = confirmSection.querySelectorAll('button');
+                    buttons.forEach(btn => btn.style.display = 'none');
+                }
+            } else {
+                // Customer says it wasn't delivered - report dispute and put payout on hold
+                try {
+                    console.log('🔄 Reporting dispute for order:', currentOrder.id);
+                    console.log('   Order token:', orderToken ? 'Present' : 'MISSING');
+
+                    const response = await fetch(`${API_URL}/api/orders/${currentOrder.id}/dispute`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            dispute_reason: 'customer_reports_not_delivered',
+                            order_token: orderToken
+                        })
+                    });
+
+                    console.log('   Response status:', response.status);
+                    const data = await response.json();
+                    console.log('   Response data:', data);
+
+                    if (response.ok) {
+                        console.log('✅ Dispute reported and payment reversed:', data);
+
+                        // Show support message
+                        messageDiv.style.display = 'block';
+                        messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
+                        messageDiv.style.color = '#ef4444';
+                        messageDiv.innerHTML = `
+                            ⚠️ Dispute reported! Your payment will be refunded. Please contact support:<br>
+                            <a href="/support.html" style="color: #ef4444; font-weight: 700;">DormDash support</a>
+                        `;
+
+                        // Reload order data to show updated state
+                        await loadOrder();
+                    } else {
+                        console.error('❌ Failed to report dispute:', response.status, data);
+                        messageDiv.style.display = 'block';
+                        messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
+                        messageDiv.style.color = '#ef4444';
+
+                        // Show specific error if available
+                        const errorMsg = data.error || 'Unknown error';
+                        messageDiv.innerHTML = `
+                            ⚠️ Error: ${errorMsg}<br>
+                            Please contact support:<br>
+                            <a href="/support.html" style="color: #ef4444; font-weight: 700;">DormDash support</a>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('❌ Error reporting dispute:', error);
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#ef4444';
+                    messageDiv.innerHTML = `
+                        ⚠️ Network error: ${error.message}<br>
+                        Please contact support:<br>
+                            <a href="/support.html" style="color: #ef4444; font-weight: 700;">DormDash support</a>
+                    `;
+                }
+
+                // Hide the Yes/No buttons after confirmation
+                if (confirmSection) {
+                    const buttons = confirmSection.querySelectorAll('button');
+                    buttons.forEach(btn => btn.style.display = 'none');
+                }
+            }
+        }
+
+        function setRating(rating) {
+            // Update hidden input
+            const ratingInput = document.getElementById('ratingValue');
+            if (ratingInput) {
+                ratingInput.value = rating;
+            }
+
+            // Update star colors
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.style.color = '#fbbf24'; // Gold color for selected stars
+                } else {
+                    star.style.color = '#666'; // Gray for unselected
+                }
+            });
+
+            // Show submit button after rating is selected
+            const submitBtn = document.getElementById('submitFeedbackBtn');
+            if (submitBtn && rating > 0) {
+                submitBtn.style.display = 'block';
+            }
+        }
+
+        async function submitFeedback() {
+            // Check if feedback already submitted
+            if (currentOrder && currentOrder.customer_feedback) {
+                console.log('Feedback already submitted for this order');
+                return;
+            }
+
+            const feedbackText = document.getElementById('feedbackText');
+            const ratingValue = document.getElementById('ratingValue');
+
+            // Find the container - either deliveryConfirmMessage or deliveryConfirmSection
+            let messageDiv = document.getElementById('deliveryConfirmMessage');
+            if (!messageDiv) {
+                messageDiv = document.getElementById('deliveryConfirmSection');
+            }
+
+            if (!messageDiv) {
+                console.error('Could not find container for feedback');
+                return;
+            }
+
+            const feedback = feedbackText ? feedbackText.value.trim() : '';
+            const rating = ratingValue ? parseInt(ratingValue.value) : 0;
+
+            if (rating === 0) {
+                // Show error if no rating selected
+                const errorMsg = document.createElement('div');
+                errorMsg.style.cssText = 'margin-top: 8px; color: #ef4444; font-size: 13px;';
+                errorMsg.textContent = 'Please select a star rating.';
+                messageDiv.appendChild(errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
+                return;
+            }
+
+            // Disable the submit button and show loading state
+            const submitBtn = document.getElementById('submitFeedbackBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${currentOrder.id}/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        feedback: feedback,
+                        rating: rating,
+                        order_token: orderToken
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update currentOrder to mark feedback as submitted
+                    if (currentOrder) {
+                        currentOrder.customer_feedback = feedback;
+                        currentOrder.rating = rating;
+                    }
+
+                    // Replace entire feedback section with thank you message
+                    messageDiv.style.background = 'rgba(16, 185, 129, 0.2)';
+                    messageDiv.style.color = '#10b981';
+                    messageDiv.style.padding = '20px';
+                    messageDiv.innerHTML = `
+                        <div style="text-align: center; font-size: 18px; font-weight: 700; color: #10b981;">✅ Thank you for your feedback!</div>
+                        <div style="text-align: center; color: #a1a1aa; font-size: 14px; margin-top: 8px;">
+                            We appreciate you taking the time to share your experience.
+                        </div>
+                    `;
+                } else {
+                    // Show error message
+                    messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
+                    messageDiv.style.color = '#ef4444';
+                    messageDiv.innerHTML = `<div style="text-align: center; font-size: 14px;">❌ ${data.error || 'Failed to submit feedback. Please try again.'}</div>`;
+
+                    // Re-enable button on error (unless feedback already submitted)
+                    if (submitBtn && !data.error?.includes('already submitted')) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit Feedback';
+                    }
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
+                messageDiv.style.color = '#ef4444';
+                messageDiv.innerHTML = '<div style="text-align: center; font-size: 14px;">❌ Network error. Please try again.</div>';
+
+                // Re-enable button on network error
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Feedback';
+                }
+            }
+        }
+
+        function refreshOrder() {
+            const btn = event.target;
+            btn.textContent = '⏳ Refreshing...';
+            btn.disabled = true;
+
+            loadOrder().then(() => {
+                btn.textContent = '🔄 Refresh Status';
+                btn.disabled = false;
+            });
+        }
+
+        function displayBill(order) {
+            // Parse menu items and cost breakdown
+            let menuItems = null;
+            let costBreakdown = null;
+
+            try {
+                if (typeof order.menu_items === 'string') {
+                    menuItems = JSON.parse(order.menu_items);
+                } else if (Array.isArray(order.menu_items)) {
+                    menuItems = order.menu_items;
+                }
+            } catch (e) {
+                console.warn('Could not parse menu_items:', e);
+            }
+
+            try {
+                if (typeof order.cost_breakdown === 'string') {
+                    costBreakdown = JSON.parse(order.cost_breakdown);
+                } else if (typeof order.cost_breakdown === 'object') {
+                    costBreakdown = order.cost_breakdown;
+                }
+            } catch (e) {
+                console.warn('Could not parse cost_breakdown:', e);
+            }
+
+            // Display menu items
+            const billItemsEl = document.getElementById('billItems');
+            if (menuItems && Array.isArray(menuItems) && billItemsEl) {
+                let itemsHtml = '';
+                menuItems.forEach(item => {
+                    const qty = item.quantity || 1;
+                    const name = item.name || 'Item';
+                    const price = item.price ? parseFloat(item.price) : 0;
+                    const total = price * qty;
+                    itemsHtml += `
+                        <div class="bill-item">
+                            <span>${name} × ${qty}</span>
+                            <span>$${total.toFixed(2)}</span>
+                        </div>
+                    `;
+                });
+                billItemsEl.innerHTML = itemsHtml;
+            }
+
+            // Display breakdown
+            const billBreakdownEl = document.getElementById('billBreakdown');
+            if (costBreakdown && billBreakdownEl) {
+                const foodSubtotal = parseFloat(costBreakdown.food_subtotal || 0);
+                const salesTax = parseFloat(costBreakdown.sales_tax || 0);
+                const deliveryFee = parseFloat(costBreakdown.delivery_fee || 0);
+                const mileageCost = parseFloat(costBreakdown.mileage_cost || 0);
+                const farAwayFee = parseFloat(costBreakdown.far_away_fee || 0);
+                const innoutFee = parseFloat(costBreakdown.innout_fee || 0);
+                const serviceCharge = parseFloat(costBreakdown.service_charge || 0);
+                const tipAmount = parseFloat(order.tip_amount || 0);
+                const taxRate = parseFloat(costBreakdown.sales_tax_rate || 0.095);
+                const taxPercentage = (taxRate * 100).toFixed(2);
+
+                let breakdownHtml = `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Food Subtotal:</span>
+                        <span>$${foodSubtotal.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Sales Tax (${taxPercentage}%):</span>
+                        <span>$${salesTax.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Delivery Fee:</span>
+                        <span>$${deliveryFee.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Mileage:</span>
+                        <span>$${mileageCost.toFixed(2)}</span>
+                    </div>
+                `;
+
+                if (farAwayFee > 0) {
+                    breakdownHtml += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span>Far-Away Fee:</span>
+                            <span>$${farAwayFee.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+
+                if (innoutFee > 0) {
+                    breakdownHtml += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span>In-N-Out Fee:</span>
+                            <span>$${innoutFee.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+
+                breakdownHtml += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Service Charge (15%):</span>
+                        <span>$${serviceCharge.toFixed(2)}</span>
+                    </div>
+                `;
+
+                const platformFeeFlat = parseFloat(costBreakdown.platform_fee_flat || 0);
+                if (platformFeeFlat > 0) {
+                    breakdownHtml += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span>Platform Fee:</span>
+                            <span>$${platformFeeFlat.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+
+                if (tipAmount > 0) {
+                    breakdownHtml += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span>Tip for Driver:</span>
+                            <span>$${tipAmount.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+
+                billBreakdownEl.innerHTML = breakdownHtml;
+            }
+
+            // Display total (including tip)
+            const billTotalEl = document.getElementById('billTotal');
+            if (costBreakdown && billTotalEl) {
+                const estTotal = parseFloat(costBreakdown.est_total || 0);
+                const tipAmount = parseFloat(order.tip_amount || 0);
+                const grandTotal = estTotal + tipAmount;
+                billTotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+            }
+        }
+
+        async function processPayment() {
+            const paymentBtn = document.getElementById('paymentBtn');
+            const paymentStatus = document.getElementById('paymentStatus');
+
+            if (!currentOrder) {
+                alert('Order not found');
+                return;
+            }
+
+            // Disable button
+            paymentBtn.disabled = true;
+            paymentBtn.textContent = 'Processing...';
+
+            try {
+                // Create Stripe checkout session using the current order's ID
+                // Include order_token for security validation
+                const response = await fetch(`${API_URL}/api/orders/${currentOrder.id}/create-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_token: currentOrder.order_token
+                    })
+                });
+
+                if (!response.ok) {
+                    let errBody = {};
+                    try { errBody = await response.json(); } catch(e) {}
+                    const debugMsg = errBody.debug || errBody.error || 'unknown';
+                    console.error(`❌ Payment failed [HTTP ${response.status}] — order #${currentOrder.id}`);
+                    console.error(`   Server says: ${debugMsg}`);
+                    console.error('   Full response:', errBody);
+                    throw new Error(`Payment error ${response.status}: ${debugMsg}`);
+                }
+
+                const data = await response.json();
+
+                if (data.checkout_url) {
+                    // Redirect to Stripe checkout
+                    window.location.href = data.checkout_url;
+                } else {
+                    throw new Error('No checkout URL received');
+                }
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                paymentBtn.disabled = false;
+                paymentBtn.textContent = 'Pay Now (demo, no charge)';
+
+                if (paymentStatus) {
+                    paymentStatus.style.display = 'block';
+                    paymentStatus.textContent = '❌ Payment failed. Please try again.';
+                    paymentStatus.style.background = 'rgba(239, 68, 68, 0.2)';
+                    paymentStatus.style.color = '#ef4444';
+                }
+            }
+        }
+
+        async function downloadReceipt() {
+            if (!currentOrder) return;
+
+            let menuItems = null;
+            let costBreakdown = null;
+
+            try {
+                if (typeof currentOrder.menu_items === 'string') {
+                    menuItems = JSON.parse(currentOrder.menu_items);
+                } else if (Array.isArray(currentOrder.menu_items)) {
+                    menuItems = currentOrder.menu_items;
+                }
+            } catch (e) {
+                console.warn('Could not parse menu_items:', e);
+            }
+
+            try {
+                if (typeof currentOrder.cost_breakdown === 'string') {
+                    costBreakdown = JSON.parse(currentOrder.cost_breakdown);
+                } else if (typeof currentOrder.cost_breakdown === 'object') {
+                    costBreakdown = currentOrder.cost_breakdown;
+                }
+            } catch (e) {
+                console.warn('Could not parse cost_breakdown:', e);
+            }
+
+            // Create professional PDF receipt
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            let yPos = 20;
+
+            // Header with logo and company name (left-aligned)
+            doc.setTextColor(0, 0, 0);
+
+            // Load logo asynchronously
+            const logoImg = new Image();
+            logoImg.crossOrigin = 'anonymous';
+
+            // Function to generate the rest of the PDF
+            const generatePDF = () => {
+
+            // Receipt title and order info
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('RECEIPT', pageWidth / 2, yPos, { align: 'center' });
+            yPos += 10;
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Order #${currentOrder.id}`, pageWidth / 2, yPos, { align: 'center' });
+            yPos += 5;
+            doc.text(formatTime(currentOrder.created_at), pageWidth / 2, yPos, { align: 'center' });
+            yPos += 10;
+
+            // Restaurant info
+            doc.setDrawColor(200, 200, 200);
+            doc.line(15, yPos, pageWidth - 15, yPos);
+            yPos += 8;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('RESTAURANT', 15, yPos);
+            yPos += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.text(currentOrder.restaurant_name, 15, yPos);
+            if (currentOrder.restaurant_address) {
+                yPos += 5;
+                doc.setFontSize(9);
+                doc.setTextColor(100, 100, 100);
+                doc.text(currentOrder.restaurant_address, 15, yPos);
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+            }
+            yPos += 10;
+
+            // Delivery address
+            doc.setFont('helvetica', 'bold');
+            doc.text('DELIVERED TO', 15, yPos);
+            yPos += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.text(currentOrder.delivery_address, 15, yPos);
+            yPos += 8;
+
+            doc.line(15, yPos, pageWidth - 15, yPos);
+            yPos += 8;
+
+            // Items header
+            doc.setFont('helvetica', 'bold');
+            doc.text('ITEMS', 15, yPos);
+            doc.text('QTY', pageWidth - 55, yPos);
+            doc.text('PRICE', pageWidth - 15, yPos, { align: 'right' });
+            yPos += 6;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+
+            // Menu items
+            if (menuItems && Array.isArray(menuItems)) {
+                menuItems.forEach(item => {
+                    const qty = item.quantity || 1;
+                    const name = item.name || 'Item';
+                    const price = item.price ? parseFloat(item.price) : 0;
+                    const total = price * qty;
+
+                    // Wrap long item names
+                    const maxWidth = pageWidth - 75;
+                    const lines = doc.splitTextToSize(name, maxWidth);
+                    lines.forEach((line, index) => {
+                        if (yPos > pageHeight - 30) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        doc.text(line, 15, yPos);
+                        if (index === lines.length - 1) {
+                            doc.text(`${qty}`, pageWidth - 55, yPos);
+                            doc.text(`$${total.toFixed(2)}`, pageWidth - 15, yPos, { align: 'right' });
+                        }
+                        yPos += 5;
+                    });
+                });
+            }
+
+            yPos += 3;
+            doc.setFontSize(10);
+
+            // Subtotals
+            if (costBreakdown) {
+                const taxRate = parseFloat(costBreakdown.sales_tax_rate || 0.095);
+                const taxPercentage = (taxRate * 100).toFixed(2);
+
+                doc.line(15, yPos, pageWidth - 15, yPos);
+                yPos += 6;
+
+                const subtotalItems = [
+                    ['Food Subtotal', parseFloat(costBreakdown.food_subtotal || 0).toFixed(2)],
+                    [`Sales Tax (${taxPercentage}%)`, parseFloat(costBreakdown.sales_tax || 0).toFixed(2)],
+                    ['Delivery Fee', parseFloat(costBreakdown.delivery_fee || 0).toFixed(2)],
+                    ['Mileage', parseFloat(costBreakdown.mileage_cost || 0).toFixed(2)]
+                ];
+
+                if (parseFloat(costBreakdown.far_away_fee || 0) > 0) {
+                    subtotalItems.push(['Far-Away Fee', parseFloat(costBreakdown.far_away_fee || 0).toFixed(2)]);
+                }
+
+                if (parseFloat(costBreakdown.innout_fee || 0) > 0) {
+                    subtotalItems.push(['In-N-Out Fee', parseFloat(costBreakdown.innout_fee || 0).toFixed(2)]);
+                }
+
+                subtotalItems.push(['Service Charge (15%)', parseFloat(costBreakdown.service_charge || 0).toFixed(2)]);
+
+                const pdfPlatformFee = parseFloat(costBreakdown.platform_fee_flat || 0);
+                if (pdfPlatformFee > 0) {
+                    subtotalItems.push(['Platform Fee', pdfPlatformFee.toFixed(2)]);
+                }
+
+                const pdfTip = parseFloat(currentOrder.tip_amount || 0);
+                if (pdfTip > 0) {
+                    subtotalItems.push(['Tip for Driver', pdfTip.toFixed(2)]);
+                }
+
+                subtotalItems.forEach(([label, amount]) => {
+                    doc.text(label, 15, yPos);
+                    doc.text(`$${amount}`, pageWidth - 15, yPos, { align: 'right' });
+                    yPos += 5;
+                });
+
+                // Total
+                yPos += 2;
+                doc.setLineWidth(0.5);
+                doc.line(15, yPos, pageWidth - 15, yPos);
+                yPos += 7;
+
+                const pdfTotal = parseFloat(costBreakdown.est_total || 0) + pdfTip;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(14);
+                doc.text('TOTAL PAID', 15, yPos);
+                doc.text(`$${pdfTotal.toFixed(2)}`, pageWidth - 15, yPos, { align: 'right' });
+            }
+
+            // Footer
+            yPos = pageHeight - 20;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100, 100, 100);
+            doc.text('Thank you for using DormDash!', pageWidth / 2, yPos, { align: 'center' });
+            yPos += 5;
+            doc.setFontSize(8);
+            doc.text('For support, visit dormdash.us/support', pageWidth / 2, yPos, { align: 'center' });
+
+            // Save PDF
+            doc.save(`DormDash_Receipt_${currentOrder.id}.pdf`);
+            };
+
+            // Try to load logo, then generate PDF
+            logoImg.onload = function() {
+                try {
+                    // Add logo to PDF
+                    doc.addImage(logoImg, 'PNG', 15, 15, 20, 20);
+                } catch (e) {
+                    console.warn('Could not add logo to PDF:', e);
+                }
+                // Company name to the right of logo
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(24);
+                doc.setFont('helvetica', 'bold');
+                doc.text('DormDash', 40, 25);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Campus Delivery Service', 40, 32);
+                yPos = 45;
+                // Generate rest of PDF
+                generatePDF();
+            };
+
+            logoImg.onerror = function() {
+                console.warn('Logo failed to load, generating PDF without it');
+                // Company name without logo
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(24);
+                doc.setFont('helvetica', 'bold');
+                doc.text('DormDash', 15, 25);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Campus Delivery Service', 15, 32);
+                yPos = 45;
+                // Generate rest of PDF
+                generatePDF();
+            };
+
+            // Start loading logo
+            logoImg.src = '/static/dormdash.png';
+        }
+
+        function showPaymentSuccessElements() {
+            const driverInfo = document.getElementById('driverInfo');
+            if (!driverInfo) return;
+
+            // Check if feedback already exists - check rating field which is more reliable
+            const feedbackExists = currentOrder && (currentOrder.rating || currentOrder.customer_feedback);
+            // Check if delivery was confirmed (customer clicked "Yes")
+            const deliveryConfirmed = currentOrder && currentOrder.delivery_confirmed;
+
+            // Check if elements already exist
+            if (document.getElementById('deliveryPhotoSection') || document.getElementById('receiptDownloadButton')) {
+                // If photo section exists but photo URL changed, update it
+                if (currentOrder && currentOrder.delivery_photo_url) {
+                    const existingImg = document.getElementById('deliveryPhotoImg');
+                    const loadingIndicator = document.getElementById('photoLoadingIndicator');
+                    if (existingImg && existingImg.src !== currentOrder.delivery_photo_url) {
+                        existingImg.src = currentOrder.delivery_photo_url;
+                    }
+                    // Remove loading indicator if photo is now available
+                    if (loadingIndicator && currentOrder.delivery_photo_url) {
+                        loadingIndicator.remove();
+                    }
+
+                    // Update feedback/dispute status if it changed
+                    const disputeReported = currentOrder.payout_on_hold && currentOrder.hold_reason === 'customer_dispute';
+                    const confirmSection = document.getElementById('deliveryConfirmSection');
+
+                    if (confirmSection) {
+                        if (disputeReported) {
+                            // Replace confirmation buttons with dispute status
+                            confirmSection.innerHTML = `
+                                <div style="padding: 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 20px; margin-bottom: 8px;">🚨</div>
+                                    <div style="font-size: 16px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">Dispute Reported</div>
+                                    <div style="font-size: 14px; color: #fca5a5;">
+                                        You reported this order as not delivered. Our admin team is reviewing your case and will contact you if needed.
+                                    </div>
+                                    ${currentOrder.reversal_status === 'succeeded' ? `
+                                        <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Refund Processed</div>
+                                            <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Your payment has been refunded.</div>
+                                        </div>
+                                    ` : currentOrder.reversal_status === 'approved_no_reversal' ? `
+                                        <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Dispute Resolved</div>
+                                            <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Admin verified the delivery was legitimate. No refund issued.</div>
+                                        </div>
+                                    ` : `
+                                        <div style="margin-top: 12px; padding: 10px; background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 8px;">
+                                            <div style="font-size: 13px; color: #fbbf24;">⏳ Review in progress...</div>
+                                        </div>
+                                    `}
+                                    <a href="/support.html" style="display: block; width: 100%; margin-top: 16px; padding: 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-sizing: border-box; text-align: center;">📞 Contact Support with Questions</a>
+                                </div>
+                            `;
+                        } else if (feedbackExists) {
+                            // Show thank you message if feedback was submitted
+                            confirmSection.innerHTML = `
+                                <div style="padding: 16px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 16px; font-weight: 600; color: #10b981;">✅ Feedback submitted. Thank you!</div>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                return;
+            }
+
+            // Create delivery photo section if order is delivered/completed
+            if (currentOrder && (currentOrder.status === 'Delivered' || currentOrder.status === 'Completed')) {
+                const deliveryPhotoSection = document.createElement('div');
+                deliveryPhotoSection.id = 'deliveryPhotoSection';
+                deliveryPhotoSection.style.cssText = 'margin-bottom: 24px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 12px; padding: 20px;';
+
+                if (currentOrder.delivery_photo_url) {
+                    // Photo exists - show it with loading state
+                    // Check if dispute already reported OR was previously reported
+                    const disputeReported = (currentOrder.payout_on_hold && currentOrder.hold_reason === 'customer_dispute') ||
+                                          currentOrder.reversal_status === 'succeeded' ||
+                                          currentOrder.reversal_status === 'approved_no_reversal' ||
+                                          currentOrder.reversal_status === 'pending_admin_review';
+
+                    deliveryPhotoSection.innerHTML = `
+                        <h3 style="font-size: 18px; font-weight: 600; color: #10b981; margin-bottom: 16px;">📸 Delivery Photo</h3>
+                        <div id="photoLoadingIndicator" style="text-align: center; padding: 40px; color: #10b981; font-size: 14px;">
+                            <div style="width: 40px; height: 40px; border: 3px solid rgba(16, 185, 129, 0.2); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+                            Loading delivery photo...
+                        </div>
+                        <img id="deliveryPhotoImg" src="${currentOrder.delivery_photo_url}" alt="Delivery Photo" style="width: 100%; max-width: 400px; border-radius: 12px; border: 2px solid #10b981; margin-bottom: 16px; display: none; margin-left: auto; margin-right: auto;" onload="this.style.display='block'; document.getElementById('photoLoadingIndicator').style.display='none';" onerror="document.getElementById('photoLoadingIndicator').innerHTML='⚠️ Failed to load photo';" />
+                        <div id="deliveryConfirmSection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${disputeReported ? '#ef4444' : '#10b981'};">
+                            ${disputeReported ? `
+                                <div style="padding: 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 20px; margin-bottom: 8px;">🚨</div>
+                                    <div style="font-size: 16px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">Dispute Reported</div>
+                                    <div style="font-size: 14px; color: #fca5a5;">
+                                        You reported this order as not delivered. Our admin team is reviewing your case and will contact you if needed.
+                                    </div>
+                                    ${currentOrder.reversal_status === 'succeeded' ? `
+                                        <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Refund Processed</div>
+                                            <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Your payment has been refunded.</div>
+                                        </div>
+                                    ` : currentOrder.reversal_status === 'approved_no_reversal' ? `
+                                        <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Dispute Resolved</div>
+                                            <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Admin verified the delivery was legitimate. No refund issued.</div>
+                                        </div>
+                                    ` : `
+                                        <div style="margin-top: 12px; padding: 10px; background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 8px;">
+                                            <div style="font-size: 13px; color: #fbbf24;">⏳ Review in progress...</div>
+                                        </div>
+                                    `}
+                                    <a href="/support.html" style="display: block; width: 100%; margin-top: 16px; padding: 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-sizing: border-box; text-align: center;">📞 Contact Support with Questions</a>
+                                </div>
+                            ` : feedbackExists ? `
+                                <div style="padding: 16px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 16px; font-weight: 600; color: #10b981;">✅ Feedback submitted. Thank you!</div>
+                                </div>
+                            ` : deliveryConfirmed ? `
+                                <div style="text-align: left;">
+                                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #ffffff;">Great! How was your experience?</div>
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 8px;">Rate your experience:</div>
+                                        <div id="starRating" style="display: flex; gap: 8px; font-size: 32px; cursor: pointer;">
+                                            <span class="star" data-rating="1" onclick="setRating(1)" style="color: #666;">★</span>
+                                            <span class="star" data-rating="2" onclick="setRating(2)" style="color: #666;">★</span>
+                                            <span class="star" data-rating="3" onclick="setRating(3)" style="color: #666;">★</span>
+                                            <span class="star" data-rating="4" onclick="setRating(4)" style="color: #666;">★</span>
+                                            <span class="star" data-rating="5" onclick="setRating(5)" style="color: #666;">★</span>
+                                        </div>
+                                        <input type="hidden" id="ratingValue" value="0">
+                                    </div>
+                                    <textarea id="feedbackText" placeholder="Tell us about your experience... (optional)" style="width: 100%; min-height: 80px; padding: 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #ffffff; font-size: 14px; font-family: inherit; resize: vertical; box-sizing: border-box;"></textarea>
+                                    <button id="submitFeedbackBtn" onclick="submitFeedback()" style="display: none; width: 100%; margin-top: 12px; padding: 12px; background: #10b981; color: #ffffff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                        Submit Feedback
+                                    </button>
+                                </div>
+                            ` : `
+                                <div style="font-size: 16px; font-weight: 600; color: #ffffff; margin-bottom: 12px;">Was your order actually delivered?</div>
+                                <div style="display: flex; gap: 12px;">
+                                    <button onclick="confirmDelivery(true)" style="flex: 1; padding: 12px; background: #10b981; color: #ffffff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                        ✓ Yes
+                                    </button>
+                                    <button onclick="confirmDelivery(false)" style="flex: 1; padding: 12px; background: #ef4444; color: #ffffff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                        ✗ No
+                                    </button>
+                                </div>
+                                <div id="deliveryConfirmMessage" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 600;"></div>
+                            `}
+                        </div>
+                    `;
+                } else {
+                    // No photo yet - show waiting message
+                    deliveryPhotoSection.innerHTML = `
+                        <h3 style="font-size: 18px; font-weight: 600; color: #10b981; margin-bottom: 16px;">📸 Delivery Photo</h3>
+                        <div id="photoLoadingIndicator" style="text-align: center; padding: 40px; color: #a1a1aa; font-size: 14px;">
+                            <div style="width: 40px; height: 40px; border: 3px solid rgba(161, 161, 170, 0.2); border-top-color: #a1a1aa; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+                            Waiting for driver to upload delivery photo...
+                        </div>
+                    `;
+                }
+
+                driverInfo.insertAdjacentElement('beforebegin', deliveryPhotoSection);
+            }
+
+            // Create download receipt button
+            const receiptButton = document.createElement('button');
+            receiptButton.id = 'receiptDownloadButton';
+            receiptButton.style.cssText = 'width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 16px;';
+            receiptButton.textContent = '📄 Download Receipt';
+            receiptButton.onclick = downloadReceipt;
+            driverInfo.insertAdjacentElement('beforebegin', receiptButton);
+        }
+
+        // Check for payment status in URL
+        const paymentStatus = urlParams.get('payment');
+        if (paymentStatus === 'success') {
+            console.log('✅ Payment completed! Checking order status...');
+            // Payment completed - reload order after a short delay to give webhook time to process
+            setTimeout(() => {
+                loadOrder();
+            }, 2000);
+        } else if (paymentStatus === 'cancelled') {
+            setTimeout(() => {
+                const billSection = document.getElementById('billSection');
+                if (billSection) {
+                    const cancelMessage = document.createElement('div');
+                    cancelMessage.style.cssText = 'background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; border-radius: 8px; padding: 12px; margin-bottom: 16px; color: #f59e0b; text-align: center; font-weight: 600;';
+                    cancelMessage.textContent = '⚠️ Payment was cancelled. Please try again when ready.';
+                    billSection.insertAdjacentElement('beforebegin', cancelMessage);
+                }
+            }, 1000);
+        }
+
+        loadOrder();
+
+
+        // PWA: Save tracking URL when page loads (for already-installed PWA users)
+        // This ensures they return to tracking page even if they didn't just install
+        window.addEventListener('DOMContentLoaded', () => {
+            // Only save if opened from PWA or if PWA is already installed
+            if (window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true) {
+                // User is using PWA, save this tracking URL
+                localStorage.setItem('active-order-url', window.location.href);
+                console.log('PWA: Saved tracking URL for return visits');
+            }
+        });
+
+        // PWA Install Banner Logic
+        let deferredPrompt = null;
+        const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const pwaCloseBtn = document.getElementById('pwaCloseBtn');
+        const iosInstructions = document.getElementById('iosInstructions');
+        const pwaBannerText = document.getElementById('pwaBannerText');
+
+        // Detect if user is on iOS
+        function isIOSDevice() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        // Check if already installed
+        function isPWAInstalled() {
+            // Check if running in standalone mode
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                return true;
+            }
+            // Check iOS standalone
+            if (window.navigator.standalone === true) {
+                return true;
+            }
+            return false;
+        }
+
+        // Show PWA banner
+        function showPWAInstallBanner() {
+            // Don't show if already installed
+            if (isPWAInstalled()) {
+                console.log('PWA already installed');
+                return;
+            }
+
+            // Don't show if user dismissed it
+            if (localStorage.getItem('pwaBannerDismissed') === 'true') {
+                console.log('User previously dismissed PWA banner');
+                return;
+            }
+
+            // Update messaging and show iOS instructions if on iOS
+            if (isIOSDevice()) {
+                pwaBannerText.textContent = 'Track your order instantly';
+                iosInstructions.style.display = 'flex';
+                pwaInstallBtn.textContent = 'Got it';
+            } else {
+                pwaBannerText.textContent = 'Add to home screen for quick access to your order';
+            }
+
+            // Show banner with animation after 3 seconds
+            setTimeout(() => {
+                pwaInstallBanner.classList.add('show');
+            }, 3000);
+        }
+
+        // Handle beforeinstallprompt event (Chrome, Edge, etc.)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt fired');
+            e.preventDefault();
+            deferredPrompt = e;
+            showPWAInstallBanner();
+        });
+
+        // Install button click
+        pwaInstallBtn.addEventListener('click', async () => {
+            if (isIOSDevice()) {
+                // On iOS, just dismiss the banner (user needs to manually add to home screen)
+                pwaInstallBanner.classList.remove('show');
+                localStorage.setItem('pwaBannerDismissed', 'true');
+            } else if (deferredPrompt) {
+                // On Chrome/Edge, trigger the install prompt
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User choice: ${outcome}`);
+
+                if (outcome === 'accepted') {
+                    // Save current tracking URL so PWA can return here
+                    localStorage.setItem('active-order-url', window.location.href);
+                }
+
+                deferredPrompt = null;
+                pwaInstallBanner.classList.remove('show');
+            } else {
+                // Fallback - just dismiss
+                pwaInstallBanner.classList.remove('show');
+                localStorage.setItem('pwaBannerDismissed', 'true');
+            }
+        });
+
+        // Close button click
+        if (pwaCloseBtn) {
+            pwaCloseBtn.addEventListener('click', () => {
+                pwaInstallBanner.classList.remove('show');
+                localStorage.setItem('pwaBannerDismissed', 'true');
+            });
+        }
+
+
+    </script>
 </body>
 </html>

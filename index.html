@@ -2061,12 +2061,22 @@
   .stat{border:1px solid var(--border);border-radius:18px;padding:24px 20px;text-align:center;background:rgba(255,255,255,.02)}
   .stat-num{font-size:clamp(32px,6vw,44px);font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,#FD2D00,#ff6a00 50%,#8b5cf6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   .stat-label{color:var(--text-muted);font-size:14px;margin-top:4px}
-  .flow{list-style:none;display:grid;gap:14px;max-width:820px;margin:0 auto 56px}
-  .flow li{display:flex;gap:18px;align-items:flex-start;padding:20px 22px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.02)}
-  .flow-n{flex:0 0 36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:rgba(253,45,0,.15);color:#ff7a5c;border:1px solid rgba(253,45,0,.35)}
-  .flow strong{font-size:17px}
-  .flow p{color:var(--text-secondary);margin-top:4px;font-size:15px}
-  .stack-grid .service-card p{margin-bottom:0}
+  .receipt-wrap{display:grid;gap:32px;align-items:center;max-width:1000px;margin:0 auto}
+  @media(min-width:880px){.receipt-wrap{grid-template-columns:1fr 1fr}}
+  .receipt-copy h3{font-size:clamp(26px,4vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:4px 0 14px}
+  .receipt-copy p{color:var(--text-secondary);margin-bottom:24px}
+  .receipt{background:#f7f5f2;color:#1b1b1b;border-radius:14px;padding:22px 22px 18px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:0 24px 60px rgba(0,0,0,.45);transform:rotate(1.2deg)}
+  .rc-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px dashed #bbb;padding-bottom:10px;margin-bottom:10px}
+  .rc-head strong{font:800 16px Inter,system-ui,sans-serif;color:#FD2D00}
+  .rc-head span{color:#666}
+  .rc-meta{display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:10px}
+  .rc-meta small{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#888}
+  .rc-meta span{color:#666;font-size:12px}
+  .rc-items,.rc-rows{border-top:1px dashed #bbb;padding-top:8px;margin-top:8px}
+  .rc-items div,.rc-rows div,.rc-total{display:flex;justify-content:space-between;gap:12px;padding:2px 0}
+  .rc-items b,.rc-rows b{font-weight:600;white-space:nowrap}
+  .rc-rows span{color:#555}
+  .rc-total{border-top:2px solid #1b1b1b;margin-top:10px;padding-top:8px;font-size:16px;font-weight:800}
 </style>
 </head>
 <body>
@@ -2081,12 +2091,12 @@
     <div class="nav-links">
       <a href="#rides">Rides</a>
       <a href="#pricing">Pricing</a>
-      <a href="#about">How it worked</a>
+      <a href="#about">Track record</a>
       <a href="/drivers.html">Drivers</a>
     </div>
     <div class="nav-cta">
       <a href="/order.html" class="btn btn-primary order-btn">🍕 Food</a>
-      <a href="#rides" class="btn btn-primary btn-ride order-btn">🚗 Rides</a>
+      <a href="/ride.html" class="btn btn-primary btn-ride order-btn">🚗 Rides</a>
     </div>
   </nav>
 </header>
@@ -2195,11 +2205,11 @@
               <div class="estimator-breakdown-row"><span>Time</span><span id="estimateTime">$0.00</span></div>
             </div>
 
-            <button class="estimator-book-btn" onclick="bookEstimatedRide()">🚗 Watch this ride on a live map →</button>
+            <button class="estimator-book-btn" onclick="bookEstimatedRide()">🚗 Book This Ride Now →</button>
           </div>
 
           <div id="estimateError" class="estimator-error" role="alert"></div>
-          <p class="estimator-credit">Places &amp; routes © OpenStreetMap contributors, routing by OSRM.</p>
+          <p class="estimator-credit">Map data © OpenStreetMap contributors.</p>
         </div>
       </div>
     </div>
@@ -2264,47 +2274,52 @@
     </div>
   </section>
 
-  <!-- HOW IT WORKED -->
+  <!-- TRACK RECORD -->
   <section id="about">
     <div class="container">
       <div class="section-header">
-        <div class="section-badge">UNDER THE HOOD</div>
-        <h2>How DormDash worked</h2>
+        <div class="section-badge">THE TRACK RECORD</div>
+        <h2>It actually ran.</h2>
         <p class="section-description">
-          A student-run delivery and rideshare service for Pepperdine, built and operated by one founder. Students ordered from any restaurant, a student driver bought and brought it, and the customer paid what the receipt actually said.
+          DormDash delivered to Pepperdine dorms from October 2025 to spring 2026, run by students for students.
         </p>
       </div>
 
       <div class="stat-grid">
-        <div class="stat"><div class="stat-num">417</div><div class="stat-label">commits to the backend</div></div>
-        <div class="stat"><div class="stat-num">10.5k</div><div class="stat-label">lines of Python</div></div>
-        <div class="stat"><div class="stat-num">19</div><div class="stat-label">customer, driver &amp; admin screens</div></div>
-        <div class="stat"><div class="stat-num">22</div><div class="stat-label">dorms on the delivery map</div></div>
+        <div class="stat"><div class="stat-num">1000+</div><div class="stat-label">orders</div></div>
+        <div class="stat"><div class="stat-num">22</div><div class="stat-label">dorms on the route</div></div>
+        <div class="stat"><div class="stat-num">6</div><div class="stat-label">months on campus</div></div>
+        <div class="stat"><div class="stat-num">$0</div><div class="stat-label">surge, ever</div></div>
       </div>
 
-      <ol class="flow">
-        <li><span class="flow-n">1</span><div><strong>Order anything</strong><p>Pick any restaurant, list the items, choose a dorm. Search ran on Google Places with OpenStreetMap as the free fallback.</p></div></li>
-        <li><span class="flow-n">2</span><div><strong>Dispatch on Discord</strong><p>A Discord bot posted each order to verified student drivers; the first to claim it got the job.</p></div></li>
-        <li><span class="flow-n">3</span><div><strong>Confirm the real bill</strong><p>The driver entered prices from the actual receipt. California sales tax came from the CDTFA rate API for the restaurant's address.</p></div></li>
-        <li><span class="flow-n">4</span><div><strong>Pay through Stripe</strong><p>Customers paid by Stripe Checkout; drivers were paid out through Stripe Connect accounts they set up in their dashboard.</p></div></li>
-        <li><span class="flow-n">5</span><div><strong>Track &amp; deliver</strong><p>Live status over WebSockets, a delivery photo at drop-off, then confirm, rate, or open a dispute.</p></div></li>
-      </ol>
-
-      <div class="grid grid-3 stack-grid">
-        <div class="service-card">
-          <div class="service-icon">🧱</div>
-          <h3>Stack</h3>
-          <p>Flask + Socket.IO on gunicorn/gevent, PostgreSQL, Stripe &amp; Stripe Connect, Google Maps Platform, OSRM, discord.py, deployed on Render. Installable as a PWA.</p>
+      <div class="receipt-wrap">
+        <div class="receipt-copy">
+          <div class="section-badge">A REAL ORDER</div>
+          <h3>One In-N-Out run for the whole floor.</h3>
+          <p>A group order to Rockwell Towers on March 17, 2026: six custom meals (and a water) from Westlake Village, each made exactly how they wanted it, $110.84 all in.</p>
+          <a href="/order.html" class="btn btn-primary">Place one yourself (demo) →</a>
         </div>
-        <div class="service-card">
-          <div class="service-icon">🛡️</div>
-          <h3>Abuse &amp; cost controls</h3>
-          <p>Cloudflare Turnstile, per-user and per-IP rate limits, automatic IP blocking, a budget guard on paid map APIs, and an admin killswitch.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">🧭</div>
-          <h3>Operations</h3>
-          <p>Driver sign-up with an e-signed contract, a driver dashboard for jobs and payouts, and an admin panel for disputes, refunds and platform revenue.</p>
+        <div class="receipt" aria-label="Receipt for order 451">
+          <div class="rc-head"><strong>DormDash</strong><span>Order #451 · Mar 17, 6:42 PM</span></div>
+          <div class="rc-meta"><div><small>Restaurant</small>In-N-Out Burger<br><span>30780 Russell Ranch Rd, Westlake Village</span></div><div><small>Delivered to</small>Rockwell Towers</div></div>
+          <div class="rc-items">
+            <div><span>#1 combo, Double-Double meat/cheese/pickle, XL Dr Pepper</span><b>$11.15</b></div>
+            <div><span>Double-Double, meat/cheese/pickle</span><b>$6.50</b></div>
+            <div><span>Water</span><b>$0.25</b></div>
+            <div><span>#2 single, fries, large vanilla shake</span><b>$10.50</b></div>
+            <div><span>#1 combo, grilled onions, strawberry shake</span><b>$11.15</b></div>
+            <div><span>#1 combo, no onions, Coke, chocolate shake</span><b>$11.15</b></div>
+            <div><span>#1 combo, fries, strawberry shake</span><b>$14.15</b></div>
+          </div>
+          <div class="rc-rows">
+            <div><span>Food subtotal</span><b>$64.85</b></div>
+            <div><span>Sales tax (8.50%)</span><b>$5.51</b></div>
+            <div><span>Delivery + mileage + far-away</span><b>$20.27</b></div>
+            <div><span>In-N-Out fee</span><b>$4.99</b></div>
+            <div><span>Service (15%) + platform</span><b>$10.22</b></div>
+            <div><span>Tip for driver</span><b>$5.00</b></div>
+          </div>
+          <div class="rc-total"><span>Total paid</span><b>$110.84</b></div>
         </div>
       </div>
     </div>
@@ -2316,12 +2331,12 @@
       <div class="driver-card">
         <h3>Driving for DormDash</h3>
         <p style="color: var(--text-secondary); font-size: 18px; margin-bottom: 0;">
-          Drivers were Pepperdine students earning between classes, with flexible hours and weekly Stripe payouts.
+          Drivers were Pepperdine students earning between classes, with flexible hours and weekly payouts.
         </p>
 
         <ul class="driver-benefits">
           <li><div><strong>$18–$25 / hour</strong><br><span style="color: var(--text-muted);">Most of each fare and 100% of tips went to the driver</span></div></li>
-          <li><div><strong>Work between classes</strong><br><span style="color: var(--text-muted);">Claim jobs from Discord when you're free, ignore them when you're not</span></div></li>
+          <li><div><strong>Work between classes</strong><br><span style="color: var(--text-muted);">Claim jobs when you're free, ignore them when you're not</span></div></li>
           <li><div><strong>A real contract</strong><br><span style="color: var(--text-muted);">Independent-contractor agreement, signed in the browser before the first job</span></div></li>
         </ul>
 
@@ -2356,13 +2371,14 @@
       <div class="footer-links">
         <h4>Try it</h4>
         <a href="/order.html">Food order demo</a>
+        <a href="/ride.html">Book a ride (demo)</a>
         <a href="#rides">Ride estimator</a>
         <a href="#pricing">Pricing</a>
       </div>
 
       <div class="footer-links">
         <h4>Project</h4>
-        <a href="#about">How it worked</a>
+        <a href="#about">Track record</a>
         <a href="/drivers.html">Driving for DormDash</a>
         <a href="/support.html">FAQ</a>
         <a href="/privacy.html">Privacy</a>
@@ -2538,9 +2554,8 @@ async function calculateEstimate() {
 
 function bookEstimatedRide() {
   if (!estimatorSelectedLocation) return;
-  const l = estimatorSelectedLocation;
-  const p = new URLSearchParams({ type: 'ride', dir: currentEstimatorDirection, name: l.name, addr: l.address, lat: l.lat.toFixed(6), lng: l.lng.toFixed(6) });
-  location.href = '/track.html?' + p.toString();
+  sessionStorage.setItem('rideshareEstimate', JSON.stringify({ direction: currentEstimatorDirection, location: estimatorSelectedLocation }));
+  location.href = '/ride.html';
 }
 
 document.getElementById('year').textContent = new Date().getFullYear();

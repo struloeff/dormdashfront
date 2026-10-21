@@ -1,0 +1,2397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Fast rideshare service for Pepperdine students">
+  <title>DormDash Rideshare — Book a Ride (Demo)</title>
+  <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+  <link rel="stylesheet" href="/static/demo.css">
+  <script src="/static/geo.js"></script>
+  <script src="/static/demo-api.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#000;color:#fff;overflow-x:hidden}
+    *::-webkit-scrollbar{width:0;display:none}
+    *{scrollbar-width:none}
+
+    /* ---- Header ---- */
+    .header{
+      position:fixed;top:var(--dd-bar-h,0px);left:0;right:0;z-index:60;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:12px 20px;
+      background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .header-left{display:flex;align-items:center;gap:10px;cursor:pointer}
+    .header-logo{width:32px;height:32px;background:url('/static/dormdash.png') center/contain no-repeat;flex-shrink:0}
+    .header-title{font-size:18px;font-weight:800;letter-spacing:-0.02em}
+    .header-badge{font-size:11px;font-weight:700;color:#a5b4fc;background:rgba(99,102,241,0.15);padding:3px 8px;border-radius:6px;letter-spacing:0.5px;text-transform:uppercase}
+    .location-pill{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;font-size:11px;font-weight:600;color:#ccc;cursor:pointer}
+    .loc-dot{width:6px;height:6px;background:#10b981;border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* ---- Full-screen Map ---- */
+    #map{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;filter:brightness(.75) saturate(1.1)}
+    .leaflet-top.leaflet-right{top:calc(var(--dd-bar-h,0px) + 58px)}
+    .leaflet-control-zoom{display:none!important}
+
+    /* ---- Bottom Sheet ---- */
+    .bottom-sheet{
+      position:fixed;bottom:0;left:0;right:0;z-index:50;
+      background:#111;border-radius:24px 24px 0 0;
+      max-height:78vh;overflow-y:auto;overflow-x:hidden;
+      box-shadow:0 -4px 40px rgba(0,0,0,0.6);
+      padding:0 20px 20px;
+      padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+      transition:transform 0.3s ease;
+    }
+    .bottom-sheet::-webkit-scrollbar{width:0;display:none}
+    .bottom-sheet{scrollbar-width:none}
+    .sheet-handle{width:36px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;margin:12px auto 16px}
+
+    /* ---- Step Wizard ---- */
+    .wizard-steps{position:relative;overflow:hidden}
+    .step{display:none;animation:stepIn 0.3s ease}
+    .step.active{display:block}
+    @keyframes stepIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes stepOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-30px)}}
+
+    /* Step indicator */
+    .step-indicator{display:flex;gap:6px;margin-bottom:18px;justify-content:center}
+    .step-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s}
+    .step-dot.active{background:#6366f1;width:24px;border-radius:4px}
+    .step-dot.done{background:#10b981}
+
+    /* Step titles */
+    .step-title{font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px}
+    .step-subtitle{font-size:13px;color:#888;font-weight:500;margin-bottom:18px}
+
+    /* ---- Back button ---- */
+    .back-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      background:none;border:none;color:#888;font-size:13px;font-weight:600;
+      cursor:pointer;padding:0;margin-bottom:14px;transition:color 0.2s;
+    }
+    .back-btn:hover{color:#fff}
+    .back-btn svg{width:16px;height:16px}
+
+    /* ---- Search Input ---- */
+    .search-input-wrap{position:relative;margin-bottom:12px}
+    .search-input{
+      width:100%;height:56px;padding:0 48px 0 44px;
+      background:#1a1a1a;border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;
+      color:#fff;font-size:16px;font-weight:500;font-family:inherit;
+      transition:border-color 0.2s,box-shadow 0.2s;
+    }
+    .search-input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.2)}
+    .search-input::placeholder{color:#555}
+    .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#555;pointer-events:none}
+    .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.1);border:none;color:#999;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:none;align-items:center;justify-content:center}
+    .search-clear.visible{display:flex}
+
+    /* ---- Search Button ---- */
+    .search-btn-row{display:flex;gap:8px;margin-bottom:8px}
+    .search-btn-row .search-input{flex:1}
+    .search-action-btn{
+      flex-shrink:0;height:56px;padding:0 20px;
+      background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:14px;
+      color:#fff;font-size:14px;font-weight:700;cursor:pointer;
+      transition:all 0.2s;white-space:nowrap;
+    }
+    .search-action-btn:hover{filter:brightness(1.1)}
+    .search-action-btn:active{transform:scale(0.97)}
+
+    /* ---- Result distance pin ---- */
+    .sr-distance{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#888;margin-top:4px}
+    .sr-distance svg{flex-shrink:0}
+
+    /* ---- Campus Select Dropdown ---- */
+    .campus-select-wrap{margin-bottom:14px}
+    .campus-select-label{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px}
+    .campus-select{
+      width:100%;height:52px;padding:0 44px 0 16px;
+      background:#0d0d0d;border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;
+      color:#fff;font-size:15px;font-weight:600;font-family:inherit;
+      appearance:none;-webkit-appearance:none;cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 16px center;
+      transition:border-color 0.2s,box-shadow 0.2s,background-color 0.2s;
+    }
+    .campus-select:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12)}
+    .campus-select option{background:#111;color:#fff;padding:10px}
+    .campus-select.selected{border-color:rgba(99,102,241,0.4);background-color:rgba(99,102,241,0.06)}
+
+    /* ---- Search Results ---- */
+    .search-results{margin-top:8px;max-height:220px;overflow-y:auto;scrollbar-width:none}
+    .search-results::-webkit-scrollbar{display:none}
+    .search-result{
+      padding:14px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.06);
+      border-radius:12px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;
+    }
+    .search-result:hover{background:#222;border-color:rgba(255,255,255,0.15);transform:translateX(2px)}
+    .search-result:active{transform:scale(0.98)}
+    .sr-name{font-weight:700;font-size:15px;margin-bottom:2px}
+    .sr-addr{font-size:12px;color:#888;font-weight:500}
+    .sr-meta{font-size:11px;color:#666;margin-top:4px}
+    .google-attr{font-size:11px;color:#555;text-align:center;padding:6px 0;font-weight:500}
+
+    /* ---- Selected Location Card ---- */
+    .selected-card{
+      display:flex;align-items:center;gap:12px;
+      padding:14px;background:#1a1a1a;border:1.5px solid rgba(99,102,241,0.3);
+      border-radius:14px;margin-bottom:12px;
+    }
+    .sc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .sc-dot.pickup{background:#10b981}
+    .sc-dot.dropoff{background:#6366f1}
+    .sc-info{flex:1;min-width:0}
+    .sc-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sc-addr{font-size:12px;color:#888;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sc-clear{background:none;border:none;color:#666;font-size:18px;cursor:pointer;padding:4px 8px;flex-shrink:0}
+    .sc-clear:hover{color:#fff}
+
+    /* ---- Direction toggle ---- */
+    .dir-toggle{display:flex;gap:8px;margin-bottom:14px}
+    .dir-btn{
+      flex:1;padding:12px 8px;background:#1a1a1a;border:1.5px solid rgba(255,255,255,0.08);
+      border-radius:12px;color:#888;font-size:13px;font-weight:700;cursor:pointer;
+      text-align:center;transition:all 0.2s;
+    }
+    .dir-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-color:#6366f1;box-shadow:0 4px 16px rgba(99,102,241,0.35)}
+    .dir-btn:hover:not(.active){background:#222;border-color:rgba(255,255,255,0.15)}
+
+    /* ---- Use Current Location btn ---- */
+    .use-location-btn{
+      width:100%;padding:12px;background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.25);
+      border-radius:12px;color:#10b981;font-size:14px;font-weight:600;cursor:pointer;
+      transition:all 0.2s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .use-location-btn:hover{background:rgba(16,185,129,0.15);border-color:#10b981}
+
+    /* ---- Manual address input ---- */
+    .manual-addr-wrap{margin-top:8px}
+    .manual-addr-input{
+      width:100%;padding:12px 14px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);
+      border-radius:10px;color:#fff;font-size:14px;font-family:inherit;font-weight:500;
+    }
+    .manual-addr-input:focus{outline:none;border-color:#6366f1}
+    .manual-addr-btn{
+      padding:10px 16px;margin-top:8px;background:none;
+      border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#888;font-size:13px;font-weight:600;cursor:pointer;
+      transition:all 0.2s;
+    }
+    .manual-addr-btn:hover{color:#ccc;border-color:rgba(255,255,255,0.3)}
+
+    /* ---- Route Summary (Step 2) ---- */
+    .route-summary{
+      display:flex;align-items:center;gap:12px;
+      padding:16px;background:#1a1a1a;border-radius:14px;margin-bottom:16px;
+    }
+    .route-dots{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+    .route-dots .dot{width:10px;height:10px;border-radius:50%}
+    .route-dots .dot.g{background:#10b981}
+    .route-dots .dot.p{background:#6366f1}
+    .route-dots .line{width:2px;height:20px;background:rgba(255,255,255,0.15)}
+    .route-places{flex:1;min-width:0}
+    .rp-label{font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+    .rp-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+    .rp-name:last-child{margin-bottom:0}
+
+    .route-stats{display:flex;gap:12px;margin-bottom:16px}
+    .route-stat{flex:1;text-align:center;padding:12px;background:#1a1a1a;border-radius:12px}
+    .rs-val{font-size:20px;font-weight:800;letter-spacing:-0.02em}
+    .rs-label{font-size:11px;color:#888;font-weight:600;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
+
+    /* ---- Fare Card ---- */
+    .fare-card{background:#1a1a1a;border-radius:14px;padding:16px;margin-bottom:16px}
+    .fare-title{font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+    .fare-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:14px}
+    .fare-row .label{color:#aaa;font-weight:500}
+    .fare-row .dots{flex:1;border-bottom:1px dotted rgba(255,255,255,0.1);margin:0 8px;min-width:20px}
+    .fare-row .val{font-weight:700;white-space:nowrap}
+    .fare-divider{border:none;border-top:1px solid rgba(255,255,255,0.08);margin:10px 0}
+    .fare-total{display:flex;justify-content:space-between;padding:8px 0 0;font-size:18px;font-weight:800}
+
+    /* ---- Schedule Toggle ---- */
+    .schedule-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .sched-label{font-size:13px;font-weight:600;color:#888}
+    .sched-toggle{display:flex;background:#1a1a1a;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)}
+    .sched-opt{padding:10px 18px;font-size:13px;font-weight:700;color:#888;cursor:pointer;transition:all 0.2s;border:none;background:none}
+    .sched-opt.active{background:#6366f1;color:#fff}
+
+    /* ---- Schedule Picker ---- */
+    .schedule-picker{display:none;background:#1a1a1a;border-radius:14px;padding:16px;margin-bottom:16px;animation:fadeSlide 0.25s ease}
+    .schedule-picker.active{display:block}
+    @keyframes fadeSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+    .sched-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+    .preset-btn{padding:10px 4px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:8px;color:#a5b4fc;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s}
+    .preset-btn:hover{background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4)}
+
+    .sched-selects{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+    .sched-select-group label{display:block;font-size:10px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+    .sched-select{
+      width:100%;padding:10px 8px;background:#111;border:1px solid rgba(255,255,255,0.1);
+      border-radius:8px;color:#fff;font-size:13px;font-weight:600;font-family:inherit;
+      appearance:none;-webkit-appearance:none;cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;
+    }
+    .sched-select:focus{outline:none;border-color:#6366f1}
+    .sched-select option{background:#111;color:#fff}
+    .sched-confirm-btn{
+      width:100%;padding:12px;background:linear-gradient(135deg,#10b981,#059669);
+      border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;
+      text-transform:uppercase;letter-spacing:0.5px;
+    }
+    .sched-confirm-btn:hover{filter:brightness(1.1)}
+
+    .sched-badge{
+      display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+      background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+      border-radius:8px;font-size:12px;font-weight:600;color:#c7d2fe;margin-bottom:12px;
+    }
+    .sched-badge button{background:none;border:none;color:#818cf8;font-weight:700;cursor:pointer;font-size:12px;margin-left:4px;text-decoration:underline}
+
+    /* ---- Form fields (Step 3) ---- */
+    .form-field{margin-bottom:16px}
+    .form-label{display:block;font-size:13px;font-weight:700;color:#aaa;margin-bottom:6px;letter-spacing:-0.01em}
+    .form-input{
+      width:100%;height:52px;padding:0 16px;
+      background:#1a1a1a;border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;
+      color:#fff;font-size:15px;font-weight:500;font-family:inherit;
+    }
+    .form-input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+    .form-input::placeholder{color:#555}
+
+    /* Notes expand */
+    .notes-toggle{
+      display:flex;align-items:center;gap:8px;padding:12px 0;
+      color:#888;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;width:100%;
+    }
+    .notes-toggle:hover{color:#ccc}
+    .notes-area{
+      display:none;width:100%;min-height:80px;padding:14px 16px;
+      background:#1a1a1a;border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;
+      color:#fff;font-size:14px;font-family:inherit;font-weight:500;resize:vertical;
+    }
+    .notes-area:focus{outline:none;border-color:#6366f1}
+    .notes-area.open{display:block}
+
+    /* ---- Tips row ---- */
+    .tips-label{font-size:13px;font-weight:700;color:#aaa;margin-bottom:8px}
+    .tips-row{display:flex;gap:8px;margin-bottom:8px}
+    .tip-chip{
+      flex:1;height:48px;display:flex;align-items:center;justify-content:center;
+      background:#1a1a1a;border:2px solid rgba(255,255,255,0.1);border-radius:12px;
+      color:#ccc;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;
+    }
+    .tip-chip:hover{border-color:rgba(99,102,241,0.4)}
+    .tip-chip.active{background:#6366f1;border-color:#6366f1;color:#fff}
+    .custom-tip-wrap{display:none;margin-bottom:12px}
+    .custom-tip-wrap.open{display:flex;gap:8px}
+    .custom-tip-input{
+      flex:1;height:48px;padding:0 14px;background:#1a1a1a;border:1.5px solid rgba(255,255,255,0.1);
+      border-radius:10px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;
+    }
+    .custom-tip-input:focus{outline:none;border-color:#6366f1}
+    .custom-tip-confirm{
+      height:48px;padding:0 20px;background:#6366f1;border:none;border-radius:10px;
+      color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+    }
+
+    /* ---- Updated total (Step 3) ---- */
+    .final-total{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:14px 16px;background:#1a1a1a;border-radius:14px;margin-bottom:16px;
+    }
+    .ft-label{font-size:14px;font-weight:600;color:#aaa}
+    .ft-amount{font-size:22px;font-weight:800}
+
+    /* ---- CTA Button ---- */
+    .cta-btn{
+      width:100%;height:56px;border:none;border-radius:14px;
+      background:linear-gradient(135deg,#6366f1,#8b5cf6);
+      color:#fff;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;
+      cursor:pointer;transition:all 0.2s;
+      box-shadow:0 4px 20px rgba(99,102,241,0.35);flex-shrink:0;
+    }
+    .cta-btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(99,102,241,0.5)}
+    .cta-btn:active{transform:scale(0.98)}
+    .cta-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+    .secondary-btn{
+      width:100%;height:48px;border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;
+      background:transparent;color:#ccc;font-size:14px;font-weight:700;cursor:pointer;
+      margin-top:8px;transition:all 0.2s;flex-shrink:0;
+    }
+    .secondary-btn:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.2)}
+
+    /* ---- Sticky CTA footer ---- */
+    .step-footer{position:sticky;bottom:0;padding:14px 0 4px;background:linear-gradient(0deg,#111 70%,transparent);z-index:10;display:flex;flex-direction:column;gap:8px;margin-top:auto}
+    .sheet-content{display:flex;flex-direction:column}
+    .step.active{display:flex;flex-direction:column;min-height:100%}
+
+    /* ---- Fullscreen mode for steps 3 & 4 ---- */
+    .bottom-sheet.fullscreen{top:var(--dd-bar-h,0px);max-height:calc(100vh - var(--dd-bar-h,0px));height:calc(100vh - var(--dd-bar-h,0px));border-radius:0;z-index:300;padding-top:env(safe-area-inset-top,44px);display:flex;flex-direction:column}
+    .bottom-sheet.fullscreen .sheet-handle{display:none}
+    .bottom-sheet.fullscreen .step-indicator{margin-top:12px}
+    .bottom-sheet.fullscreen .wizard-steps{flex:1;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+    .bottom-sheet.fullscreen .step.active{flex:1}
+
+    /* ---- Confetti ---- */
+    .confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+    .confetti-piece{position:absolute;width:10px;height:10px;top:-20px;animation:confettiFall 3s ease-out forwards;animation-fill-mode:forwards}
+    @keyframes confettiFall{
+      0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}
+      100%{transform:translateY(110vh) rotate(720deg) scale(0.3);opacity:0}
+    }
+
+    /* ---- Success overlay ---- */
+    .success-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:fadeInOverlay 0.4s ease}
+    @keyframes fadeInOverlay{from{opacity:0}to{opacity:1}}
+    .success-checkmark{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);margin-bottom:24px}
+    .success-checkmark svg{width:40px;height:40px;color:#fff}
+    @keyframes popIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+    .success-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px;animation:slideUp 0.5s ease 0.2s both}
+    .success-subtitle{font-size:14px;color:#888;font-weight:500;animation:slideUp 0.5s ease 0.3s both}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ---- Schedule for later link ---- */
+    .schedule-later-link{
+      display:block;text-align:center;color:#818cf8;font-size:13px;font-weight:600;
+      margin-top:12px;cursor:pointer;text-decoration:none;padding:8px;
+    }
+    .schedule-later-link:hover{color:#a5b4fc;text-decoration:underline}
+
+    /* ---- Route Preview (minimized sheet) ---- */
+    .bottom-sheet.route-preview{
+      transform:translateY(calc(100% - 120px));
+      transition:transform 0.4s ease;
+    }
+    .route-preview-banner{
+      display:none;text-align:center;padding:16px 0 8px;
+      font-size:14px;font-weight:700;color:#a5b4fc;
+      animation:fadeSlide 0.3s ease;
+    }
+    .bottom-sheet.route-preview .route-preview-banner{display:block}
+
+    /* ---- Toast ---- */
+    @keyframes slideInRight{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
+    @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(400px);opacity:0}}
+
+    /* ---- Modal ---- */
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:20px}
+    .modal.active{display:flex}
+    .modal-content{background:#111;border:1px solid #333;padding:28px;border-radius:16px;max-width:420px;width:100%}
+    .modal-header{font-size:20px;font-weight:800;margin-bottom:20px}
+    .modal-close{float:right;font-size:24px;color:#999;cursor:pointer;line-height:1}
+    .modal-close:hover{color:#fff}
+
+    /* ---- Responsive ---- */
+    @media(max-width:768px){
+      .header{padding:10px 16px}
+      .bottom-sheet{max-height:82vh}
+    }
+    @media(min-width:600px){
+      .bottom-sheet{max-width:480px;left:50%;transform:translateX(-50%)}
+    }
+  </style>
+</head>
+<body>
+<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
+
+  <style>
+    @keyframes gridSlide {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(50px); }
+    }
+    @keyframes cardFloat {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+
+  <div id="main-content">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left" onclick="window.location.href='/'">
+      <div class="header-logo"></div>
+      <span class="header-title">DormDash</span>
+      <span class="header-badge">Rideshare</span>
+    </div>
+    <div class="location-pill" onclick="showUserAddress()" title="Click to see your address">
+      <div class="loc-dot"></div>
+      <span id="locationText">Your Location</span>
+    </div>
+  </div>
+
+  <!-- Full-screen Map -->
+  <div id="map"></div>
+
+  <!-- Bottom Sheet -->
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <div class="route-preview-banner">Route found — scroll up to continue</div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+      <div class="step-dot" id="dot4"></div>
+    </div>
+
+    <div class="wizard-steps">
+
+      <!-- ==================== STEP 1: Where to? ==================== -->
+      <div class="step active" id="step1">
+        <div class="step-title">Where to?</div>
+        <div class="step-subtitle" id="step1Subtitle">Choose your destination</div>
+
+        <!-- Direction toggle -->
+        <div class="dir-toggle">
+          <button type="button" class="dir-btn" id="dirToBtn" onclick="selectDirection('to_campus')">To Campus</button>
+          <button type="button" class="dir-btn active" id="dirFromBtn" onclick="selectDirection('from_campus')">From Campus</button>
+        </div>
+
+        <!-- === FROM CAMPUS: destination search === -->
+        <div id="fromCampusUI">
+          <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Where are you headed?</div>
+          <div id="destSearchWrap">
+            <div class="search-btn-row">
+              <div class="search-input-wrap" style="flex:1">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="search-input" id="destSearchInput" placeholder="Search destination..." autocomplete="off">
+                <button class="search-clear" id="destSearchClear" onclick="clearDestSearch()">&times;</button>
+              </div>
+              <button class="search-action-btn" onclick="triggerDestSearch()">Search</button>
+            </div>
+            <div class="search-results" id="destSearchResults"></div>
+          </div>
+          <div id="destSelectedCard" style="display:none"></div>
+        </div>
+
+        <!-- === TO CAMPUS: campus destination select === -->
+        <div id="toCampusUI" style="display:none">
+          <div class="campus-select-wrap">
+            <div class="campus-select-label">Campus Destination</div>
+            <select class="campus-select" id="campusDropoffSelect" onchange="selectCampusLocation('dropoff')">
+              <option value="">Select campus destination</option>
+              <option value="Mountain Parking Structure">Mountain Parking Structure</option>
+              <option value="Seaver Main Lot (B)">Seaver Main Lot (B)</option>
+              <option value="Theme Tower Lot (A)">Theme Tower Lot (A)</option>
+              <option value="Firestone Fieldhouse Lot (P)">Firestone Fieldhouse Lot (P)</option>
+              <option value="Eddy D. Field Baseball Stadium Lot (N)">Eddy D. Field Baseball Stadium Lot (N)</option>
+              <option value="Stotsenberg Track, Rokus Field Lot (M)">Stotsenberg Track, Rokus Field Lot (M)</option>
+              <option value="Page Terrace Lot (I)">Page Terrace Lot (I)</option>
+              <option value="George Page Lot (H)">George Page Lot (H)</option>
+            </select>
+          </div>
+        </div>
+
+        <a class="schedule-later-link" id="scheduleLaterLink" onclick="openSchedulePicker()">Schedule for later</a>
+        <div class="schedule-picker" id="schedulePicker">
+          <div class="sched-presets">
+            <button type="button" class="preset-btn" onclick="setQuickTime(30)">30 min</button>
+            <button type="button" class="preset-btn" onclick="setQuickTime(60)">1 hour</button>
+            <button type="button" class="preset-btn" onclick="setQuickTime(120)">2 hours</button>
+            <button type="button" class="preset-btn" onclick="setQuickTime(180)">3 hours</button>
+          </div>
+          <div class="sched-selects">
+            <div class="sched-select-group">
+              <label>Month</label>
+              <select class="sched-select" id="scheduleMonth"></select>
+            </div>
+            <div class="sched-select-group">
+              <label>Day</label>
+              <select class="sched-select" id="scheduleDay"></select>
+            </div>
+            <div class="sched-select-group">
+              <label>Time</label>
+              <select class="sched-select" id="scheduleTime"></select>
+            </div>
+          </div>
+          <button type="button" class="sched-confirm-btn" onclick="confirmScheduledTime()">Confirm Time</button>
+        </div>
+        <div id="schedBadge" class="sched-badge" style="display:none">
+          <span id="schedBadgeText"></span>
+          <button onclick="changeSchedule()">Change</button>
+        </div>
+
+        <div class="step-footer" id="step1Footer" style="display:none">
+          <button class="cta-btn" id="step1ContinueBtn" onclick="goToStep(2)">Continue</button>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 2: Pickup Location ==================== -->
+      <div class="step" id="step2">
+        <button class="back-btn" onclick="goToStep(1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+          Back
+        </button>
+        <div class="step-title">Pickup</div>
+        <div class="step-subtitle">Where should we pick you up?</div>
+
+        <!-- FROM CAMPUS: campus pickup select -->
+        <div id="fromCampusPickupUI">
+          <div class="campus-select-wrap">
+            <div class="campus-select-label">Campus Pickup Location</div>
+            <select class="campus-select" id="campusPickupSelect" onchange="selectCampusLocation('pickup')">
+              <option value="">Select pickup location</option>
+              <option value="Mountain Parking Structure">Mountain Parking Structure</option>
+              <option value="Seaver Main Lot (B)">Seaver Main Lot (B)</option>
+              <option value="Theme Tower Lot (A)">Theme Tower Lot (A)</option>
+              <option value="Firestone Fieldhouse Lot (P)">Firestone Fieldhouse Lot (P)</option>
+              <option value="Eddy D. Field Baseball Stadium Lot (N)">Eddy D. Field Baseball Stadium Lot (N)</option>
+              <option value="Stotsenberg Track, Rokus Field Lot (M)">Stotsenberg Track, Rokus Field Lot (M)</option>
+              <option value="Page Terrace Lot (I)">Page Terrace Lot (I)</option>
+              <option value="George Page Lot (H)">George Page Lot (H)</option>
+              <option value="other">Other (Specify Location)</option>
+            </select>
+            <div id="campusPickupOtherWrap" style="display:none;margin-top:8px">
+              <input class="manual-addr-input" id="campusPickupOtherInput" placeholder="Enter specific campus location...">
+            </div>
+          </div>
+        </div>
+
+        <!-- TO CAMPUS: pickup search / current location -->
+        <div id="toCampusPickupUI" style="display:none">
+          <button type="button" class="use-location-btn" onclick="useCurrentLocation()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
+            Use Current Location
+          </button>
+          <div id="pickupSearchWrap">
+            <div class="search-btn-row">
+              <div class="search-input-wrap" style="flex:1">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="search-input" id="pickupSearchInput" placeholder="Search pickup location..." autocomplete="off">
+                <button class="search-clear" id="pickupSearchClear" onclick="clearPickupSearch()">&times;</button>
+              </div>
+              <button class="search-action-btn" onclick="triggerPickupSearch()">Search</button>
+            </div>
+            <div class="search-results" id="pickupSearchResults"></div>
+          </div>
+          <div id="pickupSelectedCard" style="display:none"></div>
+        </div>
+
+        <div class="step-footer" id="step2Footer" style="display:none">
+          <button class="cta-btn" id="step2ContinueBtn" onclick="goToStep(3)">Continue</button>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 3: Confirm Route ==================== -->
+      <div class="step" id="step3">
+        <button class="back-btn" onclick="goToStep(2)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+          Back
+        </button>
+        <div class="step-title">Confirm Route</div>
+        <div class="step-subtitle">Review your trip details</div>
+
+        <!-- Route summary -->
+        <div class="route-summary">
+          <div class="route-dots">
+            <div class="dot g"></div>
+            <div class="line"></div>
+            <div class="dot p"></div>
+          </div>
+          <div class="route-places">
+            <div class="rp-label">Pickup</div>
+            <div class="rp-name" id="routePickupName">--</div>
+            <div class="rp-label">Destination</div>
+            <div class="rp-name" id="routeDropoffName">--</div>
+          </div>
+        </div>
+
+        <!-- Schedule badge if scheduled -->
+        <div id="step3SchedBadge" class="sched-badge" style="display:none">
+          <span id="step3SchedText"></span>
+        </div>
+
+        <!-- Stats boxes -->
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div style="flex:1;background:#1a1a1a;border-radius:12px;padding:14px;text-align:center">
+            <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Distance</div>
+            <div style="font-size:20px;font-weight:800;color:#fff" id="routeDistance">--</div>
+          </div>
+          <div style="flex:1;background:#1a1a1a;border-radius:12px;padding:14px;text-align:center">
+            <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Est. Time</div>
+            <div style="font-size:20px;font-weight:800;color:#fff" id="routeETA">--</div>
+          </div>
+        </div>
+
+        <!-- Itemized fare card -->
+        <div id="fareCardContent" style="background:#1a1a1a;border-radius:14px;padding:16px;margin-bottom:16px">
+          <div class="fare-row"><span class="label">Base fare</span><span class="dots"></span><span class="val">$4.99</span></div>
+          <div class="fare-row" id="fareMileRow"><span class="label" id="fareMileLabel">Mileage</span><span class="dots"></span><span class="val" id="fareMileVal">$0.00</span></div>
+          <div class="fare-row" id="fareTimeRow"><span class="label" id="fareTimeLabel">Time</span><span class="dots"></span><span class="val" id="fareTimeVal">$0.00</span></div>
+          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:10px 0">
+          <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:#fff">
+            <span>Total</span>
+            <span id="fareTotal">$4.99</span>
+          </div>
+        </div>
+
+        <div class="step-footer">
+          <button class="cta-btn" onclick="goToStep(4)">Continue</button>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 4: Your Details ==================== -->
+      <div class="step" id="step4">
+        <button class="back-btn" onclick="goToStep(3)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
+          Back
+        </button>
+        <div class="step-title">Your Details</div>
+        <div class="step-subtitle">Almost there!</div>
+
+        <form id="rideForm" onsubmit="return false;">
+          <div class="form-field">
+            <label class="form-label">Name</label>
+            <input class="form-input" id="customerName" placeholder="Your full name" required>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Phone Number</label>
+            <input class="form-input" id="phoneNumber" type="tel" placeholder="(123) 456-7890" required>
+          </div>
+
+          <div class="form-field" id="confirmPhoneGroup">
+            <label class="form-label">Confirm Phone Number</label>
+            <input class="form-input" id="confirmPhoneNumber" type="tel" placeholder="(123) 456-7890" required>
+          </div>
+
+          <button type="button" class="notes-toggle" id="notesToggle" onclick="toggleNotes()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg>
+            Add notes for driver
+          </button>
+          <textarea class="notes-area" id="rideNotes" placeholder="Special instructions for your driver..."></textarea>
+
+          <div style="margin-top:16px">
+            <div class="tips-label">Tip Your Driver</div>
+            <div class="tips-row">
+              <div class="tip-chip" onclick="setTip(1)">$1</div>
+              <div class="tip-chip" onclick="setTip(3)">$3</div>
+              <div class="tip-chip" onclick="setTip(5)">$5</div>
+              <div class="tip-chip" onclick="setTip(-1)">Custom</div>
+            </div>
+            <div class="custom-tip-wrap" id="customTipWrap">
+              <input class="custom-tip-input" id="customTipInput" type="number" min="0" step="0.01" placeholder="Enter amount">
+              <button type="button" class="custom-tip-confirm" onclick="confirmCustomTip()">OK</button>
+            </div>
+          </div>
+
+          <div class="final-total">
+            <span class="ft-label">Total with tip</span>
+            <span class="ft-amount" id="finalTotal">$0.00</span>
+          </div>
+
+        </form>
+
+        <div class="step-footer">
+          <button type="button" class="cta-btn" id="submitBtn" onclick="submitRide()">Request Ride</button>
+        </div>
+      </div>
+
+    </div><!-- /wizard-steps -->
+  </div><!-- /bottom-sheet -->
+
+  <!-- Location Address Modal -->
+  <div id="locationModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeLocationModal()">&times;</span>
+      <div class="modal-header">Your Current Location</div>
+      <div style="color:#fff;line-height:1.8;">
+        <p><strong>Address:</strong> <span id="userAddressDisplay">Loading...</span></p>
+        <p><strong>Coordinates:</strong> <span id="userCoords">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* ===========================
+     Config
+  =========================== */
+  const API_URL = '';  // demo: /api/* is answered by static/demo-api.js
+  const OSRM_BASE = 'https://router.project-osrm.org/route/v1';
+  const OSRM_DRIVING = 'https://router.project-osrm.org/route/v1/driving';
+
+  const BASE_FARE = 4.99;
+  const PER_MILE = 0.89;
+  const PER_MINUTE = 0.39;
+
+  /* ===========================
+     State
+  =========================== */
+  const PEPPERDINE_LOCATION = { lat: 34.0366, lng: -118.7108 };
+  let userLocation = { lat: 34.0366, lng: -118.7108 };
+  let userLocationKnown = false;
+  let userAddress = null;
+  let map;
+  let pickupLocation = null;
+  let dropoffLocation = null;
+  let currentDirection = 'from_campus';
+  let currentStep = 1;
+
+  // Scheduling
+  let scheduleType = 'now';
+  let scheduledTime = null;
+
+  // Route / cost
+  let currentRouteSummary = null;
+  let currentTripData = { distance_miles: 0, duration_minutes: 0, base_fare_total: 0 };
+  let tipAmount = 0;
+  let tipSelected = false;
+
+  // Campus selections
+  let selectedCampusPickup = '';
+  let selectedCampusDropoff = '';
+
+  /* ===========================
+     Cloudflare Turnstile
+  =========================== */
+  window.turnstileToken = null;
+  window.turnstileTokenExpiry = null;
+  let turnstileRefreshWidget = null;
+
+  function onTurnstileSuccess(token) {
+    window.turnstileToken = token;
+    window.turnstileTokenExpiry = Date.now() + (5 * 60 * 1000);
+    console.log('Turnstile verified, token valid for 5 minutes');
+  }
+
+  function onTurnstileRefresh(token) {
+    window.turnstileToken = token;
+    window.turnstileTokenExpiry = Date.now() + (5 * 60 * 1000);
+    console.log('Turnstile token refreshed');
+
+    fetch(`${API_URL}/api/security/validate-turnstile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        turnstile_token: token,
+        browser_fingerprint: generateBrowserFingerprint()
+      })
+    }).then(response => {
+      if (response.ok) console.log('New token pre-cached with backend');
+    }).catch(err => {
+      console.warn('Token pre-cache failed:', err);
+    });
+  }
+
+  function initializeRefreshWidget() {
+    if (turnstileRefreshWidget) {
+      turnstile.reset(turnstileRefreshWidget);
+      return;
+    }
+    if (typeof turnstile === 'undefined') {
+      console.error('Turnstile API not loaded');
+      return;
+    }
+    const container = document.getElementById('turnstile-refresh');
+    if (!container) return;
+
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'cf-turnstile';
+    widgetDiv.setAttribute('data-sitekey', 'demo');
+    widgetDiv.setAttribute('data-callback', 'onTurnstileRefresh');
+    widgetDiv.setAttribute('data-theme', 'light');
+    widgetDiv.setAttribute('data-size', 'invisible');
+    container.appendChild(widgetDiv);
+
+    turnstileRefreshWidget = turnstile.render(widgetDiv);
+  }
+
+  function isTurnstileTokenValid() {
+    if (!window.turnstileToken) return false;
+    if (!window.turnstileTokenExpiry) return true;
+    return Date.now() < window.turnstileTokenExpiry;
+  }
+
+  async function makeSecureAPICall(url, body) {
+    if (!isTurnstileTokenValid()) {
+      console.warn('Turnstile token expired, requesting new verification...');
+      if (turnstileRefreshWidget) {
+        turnstile.reset(turnstileRefreshWidget);
+      }
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!isTurnstileTokenValid()) {
+        throw new Error('Security verification expired. Please refresh the page.');
+      }
+    }
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...body,
+        turnstile_token: window.turnstileToken
+      })
+    });
+  }
+
+  /* ===========================
+     Browser Fingerprinting
+  =========================== */
+  function generateBrowserFingerprint() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(125, 1, 62, 20);
+    ctx.fillStyle = '#069';
+    ctx.fillText('DormDash Security', 2, 15);
+    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+    ctx.fillText('DormDash Security', 4, 17);
+    const canvasFingerprint = canvas.toDataURL();
+
+    let webglVendor = '';
+    let webglRenderer = '';
+    try {
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+          webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+          webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        }
+      }
+    } catch (e) {}
+
+    return {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      platform: navigator.platform,
+      screenWidth: screen.width,
+      screenHeight: screen.height,
+      colorDepth: screen.colorDepth,
+      timezone: new Date().getTimezoneOffset(),
+      cookieEnabled: navigator.cookieEnabled,
+      canvasFingerprint: canvasFingerprint,
+      webglVendor: webglVendor,
+      webglRenderer: webglRenderer,
+      hardwareConcurrency: navigator.hardwareConcurrency || 0,
+      deviceMemory: navigator.deviceMemory || 0,
+      plugins: Array.from(navigator.plugins || []).map(p => p.name).join(','),
+      touchSupport: 'ontouchstart' in window
+    };
+  }
+
+  /* ===========================
+     Utils
+  =========================== */
+  function metersToMilesNumber(m){ return m / 1609.344; }
+  function formatDuration(seconds){
+    const m = Math.round(seconds / 60);
+    if (m < 60) return `${m} min`;
+    const h = Math.floor(m / 60), r = m % 60;
+    return r ? `${h} hr ${r} min` : `${h} hr`;
+  }
+
+  function calculateDistance(lat1, lng1, lat2, lng2){
+    const R = 3959;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function getDistanceFromLatLonInMiles(lat1, lon1, lat2, lon2) {
+    const R = 3958.8;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function formatPhoneNumber(value) {
+    const digits = value.replace(/\D/g, '');
+    let formatted = '';
+    if (digits.length > 0) {
+      if (digits.length <= 3) {
+        formatted = '(' + digits;
+      } else if (digits.length <= 6) {
+        formatted = '(' + digits.slice(0, 3) + ') ' + digits.slice(3);
+      } else {
+        formatted = '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6, 10);
+      }
+    }
+    return formatted;
+  }
+
+  /* ===========================
+     Toast Messages
+  =========================== */
+  function showInlineMessage(message, type = 'error', duration = 4000) {
+    const existingMsg = document.querySelector('.inline-toast-message');
+    if (existingMsg) existingMsg.remove();
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `inline-toast-message ${type}`;
+    msgDiv.style.cssText = `
+      position:fixed;top:20px;right:20px;
+      background:${type === 'error' ? 'linear-gradient(135deg,#dc2626,#991b1b)' : type === 'success' ? 'linear-gradient(135deg,#059669,#047857)' : 'linear-gradient(135deg,#d97706,#b45309)'};
+      color:white;padding:16px 20px;border-radius:12px;
+      box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:10001;
+      font-size:15px;font-weight:600;max-width:400px;
+      animation:slideInRight 0.3s ease-out;display:flex;align-items:center;gap:12px;
+    `;
+    const icon = type === 'error' ? '!' : type === 'success' ? '\u2713' : 'i';
+    msgDiv.innerHTML = `<span style="font-size:18px;font-weight:800;width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.2);border-radius:50%;flex-shrink:0">${icon}</span><span>${message}</span>`;
+    document.body.appendChild(msgDiv);
+
+    setTimeout(() => {
+      msgDiv.style.animation = 'slideOutRight 0.3s ease-out';
+      setTimeout(() => msgDiv.remove(), 300);
+    }, duration);
+  }
+
+  /* ===========================
+     Map Init
+  =========================== */
+  function initMap(){
+    map = L.map('map', { zoomControl: false }).setView([userLocation.lat, userLocation.lng], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map);
+    map.attributionControl.setPosition('topright');
+    getUserLocation();
+  }
+
+  function getUserLocation(){
+    if (!navigator.geolocation) {
+      document.getElementById('locationText').textContent = 'Pepperdine Campus';
+      userLocation = PEPPERDINE_LOCATION;
+      userLocationKnown = false;
+      return;
+    }
+
+    document.getElementById('locationText').textContent = 'Getting location...';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        userLocationKnown = true;
+        document.getElementById('locationText').textContent = 'Your Location';
+        map.setView([userLocation.lat, userLocation.lng], 14);
+
+        L.marker([userLocation.lat, userLocation.lng], {
+          icon: L.divIcon({
+            className:'user-marker',
+            html:'<div style="background:#10b981;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(16,185,129,0.6);"></div>',
+            iconSize:[14,14],
+            iconAnchor:[7,7]
+          })
+        }).addTo(map);
+
+        autoSelectDirection();
+      },
+      (err) => {
+        document.getElementById('locationText').textContent = 'Pepperdine Campus';
+        userLocation = PEPPERDINE_LOCATION;
+        userLocationKnown = false;
+        map.setView([userLocation.lat, userLocation.lng], 14);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  }
+
+  function autoSelectDirection(){
+    if(!userLocationKnown) return;
+    const dist = calculateDistance(userLocation.lat, userLocation.lng, PEPPERDINE_LOCATION.lat, PEPPERDINE_LOCATION.lng);
+    if(dist > 1){
+      selectDirection('to_campus');
+    } else {
+      selectDirection('from_campus');
+    }
+  }
+
+  /* ===========================
+     Step Navigation
+  =========================== */
+  function updateContinueVisibility(){
+    // Step 1: destination selected?
+    const footer1 = document.getElementById('step1Footer');
+    let destReady = false;
+    if(currentDirection === 'from_campus'){
+      destReady = !!dropoffLocation;
+    } else {
+      destReady = !!selectedCampusDropoff;
+    }
+    footer1.style.display = destReady ? 'flex' : 'none';
+
+    // Step 2: pickup selected?
+    const footer2 = document.getElementById('step2Footer');
+    if(footer2){
+      let pickupReady = false;
+      if(currentDirection === 'from_campus'){
+        pickupReady = !!selectedCampusPickup;
+      } else {
+        pickupReady = !!pickupLocation;
+      }
+      footer2.style.display = pickupReady ? 'flex' : 'none';
+    }
+  }
+
+  function goToStep(n){
+    // Only validate when going FORWARD
+    if(n > currentStep){
+      // Step 1→2: destination must be selected
+      if(n >= 2 && currentStep < 2){
+        if(currentDirection === 'from_campus'){
+          if(!dropoffLocation){
+            showInlineMessage('Please search and select a destination', 'info');
+            return;
+          }
+        } else {
+          if(!selectedCampusDropoff){
+            showInlineMessage('Please select a campus destination', 'info');
+            return;
+          }
+          if(!dropoffLocation && selectedCampusDropoff){
+            dropoffLocation = {
+              name: selectedCampusDropoff,
+              address: `Pepperdine University, ${selectedCampusDropoff}`,
+              lat: PEPPERDINE_LOCATION.lat,
+              lng: PEPPERDINE_LOCATION.lng
+            };
+          }
+        }
+      }
+
+      // Step 2→3: pickup must be selected
+      if(n >= 3 && currentStep < 3){
+        if(currentDirection === 'from_campus'){
+          if(!selectedCampusPickup){
+            showInlineMessage('Please select a campus pickup location', 'info');
+            return;
+          }
+          if(!pickupLocation && selectedCampusPickup && selectedCampusPickup !== 'other'){
+            pickupLocation = {
+              name: selectedCampusPickup,
+              address: `Pepperdine University, ${selectedCampusPickup}`,
+              lat: PEPPERDINE_LOCATION.lat,
+              lng: PEPPERDINE_LOCATION.lng
+            };
+          }
+        } else {
+          if(!pickupLocation){
+            showInlineMessage('Please select a pickup location', 'info');
+            return;
+          }
+        }
+
+        if(!pickupLocation || !dropoffLocation){
+          showInlineMessage('Please select both pickup and destination', 'info');
+          return;
+        }
+      }
+
+      // Step 3→4: route must be calculated
+      if(n >= 4){
+        if(!currentRouteSummary){
+          showInlineMessage('Please wait for route calculation to complete', 'info');
+          return;
+        }
+      }
+    }
+
+    // Show correct pickup UIs on step 2
+    if(n === 2){
+      document.getElementById('fromCampusPickupUI').style.display = currentDirection === 'from_campus' ? 'block' : 'none';
+      document.getElementById('toCampusPickupUI').style.display = currentDirection === 'to_campus' ? 'block' : 'none';
+      updateContinueVisibility();
+    }
+
+    // Populate step 3 data (Confirm Route)
+    if(n === 3){
+      document.getElementById('routePickupName').textContent = pickupLocation.name;
+      document.getElementById('routeDropoffName').textContent = dropoffLocation.name;
+
+      const s3badge = document.getElementById('step3SchedBadge');
+      if(scheduledTime){
+        const d = new Date(scheduledTime);
+        document.getElementById('step3SchedText').textContent = 'Scheduled: ' + d.toLocaleString('en-US', {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+        s3badge.style.display = 'inline-flex';
+      } else {
+        s3badge.style.display = 'none';
+      }
+
+      // Calculate route if not already done
+      if(!currentRouteSummary){
+        updateRoute();
+      }
+    }
+
+    // Populate step 4 data (Your Details)
+    if(n === 4){
+      const savedName = localStorage.getItem('dormdash_name');
+      const savedPhone = localStorage.getItem('dormdash_phone');
+      if(savedName && !document.getElementById('customerName').value){
+        document.getElementById('customerName').value = savedName;
+      }
+      if(savedPhone && !document.getElementById('phoneNumber').value){
+        document.getElementById('phoneNumber').value = savedPhone;
+      }
+      updateFinalTotal();
+    }
+
+    // Animate step transition
+    const currentEl = document.getElementById('step' + currentStep);
+    currentEl.style.animation = 'stepOut 0.2s ease';
+    setTimeout(() => {
+      currentEl.classList.remove('active');
+      currentEl.style.animation = '';
+      currentStep = n;
+      const nextEl = document.getElementById('step' + n);
+      nextEl.classList.add('active');
+
+      // Update dots — mark all steps up to current as done or active
+      for(let i = 1; i <= 4; i++){
+        const dot = document.getElementById('dot' + i);
+        dot.className = 'step-dot';
+        if(i === n) dot.classList.add('active');
+        else if(i < n) dot.classList.add('done');
+      }
+
+      document.getElementById('bottomSheet').scrollTop = 0;
+
+      // Fullscreen for steps 3 & 4, map visible for steps 1 & 2
+      const sheet = document.getElementById('bottomSheet');
+      const mapEl = document.getElementById('map');
+      if(n >= 3){
+        sheet.classList.add('fullscreen');
+        mapEl.style.display = 'none';
+      } else {
+        sheet.classList.remove('fullscreen');
+        mapEl.style.display = 'block';
+        setTimeout(() => map.invalidateSize(), 300);
+      }
+    }, 200);
+  }
+
+  /* ===========================
+     Direction Selector
+  =========================== */
+  function selectDirection(direction){
+    const dirChanged = currentDirection !== direction;
+    currentDirection = direction;
+
+    document.getElementById('dirToBtn').classList.toggle('active', direction === 'to_campus');
+    document.getElementById('dirFromBtn').classList.toggle('active', direction === 'from_campus');
+
+    // Step 1 UIs
+    document.getElementById('fromCampusUI').style.display = direction === 'from_campus' ? 'block' : 'none';
+    document.getElementById('toCampusUI').style.display = direction === 'to_campus' ? 'block' : 'none';
+
+    // Step 2 pickup UIs (if visible)
+    const fromPickup = document.getElementById('fromCampusPickupUI');
+    const toPickup = document.getElementById('toCampusPickupUI');
+    if(fromPickup) fromPickup.style.display = direction === 'from_campus' ? 'block' : 'none';
+    if(toPickup) toPickup.style.display = direction === 'to_campus' ? 'block' : 'none';
+
+    if(dirChanged){
+      pickupLocation = null;
+      dropoffLocation = null;
+      currentRouteSummary = null;
+
+      document.getElementById('campusPickupSelect') && (document.getElementById('campusPickupSelect').value = '');
+      document.getElementById('campusDropoffSelect') && (document.getElementById('campusDropoffSelect').value = '');
+      selectedCampusPickup = '';
+      selectedCampusDropoff = '';
+
+      resetDestSearch();
+      resetPickupSearch();
+
+      if(window.routeLine){
+        map.removeLayer(window.routeLine);
+        window.routeLine = null;
+      }
+    }
+    updateContinueVisibility();
+  }
+
+  /* ===========================
+     Campus Select Location
+  =========================== */
+  function selectCampusLocation(type){
+    const selectId = type === 'pickup' ? 'campusPickupSelect' : 'campusDropoffSelect';
+    const selectEl = document.getElementById(selectId);
+    const value = selectEl.value;
+
+    // Add/remove selected class for visual feedback
+    selectEl.classList.toggle('selected', !!value);
+
+    if(type === 'pickup'){
+      selectedCampusPickup = value;
+      // Handle "other"
+      const otherWrap = document.getElementById('campusPickupOtherWrap');
+      if(otherWrap) otherWrap.style.display = value === 'other' ? 'block' : 'none';
+      if(value && value !== 'other'){
+        pickupLocation = {
+          name: value,
+          address: `Pepperdine University, ${value}`,
+          lat: PEPPERDINE_LOCATION.lat,
+          lng: PEPPERDINE_LOCATION.lng
+        };
+      } else if(value === 'other'){
+        // Wait for custom input
+        const input = document.getElementById('campusPickupOtherInput');
+        input.focus();
+        input.onblur = function(){
+          const val = this.value.trim();
+          if(val){
+            selectedCampusPickup = val;
+            pickupLocation = {
+              name: val,
+              address: `Pepperdine University, ${val}`,
+              lat: PEPPERDINE_LOCATION.lat,
+              lng: PEPPERDINE_LOCATION.lng
+            };
+            updateContinueVisibility();
+          }
+        };
+      } else {
+        pickupLocation = null;
+      }
+    } else {
+      selectedCampusDropoff = value;
+      if(value){
+        dropoffLocation = {
+          name: value,
+          address: `Pepperdine University, ${value}`,
+          lat: PEPPERDINE_LOCATION.lat,
+          lng: PEPPERDINE_LOCATION.lng
+        };
+        previewRouteOnMap(dropoffLocation);
+      } else {
+        dropoffLocation = null;
+        if(window.previewRouteLine){ map.removeLayer(window.previewRouteLine); window.previewRouteLine = null; }
+      }
+    }
+    updateContinueVisibility();
+  }
+
+  /* ===========================
+     Destination Search (From Campus)
+  =========================== */
+  const destInput = document.getElementById('destSearchInput');
+
+  destInput.addEventListener('input', function(){
+    const q = this.value.trim();
+    document.getElementById('destSearchClear').classList.toggle('visible', q.length > 0);
+  });
+
+  destInput.addEventListener('keypress', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      triggerDestSearch();
+    }
+  });
+
+  function triggerDestSearch(){
+    const q = document.getElementById('destSearchInput').value.trim();
+    if(!q){
+      showInlineMessage('Please enter a destination to search', 'info');
+      return;
+    }
+    searchDestination(q);
+  }
+
+  async function searchDestination(query){
+    if(!query) return;
+    const resultsDiv = document.getElementById('destSearchResults');
+    resultsDiv.innerHTML = '<div style="padding:12px;color:#666;text-align:center;font-size:13px">Searching...</div>';
+
+    const fingerprint = generateBrowserFingerprint();
+    try {
+      const res = await fetch(`${API_URL}/api/restaurants/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: query,
+          lat: PEPPERDINE_LOCATION.lat,
+          lng: PEPPERDINE_LOCATION.lng,
+          service_type: 'rideshare',
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+      const results = await res.json();
+
+      if(!results || !Array.isArray(results) || results.length === 0){
+        const errorMsg = results?.error || 'No results found';
+        resultsDiv.innerHTML = `
+          <div style="padding:12px;text-align:center;">
+            <div style="color:#666;font-size:13px">${errorMsg}</div>
+          </div>
+        `;
+        return;
+      }
+
+      resultsDiv.innerHTML = results.map((r, idx) => {
+        const attribution = r.attribution || r.html_attributions?.[0] || '';
+        const attrHtml = attribution ? `<div style="font-size:10px;color:#555;margin-top:3px" translate="no">${attribution}</div>` : '';
+        const distHtml = r.distance_text ? `<div class="sr-distance"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${r.distance_text}</div>` : '';
+        return `
+          <div class="search-result" data-idx="${idx}">
+            <div class="sr-name">${r.name}</div>
+            <div class="sr-addr">${r.address}</div>
+            ${distHtml}
+            ${attrHtml}
+          </div>
+        `;
+      }).join('') + '<div class="google-attr" translate="no">Places from OpenStreetMap</div>';
+
+      resultsDiv.querySelectorAll('.search-result').forEach((item, idx) => {
+        item.onclick = () => selectDestinationResult(results[idx]);
+      });
+    } catch(err) {
+      console.error('Search error:', err);
+      resultsDiv.innerHTML = '<div style="padding:12px;color:#666;text-align:center;font-size:13px">Error searching. Try again.</div>';
+    }
+  }
+
+  function selectDestinationResult(location){
+    dropoffLocation = {
+      name: location.name,
+      address: location.address,
+      lat: location.lat,
+      lng: location.lng,
+      duration_text: location.duration_text,
+      duration_seconds: location.duration_seconds,
+      distance_text: location.distance_text
+    };
+
+    // Show selected card
+    document.getElementById('destSearchWrap').style.display = 'none';
+    const card = document.getElementById('destSelectedCard');
+    card.style.display = 'block';
+    card.innerHTML = `
+      <div class="selected-card">
+        <div class="sc-dot dropoff"></div>
+        <div class="sc-info">
+          <div class="sc-name">${location.name}</div>
+          <div class="sc-addr">${location.address}</div>
+        </div>
+        <button class="sc-clear" onclick="clearDestSelection()">&times;</button>
+      </div>
+    `;
+
+    updateContinueVisibility();
+    previewRouteOnMap(location);
+  }
+
+  function previewRouteOnMap(dest){
+    // Remove any existing preview route
+    if(window.previewRouteLine){ map.removeLayer(window.previewRouteLine); window.previewRouteLine = null; }
+
+    const origin = userLocation || PEPPERDINE_LOCATION;
+    const sheetH = document.getElementById('bottomSheet').offsetHeight || 300;
+
+    // Fetch route from OSRM and draw it
+    fetch(`${OSRM_DRIVING}/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=polyline`)
+      .then(r => r.json())
+      .then(data => {
+        if(data.routes && data.routes.length > 0){
+          const coords = decodePolyline(data.routes[0].geometry);
+          window.previewRouteLine = L.polyline(coords, {
+            color:'#6366f1', weight:4, opacity:0.8
+          }).addTo(map);
+          const bounds = window.previewRouteLine.getBounds();
+          map.fitBounds(bounds, { paddingBottomRight:[20, sheetH + 40], paddingTopLeft:[20, 60] });
+        }
+      })
+      .catch(err => console.log('Preview route error:', err));
+  }
+
+  function clearDestSelection(){
+    dropoffLocation = null;
+    currentRouteSummary = null;
+    document.getElementById('destSelectedCard').style.display = 'none';
+    document.getElementById('destSearchWrap').style.display = 'block';
+    document.getElementById('destSearchInput').value = '';
+    document.getElementById('destSearchResults').innerHTML = '';
+    document.getElementById('destSearchClear').classList.remove('visible');
+    if(window.routeLine){ map.removeLayer(window.routeLine); window.routeLine = null; }
+    if(window.previewRouteLine){ map.removeLayer(window.previewRouteLine); window.previewRouteLine = null; }
+    updateContinueVisibility();
+  }
+
+  function clearDestSearch(){
+    document.getElementById('destSearchInput').value = '';
+    document.getElementById('destSearchResults').innerHTML = '';
+    document.getElementById('destSearchClear').classList.remove('visible');
+    document.getElementById('destSearchInput').focus();
+  }
+
+  function resetDestSearch(){
+    document.getElementById('destSearchWrap').style.display = 'block';
+    document.getElementById('destSelectedCard').style.display = 'none';
+    document.getElementById('destSearchInput').value = '';
+    document.getElementById('destSearchResults').innerHTML = '';
+    document.getElementById('destSearchClear').classList.remove('visible');
+  }
+
+  async function useManualDestAddress(){
+    const input = document.getElementById('manualDestAddr');
+    if(!input) return;
+    const address = input.value.trim();
+    if(!address){
+      showInlineMessage('Please enter an address', 'info');
+      return;
+    }
+
+    try {
+      const fingerprint = generateBrowserFingerprint();
+      const res = await fetch(`${API_URL}/api/geocode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: address,
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+      const data = await res.json();
+
+      if(data.lat && data.lng){
+        selectDestinationResult({
+          name: data.place_name || data.formatted_address || address,
+          address: data.formatted_address || address,
+          lat: data.lat,
+          lng: data.lng,
+          distance_text: '',
+          duration_text: '',
+          duration_seconds: 0
+        });
+      } else {
+        showInlineMessage('Could not find that address. Please try again.');
+      }
+    } catch(err){
+      console.error('Geocoding error:', err);
+      showInlineMessage('Error finding address. Please try again.');
+    }
+  }
+
+  /* ===========================
+     Pickup Search (To Campus)
+  =========================== */
+  const pickupInput = document.getElementById('pickupSearchInput');
+
+  if(pickupInput){
+    pickupInput.addEventListener('input', function(){
+      const q = this.value.trim();
+      document.getElementById('pickupSearchClear').classList.toggle('visible', q.length > 0);
+    });
+
+    pickupInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        triggerPickupSearch();
+      }
+    });
+  }
+
+  function triggerPickupSearch(){
+    const q = document.getElementById('pickupSearchInput').value.trim();
+    if(!q){
+      showInlineMessage('Please enter a pickup location to search', 'info');
+      return;
+    }
+    searchPickupLocation(q);
+  }
+
+  async function searchPickupLocation(query){
+    if(!query) return;
+    const resultsDiv = document.getElementById('pickupSearchResults');
+    resultsDiv.innerHTML = '<div style="padding:12px;color:#666;text-align:center;font-size:13px">Searching...</div>';
+
+    const searchLat = userLocationKnown ? userLocation.lat : PEPPERDINE_LOCATION.lat;
+    const searchLng = userLocationKnown ? userLocation.lng : PEPPERDINE_LOCATION.lng;
+    const fingerprint = generateBrowserFingerprint();
+
+    try {
+      const res = await fetch(`${API_URL}/api/restaurants/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: query,
+          lat: searchLat,
+          lng: searchLng,
+          service_type: 'rideshare',
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+      const results = await res.json();
+
+      if(!results || !Array.isArray(results) || results.length === 0){
+        const errorMsg = results?.error || 'No results found';
+        resultsDiv.innerHTML = `
+          <div style="padding:12px;text-align:center;">
+            <div style="color:#666;font-size:13px">${errorMsg}</div>
+          </div>
+        `;
+        return;
+      }
+
+      resultsDiv.innerHTML = results.map((r, idx) => {
+        const attribution = r.attribution || r.html_attributions?.[0] || '';
+        const attrHtml = attribution ? `<div style="font-size:10px;color:#555;margin-top:3px" translate="no">${attribution}</div>` : '';
+        const distHtml = r.distance_text ? `<div class="sr-distance"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${r.distance_text}</div>` : '';
+        return `
+          <div class="search-result" data-idx="${idx}">
+            <div class="sr-name">${r.name}</div>
+            <div class="sr-addr">${r.address}</div>
+            ${distHtml}
+            ${attrHtml}
+          </div>
+        `;
+      }).join('') + '<div class="google-attr" translate="no">Places from OpenStreetMap</div>';
+
+      resultsDiv.querySelectorAll('.search-result').forEach((item, idx) => {
+        item.onclick = () => selectPickupResult(results[idx]);
+      });
+    } catch(err) {
+      console.error('Search error:', err);
+      resultsDiv.innerHTML = '<div style="padding:12px;color:#666;text-align:center;font-size:13px">Error searching. Try again.</div>';
+    }
+  }
+
+  function selectPickupResult(location){
+    pickupLocation = {
+      name: location.name,
+      address: location.address,
+      lat: location.lat,
+      lng: location.lng,
+      duration_text: location.duration_text,
+      duration_seconds: location.duration_seconds,
+      distance_text: location.distance_text,
+      return_duration_text: location.return_duration_text,
+      return_duration_seconds: location.return_duration_seconds
+    };
+
+    const searchWrap = document.getElementById('pickupSearchWrap');
+    if(searchWrap) searchWrap.style.display = 'none';
+    const card = document.getElementById('pickupSelectedCard');
+    card.style.display = 'block';
+    card.innerHTML = `
+      <div class="selected-card">
+        <div class="sc-dot pickup"></div>
+        <div class="sc-info">
+          <div class="sc-name">${location.name}</div>
+          <div class="sc-addr">${location.address}</div>
+        </div>
+        <button class="sc-clear" onclick="clearPickupSelection()">&times;</button>
+      </div>
+    `;
+
+    showRoutePreview();
+    updateContinueVisibility();
+
+    // Pre-calculate route if both locations are set
+    if(pickupLocation && dropoffLocation){
+      updateRoute();
+    }
+  }
+
+  function clearPickupSelection(){
+    pickupLocation = null;
+    currentRouteSummary = null;
+    document.getElementById('pickupSelectedCard').style.display = 'none';
+    const searchWrap = document.getElementById('pickupSearchWrap');
+    if(searchWrap) searchWrap.style.display = 'block';
+    const searchInput = document.getElementById('pickupSearchInput');
+    if(searchInput) searchInput.value = '';
+    const searchResults = document.getElementById('pickupSearchResults');
+    if(searchResults) searchResults.innerHTML = '';
+    const searchClear = document.getElementById('pickupSearchClear');
+    if(searchClear) searchClear.classList.remove('visible');
+    if(window.routeLine){ map.removeLayer(window.routeLine); window.routeLine = null; }
+    updateContinueVisibility();
+  }
+
+  function clearPickupSearch(){
+    document.getElementById('pickupSearchInput').value = '';
+    document.getElementById('pickupSearchResults').innerHTML = '';
+    document.getElementById('pickupSearchClear').classList.remove('visible');
+    document.getElementById('pickupSearchInput').focus();
+  }
+
+  function resetPickupSearch(){
+    const searchWrap = document.getElementById('pickupSearchWrap');
+    if(searchWrap) searchWrap.style.display = 'block';
+    const selectedCard = document.getElementById('pickupSelectedCard');
+    if(selectedCard) selectedCard.style.display = 'none';
+    const searchInput = document.getElementById('pickupSearchInput');
+    if(searchInput) searchInput.value = '';
+    const searchResults = document.getElementById('pickupSearchResults');
+    if(searchResults) searchResults.innerHTML = '';
+    const searchClear = document.getElementById('pickupSearchClear');
+    if(searchClear) searchClear.classList.remove('visible');
+  }
+
+  async function useCurrentLocation(){
+    if(!userLocationKnown){
+      showInlineMessage('Location not available. Please enable location services and refresh the page.');
+      return;
+    }
+
+    try {
+      const fingerprint = generateBrowserFingerprint();
+      const res = await fetch(`${API_URL}/api/reverse-geocode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lat: userLocation.lat,
+          lng: userLocation.lng,
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+      const data = await res.json();
+
+      if(data.address){
+        selectPickupResult({
+          name: 'Current Location',
+          address: data.address,
+          lat: userLocation.lat,
+          lng: userLocation.lng
+        });
+      } else {
+        showInlineMessage('Could not determine your address. Please search manually.');
+      }
+    } catch(err){
+      console.error('Reverse geocoding error:', err);
+      showInlineMessage('Error getting your address. Please try searching manually.');
+    }
+  }
+
+  async function useManualPickupAddress(){
+    const input = document.getElementById('manualPickupAddr');
+    if(!input) return;
+    const address = input.value.trim();
+    if(!address){
+      showInlineMessage('Please enter an address', 'info');
+      return;
+    }
+
+    try {
+      const fingerprint = generateBrowserFingerprint();
+      const res = await fetch(`${API_URL}/api/geocode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: address,
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+      const data = await res.json();
+
+      if(data.lat && data.lng){
+        const distance = getDistanceFromLatLonInMiles(PEPPERDINE_LOCATION.lat, PEPPERDINE_LOCATION.lng, data.lat, data.lng);
+        const durationSeconds = Math.round((distance / 30) * 3600);
+        const durationMinutes = Math.round(durationSeconds / 60);
+        const durationText = durationMinutes < 60 ? `${durationMinutes} min` : `${Math.floor(durationMinutes / 60)} hr ${durationMinutes % 60} min`;
+
+        selectPickupResult({
+          name: data.place_name || data.formatted_address || address,
+          address: data.formatted_address || address,
+          lat: data.lat,
+          lng: data.lng,
+          duration_text: durationText,
+          distance_text: `${distance.toFixed(1)} mi`,
+          duration_seconds: durationSeconds,
+          return_duration_text: durationText,
+          return_duration_seconds: durationSeconds
+        });
+      } else {
+        showInlineMessage('Could not find that address. Please try again.');
+      }
+    } catch(err){
+      console.error('Geocoding error:', err);
+      showInlineMessage('Error geocoding address. Please try again.');
+    }
+  }
+
+  /* ===========================
+     Route Preview (minimize sheet to show map)
+  =========================== */
+  function showRoutePreview(){
+    const sheet = document.getElementById('bottomSheet');
+    sheet.classList.add('route-preview');
+    // After 2 seconds, restore the sheet
+    setTimeout(() => {
+      sheet.classList.remove('route-preview');
+    }, 2000);
+  }
+
+  // Also allow tapping the sheet to restore it early
+  document.getElementById('bottomSheet').addEventListener('click', function(){
+    if(this.classList.contains('route-preview')){
+      this.classList.remove('route-preview');
+    }
+  });
+
+  /* ===========================
+     Route Calculation
+  =========================== */
+  async function updateRoute(){
+    if(!pickupLocation || !dropoffLocation) return;
+
+    try {
+      const fingerprint = generateBrowserFingerprint();
+      const requestBody = {
+        origin_lat: pickupLocation.lat,
+        origin_lng: pickupLocation.lng,
+        dest_lat: dropoffLocation.lat,
+        dest_lng: dropoffLocation.lng,
+        use_traffic: true,
+        browser_fingerprint: fingerprint
+      };
+
+      if (window.turnstileToken) {
+        requestBody.cf_turnstile_response = window.turnstileToken;
+      }
+
+      const res = await fetch(`${API_URL}/api/directions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      const route = await res.json();
+      if(route.error){
+        console.error('Route error:', route.error);
+        return;
+      }
+
+      currentRouteSummary = {
+        meters: route.distance_meters,
+        seconds: route.duration_in_traffic_seconds
+      };
+
+      renderCostCard(currentRouteSummary);
+
+      // Draw route on map
+      if(window.routeLine){
+        map.removeLayer(window.routeLine);
+      }
+
+      const coordinates = decodePolyline(route.polyline);
+      window.routeLine = L.polyline(coordinates, {
+        color: '#6366f1',
+        weight: 4,
+        opacity: 0.9
+      }).addTo(map);
+
+      map.fitBounds(window.routeLine.getBounds(), { padding: [80, 80] });
+
+    } catch(err){
+      console.error('Route calculation error:', err);
+    }
+  }
+
+  function decodePolyline(encoded){
+    const points = [];
+    let index = 0, len = encoded.length;
+    let lat = 0, lng = 0;
+
+    while(index < len){
+      let b, shift = 0, result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while(b >= 0x20);
+      lat += ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while(b >= 0x20);
+      lng += ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+      points.push([lat / 1e5, lng / 1e5]);
+    }
+    return points;
+  }
+
+  function renderCostCard(summary){
+    if(!summary) return;
+
+    const miles = metersToMilesNumber(summary.meters);
+    const minutes = Math.round(summary.seconds / 60);
+    const eta = formatDuration(summary.seconds);
+    const mileageCost = +(miles * PER_MILE).toFixed(2);
+    const timeCost = +(minutes * PER_MINUTE).toFixed(2);
+    const baseFareTotal = +(BASE_FARE + mileageCost + timeCost).toFixed(2);
+
+    currentTripData = {
+      distance_miles: miles,
+      duration_minutes: minutes,
+      base_fare_total: baseFareTotal
+    };
+
+    // Step 3 fare display
+    document.getElementById('routeDistance').textContent = `${miles.toFixed(1)} mi`;
+    document.getElementById('routeETA').textContent = eta;
+    document.getElementById('fareMileLabel').textContent = `Mileage (${miles.toFixed(1)} mi × $${PER_MILE.toFixed(2)})`;
+    document.getElementById('fareMileVal').textContent = `$${mileageCost.toFixed(2)}`;
+    document.getElementById('fareTimeLabel').textContent = `Time (${minutes} min × $${PER_MINUTE.toFixed(2)})`;
+    document.getElementById('fareTimeVal').textContent = `$${timeCost.toFixed(2)}`;
+    document.getElementById('fareTotal').textContent = `$${baseFareTotal.toFixed(2)}`;
+
+    updateFinalTotal();
+  }
+
+  function updateFinalTotal(){
+    const base = currentTripData.base_fare_total || BASE_FARE;
+    const total = +(base + tipAmount).toFixed(2);
+    document.getElementById('finalTotal').textContent = `$${total.toFixed(2)}`;
+  }
+
+  /* ===========================
+     Tip Functions
+  =========================== */
+  function setTip(amount){
+    document.querySelectorAll('.tip-chip').forEach(c => c.classList.remove('active'));
+    const chips = document.querySelectorAll('.tip-chip');
+
+    if(amount === -1){
+      // Custom
+      chips[3].classList.add('active');
+      document.getElementById('customTipWrap').classList.add('open');
+      document.getElementById('customTipInput').value = '';
+      document.getElementById('customTipInput').focus();
+      tipSelected = false;
+    } else {
+      // Find and activate the right chip
+      if(amount === 1) chips[0].classList.add('active');
+      else if(amount === 3) chips[1].classList.add('active');
+      else if(amount === 5) chips[2].classList.add('active');
+
+      document.getElementById('customTipWrap').classList.remove('open');
+      tipAmount = amount;
+      tipSelected = true;
+      updateFinalTotal();
+    }
+  }
+
+  function confirmCustomTip(){
+    const val = parseFloat(document.getElementById('customTipInput').value);
+    if(isNaN(val) || val < 0){
+      showInlineMessage('Please enter a valid tip amount', 'info');
+      return;
+    }
+    tipAmount = val;
+    tipSelected = true;
+    updateFinalTotal();
+    showInlineMessage('Custom tip confirmed!', 'success', 2000);
+  }
+
+  /* ===========================
+     Notes Toggle
+  =========================== */
+  function toggleNotes(){
+    const area = document.getElementById('rideNotes');
+    area.classList.toggle('open');
+    if(area.classList.contains('open')){
+      area.focus();
+      document.getElementById('notesToggle').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg> Hide notes';
+    } else {
+      document.getElementById('notesToggle').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg> Add notes for driver';
+    }
+  }
+
+  /* ===========================
+     Schedule Functions
+  =========================== */
+  function openSchedulePicker(){
+    const picker = document.getElementById('schedulePicker');
+    if(picker.classList.contains('active')){
+      picker.classList.remove('active');
+      document.getElementById('scheduleLaterLink').textContent = 'Schedule for later';
+    } else {
+      picker.classList.add('active');
+      document.getElementById('scheduleLaterLink').textContent = 'Cancel scheduling';
+      populateTimePickers();
+    }
+  }
+
+  function populateTimePickers(){
+    const now = new Date();
+    const monthSelect = document.getElementById('scheduleMonth');
+    const daySelect = document.getElementById('scheduleDay');
+    const timeSelect = document.getElementById('scheduleTime');
+
+    monthSelect.innerHTML = '';
+    daySelect.innerHTML = '';
+    timeSelect.innerHTML = '';
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    for(let i = 0; i < 2; i++){
+      const monthIndex = (currentMonth + i) % 12;
+      const year = currentMonth + i >= 12 ? currentYear + 1 : currentYear;
+      const option = document.createElement('option');
+      option.value = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+      option.textContent = `${months[monthIndex]} ${year}`;
+      monthSelect.appendChild(option);
+    }
+
+    updateDays();
+    monthSelect.addEventListener('change', updateDays);
+
+    const startTime = new Date(now.getTime() + 60 * 60 * 1000);
+    startTime.setMinutes(Math.ceil(startTime.getMinutes() / 15) * 15);
+
+    for(let i = 0; i < 96; i++){
+      const time = new Date(startTime.getTime() + i * 15 * 60 * 1000);
+      const hours = time.getHours();
+      const minutes = String(time.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+
+      const option = document.createElement('option');
+      option.value = `${String(hours).padStart(2, '0')}:${minutes}`;
+      option.textContent = `${displayHours}:${minutes} ${ampm}`;
+      timeSelect.appendChild(option);
+    }
+  }
+
+  function updateDays(){
+    const monthSelect = document.getElementById('scheduleMonth');
+    const daySelect = document.getElementById('scheduleDay');
+    const now = new Date();
+
+    daySelect.innerHTML = '';
+    if(!monthSelect.value) return;
+
+    const [year, month] = monthSelect.value.split('-').map(Number);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const today = now.getDate();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const startDay = (year === currentYear && month === currentMonth) ? today : 1;
+
+    for(let day = startDay; day <= daysInMonth; day++){
+      const option = document.createElement('option');
+      option.value = String(day).padStart(2, '0');
+      option.textContent = day;
+      daySelect.appendChild(option);
+    }
+  }
+
+  function setQuickTime(minutes){
+    const now = new Date();
+    const futureTime = new Date(now.getTime() + minutes * 60 * 1000);
+
+    const year = futureTime.getFullYear();
+    const month = String(futureTime.getMonth() + 1).padStart(2, '0');
+    const day = String(futureTime.getDate()).padStart(2, '0');
+    const hours = String(futureTime.getHours()).padStart(2, '0');
+
+    document.getElementById('scheduleMonth').value = `${year}-${month}`;
+    updateDays();
+
+    setTimeout(() => {
+      document.getElementById('scheduleDay').value = day;
+      const rounded = Math.ceil(futureTime.getMinutes() / 15) * 15;
+      const roundedMins = String(rounded === 60 ? 0 : rounded).padStart(2, '0');
+      const roundedHours = rounded === 60 ? String((futureTime.getHours() + 1) % 24).padStart(2, '0') : hours;
+      document.getElementById('scheduleTime').value = `${roundedHours}:${roundedMins}`;
+    }, 50);
+  }
+
+  function confirmScheduledTime(){
+    const month = document.getElementById('scheduleMonth').value;
+    const day = document.getElementById('scheduleDay').value;
+    const time = document.getElementById('scheduleTime').value;
+
+    if(!month || !day || !time){
+      showInlineMessage('Please select a date and time', 'info');
+      return;
+    }
+
+    const [year, monthNum] = month.split('-');
+    scheduledTime = `${year}-${monthNum}-${day}T${time}:00`;
+    scheduleType = 'later';
+
+    const date = new Date(scheduledTime);
+    const formatted = date.toLocaleString('en-US', {
+      weekday:'short', month:'short', day:'numeric',
+      hour:'numeric', minute:'2-digit', hour12:true
+    });
+
+    // Hide picker, show badge
+    document.getElementById('schedulePicker').classList.remove('active');
+    document.getElementById('scheduleLaterLink').style.display = 'none';
+    const badge = document.getElementById('schedBadge');
+    badge.style.display = 'inline-flex';
+    document.getElementById('schedBadgeText').textContent = 'Scheduled: ' + formatted;
+  }
+
+  function changeSchedule(){
+    scheduledTime = null;
+    scheduleType = 'now';
+    document.getElementById('schedBadge').style.display = 'none';
+    document.getElementById('scheduleLaterLink').style.display = 'block';
+    document.getElementById('scheduleLaterLink').textContent = 'Schedule for later';
+    document.getElementById('schedulePicker').classList.remove('active');
+  }
+
+  /* ===========================
+     Phone Number Formatting & Confirmation
+  =========================== */
+  const phoneInput = document.getElementById('phoneNumber');
+  const confirmPhoneInput = document.getElementById('confirmPhoneNumber');
+  const confirmPhoneGroup = document.getElementById('confirmPhoneGroup');
+
+  if(phoneInput){
+    phoneInput.addEventListener('input', (e) => {
+      e.target.value = formatPhoneNumber(e.target.value);
+    });
+  }
+
+  if(confirmPhoneInput){
+    confirmPhoneInput.addEventListener('input', (e) => {
+      e.target.value = formatPhoneNumber(e.target.value);
+      const phone = phoneInput.value.replace(/\D/g, '');
+      const confirmPhone = e.target.value.replace(/\D/g, '');
+      if(phone === confirmPhone || confirmPhone.length < 10){
+        confirmPhoneInput.setCustomValidity('');
+      }
+    });
+
+    confirmPhoneInput.addEventListener('blur', () => {
+      const phone = phoneInput.value.replace(/\D/g, '');
+      const confirmPhone = confirmPhoneInput.value.replace(/\D/g, '');
+      if(confirmPhone.length >= 10 && phone !== confirmPhone){
+        confirmPhoneInput.setCustomValidity('Phone numbers do not match');
+        confirmPhoneInput.reportValidity();
+      } else {
+        confirmPhoneInput.setCustomValidity('');
+      }
+    });
+  }
+
+  /* ===========================
+     Form Submit
+  =========================== */
+  async function submitRide(){
+    const customerName = document.getElementById('customerName').value.trim();
+    const phoneNumber = document.getElementById('phoneNumber').value.trim();
+    const rideNotes = document.getElementById('rideNotes').value.trim();
+
+    if(!customerName){
+      showInlineMessage('Please enter your name', 'info');
+      return;
+    }
+    if(!phoneNumber || phoneNumber.replace(/\D/g,'').length < 10){
+      showInlineMessage('Please enter a valid phone number', 'info');
+      return;
+    }
+
+    // Check phone confirmation
+    const confirmPhone = document.getElementById('confirmPhoneNumber').value.trim();
+    if(!confirmPhone || confirmPhone.replace(/\D/g,'').length < 10){
+      showInlineMessage('Please confirm your phone number', 'info');
+      return;
+    }
+    const p1 = phoneNumber.replace(/\D/g,'');
+    const p2 = confirmPhone.replace(/\D/g,'');
+    if(p1 !== p2){
+      showInlineMessage('Phone numbers do not match', 'info');
+      return;
+    }
+
+    if(!tipSelected){
+      showInlineMessage('Please select a tip amount to continue', 'info');
+      return;
+    }
+
+    if(!pickupLocation || !dropoffLocation){
+      showInlineMessage('Route information missing. Please go back and select locations.');
+      return;
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Requesting...';
+
+    const fingerprint = generateBrowserFingerprint();
+
+    const requestBody = {
+      customer_name: customerName,
+      phone_number: phoneNumber,
+      pickup_address: pickupLocation.address,
+      dropoff_address: dropoffLocation.address,
+      notes: rideNotes,
+      pickup_lat: pickupLocation.lat,
+      pickup_lng: pickupLocation.lng,
+      dropoff_lat: dropoffLocation.lat,
+      dropoff_lng: dropoffLocation.lng,
+      tip_amount: tipAmount,
+      scheduled_for: scheduledTime,
+      browser_fingerprint: fingerprint
+    };
+
+    try {
+      const res = await fetch(`${API_URL}/api/rideshare/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await res.json();
+
+      if(res.ok && data.order_id){
+        // Save to localStorage for returning users
+        localStorage.setItem('dormdash_name', customerName);
+        localStorage.setItem('dormdash_phone', phoneNumber);
+
+        // Confetti burst + success animation
+        launchConfetti();
+        showSuccessOverlay(data.order_token);
+      } else {
+        showInlineMessage(data.error || 'Failed to request ride. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'REQUEST RIDE';
+      }
+    } catch(err) {
+      console.error('Submit error:', err);
+      showInlineMessage('Connection error. Please check your internet and try again.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'REQUEST RIDE';
+    }
+  }
+
+  function goToTracking(){
+    window.location.href = '/tracking.html';
+  }
+
+  function launchConfetti(){
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    const colors = ['#ff3e3e','#ff9f43','#feca57','#48dbfb','#ff6b81','#6366f1','#10b981','#ff75a0','#a29bfe','#fd2d00','#00d2ff','#7c3aed'];
+
+    function burst(){
+      for(let i = 0; i < 80; i++){
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.6 + 's';
+        piece.style.animationDuration = (2.5 + Math.random() * 2.5) + 's';
+        piece.style.width = (5 + Math.random() * 10) + 'px';
+        piece.style.height = (5 + Math.random() * 10) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.transform = `rotate(${Math.random()*360}deg)`;
+        container.appendChild(piece);
+      }
+    }
+
+    // Multiple bursts for continuous confetti
+    burst();
+    setTimeout(burst, 400);
+    setTimeout(burst, 900);
+    setTimeout(burst, 1500);
+  }
+
+  function showSuccessOverlay(orderToken){
+    const overlay = document.createElement('div');
+    overlay.className = 'success-overlay';
+    overlay.innerHTML = `
+      <div class="success-checkmark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title">Ride Requested!</div>
+      <div class="success-subtitle">Redirecting to tracking...</div>
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => {
+      window.location.href = '/ride-tracking.html?token=' + encodeURIComponent(orderToken);
+    }, 2500);
+  }
+
+  /* ===========================
+     Location Address Modal
+  =========================== */
+  async function showUserAddress(){
+    if(!userLocationKnown){
+      showInlineMessage('Location not available. Please enable location services.');
+      return;
+    }
+
+    document.getElementById('locationModal').classList.add('active');
+    document.getElementById('userCoords').textContent = `${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)}`;
+
+    if(userAddress){
+      document.getElementById('userAddressDisplay').textContent = userAddress;
+      return;
+    }
+
+    document.getElementById('userAddressDisplay').textContent = 'Loading...';
+
+    try {
+      const fingerprint = generateBrowserFingerprint();
+      const res = await fetch(`${API_URL}/api/reverse-geocode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lat: userLocation.lat,
+          lng: userLocation.lng,
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+      const data = await res.json();
+
+      if(data.address){
+        userAddress = data.address;
+        document.getElementById('userAddressDisplay').textContent = userAddress;
+      } else {
+        document.getElementById('userAddressDisplay').textContent = 'Address not found';
+      }
+    } catch(err){
+      document.getElementById('userAddressDisplay').textContent = 'Error loading address';
+    }
+  }
+
+  function closeLocationModal(){
+    document.getElementById('locationModal').classList.remove('active');
+  }
+
+  /* ===========================
+     Init
+  =========================== */
+  window.addEventListener('DOMContentLoaded', () => {
+    initMap();
+
+    // Pre-fill from localStorage
+    const savedName = localStorage.getItem('dormdash_name');
+    const savedPhone = localStorage.getItem('dormdash_phone');
+    if(savedName) document.getElementById('customerName').value = savedName;
+    if(savedPhone){
+      document.getElementById('phoneNumber').value = savedPhone;
+    }
+  });
+
+  /* ===========================
+     Page Load Turnstile Gate
+  =========================== */
+  function onPageLoadTurnstileSuccess(token) {
+    console.log('Page load verification passed');
+
+    window.turnstileToken = token;
+    window.turnstileTokenExpiry = Date.now() + (5 * 60 * 1000);
+
+    fetch(`${API_URL}/api/security/validate-turnstile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        turnstile_token: token,
+        browser_fingerprint: generateBrowserFingerprint()
+      })
+    }).then(response => {
+      if (response.ok) console.log('Token pre-cached with backend');
+    }).catch(err => {
+      console.warn('Token pre-cache request failed:', err);
+    });
+
+    document.getElementById('main-content').style.display = 'block';
+
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+      }
+    }, 100);
+  }
+
+  // Demo mode: no Cloudflare Turnstile, continue as if verification passed
+  window.addEventListener('DOMContentLoaded', () => {
+    onPageLoadTurnstileSuccess('demo-token');
+    // after the (campus) location fix has picked a direction
+    setTimeout(applyEstimatorPrefill, 700);
+  });
+
+  /* ===========================
+     Demo: pre-fill from the home-page ride estimator
+     (/ride.html?dir=from|to&name=&addr=&lat=&lng=, or sessionStorage 'rideshareEstimate')
+  =========================== */
+  function applyEstimatorPrefill(){
+    let pre = null;
+    const qs = new URLSearchParams(location.search);
+    if (qs.get('lat') && qs.get('lng')) {
+      pre = { direction: qs.get('dir') === 'to' ? 'to' : 'from',
+              location: { name: qs.get('name') || 'Selected place', address: qs.get('addr') || '', lat: qs.get('lat'), lng: qs.get('lng') } };
+    } else {
+      try { pre = JSON.parse(sessionStorage.getItem('rideshareEstimate') || 'null'); sessionStorage.removeItem('rideshareEstimate'); } catch(e) {}
+    }
+    if (!pre || !pre.location) return;
+    const loc = {
+      name: pre.location.name || 'Selected place',
+      address: pre.location.address || pre.location.name || '',
+      lat: parseFloat(pre.location.lat),
+      lng: parseFloat(pre.location.lng)
+    };
+    if (isNaN(loc.lat) || isNaN(loc.lng)) return;
+    if (pre.direction === 'to') {
+      selectDirection('to_campus');
+      selectPickupResult(loc);
+    } else {
+      selectDirection('from_campus');
+      selectDestinationResult(loc);
+    }
+  }
+
+  </script>
+  </div><!-- end main-content -->
+</body>
+</html>

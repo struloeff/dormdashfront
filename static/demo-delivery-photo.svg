@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#12161f"/>
+  <g fill="none" stroke="#10b981" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M320 230h160l22 170H298z"/>
+    <path d="M352 230v-22a48 48 0 0 1 96 0v22"/>
+  </g>
+  <text x="400" y="470" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="34" font-weight="700" fill="#e4e4e7">Delivery photo</text>
+  <text x="400" y="515" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" fill="#8b8b94">Drivers uploaded a real photo here. This is the demo placeholder.</text>
+</svg>

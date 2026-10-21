@@ -1,311 +1,2015 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<meta name="theme-color" content="#0a0e1a" />
-<meta name="description" content="Build a DormDash food order: any restaurant, any dorm, the real fee schedule. A working demo of an archived student startup.">
-<title>DormDash — Order Demo</title>
-<link rel="icon" type="image/x-icon" href="/static/icon.ico">
-<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-<style>
-  :root{
-    --brand:#FD2D00;--bg:#0a0e1a;--surface:#131824;--surface-2:#1a2332;
-    --text:#fff;--text-2:#a0aec0;--muted:#6b7280;--border:rgba(255,255,255,.08);--ok:#10b981;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
-  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse 70% 40% at 50% -10%,rgba(253,45,0,.16),transparent),radial-gradient(ellipse 50% 50% at 90% 60%,rgba(139,92,246,.08),transparent)}
-  a{color:inherit}
-  .dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px}
-  .dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:2px}
-  header{display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;padding:18px 20px}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;text-decoration:none;letter-spacing:-.02em}
-  .logo i{width:38px;height:38px;background:url('/static/dormdash.png') center/contain no-repeat}
-  .back{color:var(--text-2);text-decoration:none;font-weight:600;font-size:14px}
-  .back:hover{color:#fff}
-  .wrap{max-width:1100px;margin:0 auto;padding:8px 20px 80px;display:grid;gap:24px}
-  @media(min-width:900px){.wrap{grid-template-columns:1fr 380px;align-items:start}.summary{position:sticky;top:20px}}
-  h1{font-size:clamp(30px,6vw,44px);font-weight:900;letter-spacing:-.04em;line-height:1.1}
-  .lede{color:var(--text-2);margin-top:8px;max-width:560px}
-  .card{background:linear-gradient(145deg,rgba(26,35,50,.8),rgba(19,24,36,.8));border:1px solid var(--border);border-radius:20px;padding:24px}
-  .step{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-  .step b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:rgba(253,45,0,.15);color:#ff7a5c;border:1px solid rgba(253,45,0,.35);flex:0 0 30px}
-  .step h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
-  .stack{display:grid;gap:24px}
-  label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:6px}
-  input,select,textarea{width:100%;padding:13px 14px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;font:inherit;font-size:16px}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(253,45,0,.15)}
-  select option{background:#131824}
-  .search{display:flex;gap:8px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:12px;border:none;font:700 15px Inter,system-ui,sans-serif;cursor:pointer;color:#fff;background:linear-gradient(135deg,#FD2D00,#ff4500);text-decoration:none;white-space:nowrap}
-  .btn:hover{box-shadow:0 6px 24px rgba(253,45,0,.45)}
-  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
-  .btn-ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
-  .btn-ghost:hover{box-shadow:none;background:rgba(255,255,255,.09)}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .chips button{padding:8px 14px;border-radius:100px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-2);font:600 13px Inter,system-ui,sans-serif;cursor:pointer}
-  .chips button:hover{color:#fff;border-color:rgba(253,45,0,.6)}
-  .results{margin-top:12px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
-  .results:empty{display:none}
-  .result{padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
-  .result:last-child{border-bottom:none}
-  .result:hover,.result:focus{background:rgba(255,255,255,.05);outline:none}
-  .result b{display:block;font-size:15px}
-  .result span{font-size:13px;color:var(--muted)}
-  .picked{display:none;padding:16px;border-radius:14px;background:rgba(253,45,0,.08);border:1px solid rgba(253,45,0,.3);justify-content:space-between;gap:12px;align-items:flex-start}
-  .picked.on{display:flex}
-  .picked b{display:block}
-  .picked span{font-size:13px;color:var(--text-2)}
-  .link-btn{background:none;border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:7px 12px;font:600 13px Inter,system-ui,sans-serif;cursor:pointer;flex-shrink:0}
-  .msg{display:none;margin-top:12px;padding:12px 14px;border-radius:10px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ff8a8a;font-size:14px}
-  .searching{display:none;margin-top:12px;color:var(--text-2);font-size:14px}
-  .item{display:grid;grid-template-columns:1fr 64px 92px 36px;gap:8px;margin-bottom:10px;align-items:center}
-  .item input{padding:11px 12px;font-size:15px}
-  .item input[type=number]{-moz-appearance:textfield}.item input::-webkit-inner-spin-button,.item input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-  .item .x{height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-size:18px;cursor:pointer}
-  .item .x:hover{color:#ff8a8a;border-color:rgba(239,68,68,.4)}
-  .item-head{display:grid;grid-template-columns:1fr 64px 92px 36px;gap:8px;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
-  @media(max-width:480px){.item,.item-head{grid-template-columns:1fr 52px 78px 34px;gap:6px}}
-  .hint{font-size:13px;color:var(--muted);margin-top:8px}
-  .two{display:grid;gap:12px}
-  @media(min-width:560px){.two{grid-template-columns:1fr 1fr}}
-  .tips{display:flex;gap:8px}
-  .tips button{flex:1;height:46px;border-radius:10px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font:600 14px Inter,system-ui,sans-serif;cursor:pointer}
-  .tips button.on{background:var(--brand);border-color:var(--brand)}
-  .summary h2{font-size:19px;font-weight:800;margin-bottom:14px}
-  .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;font-size:15px;color:var(--text-2)}
-  .row span:last-child{color:#fff;font-weight:600;white-space:nowrap}
-  .row.total{border-top:1px solid rgba(255,255,255,.12);margin-top:8px;padding-top:14px;font-size:20px;font-weight:800;color:#fff}
-  .row.total span:last-child{font-weight:900}
-  .summary .btn{width:100%;margin-top:18px;padding:16px}
-  .fine{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5}
-  .how{font-size:13px;color:var(--text-2);padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12);margin-top:14px}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Fast food and rideshare delivery for Pepperdine students">
+  <title>DormDash — Order Food (Demo)</title>
+  <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+
+  <!-- Leaflet + Routing -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+  <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+  <link rel="stylesheet" href="/static/demo.css">
+  <script src="/static/geo.js"></script>
+  <script src="/static/demo-api.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#000;color:#e4e4e7}
+    *::-webkit-scrollbar{width:0;display:none}
+    *{scrollbar-width:none}
+
+    /* ---- Confetti ---- */
+    .confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+    .confetti-piece{position:absolute;width:10px;height:10px;top:-20px;animation:confettiFall 3s ease-out forwards}
+    @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(110vh) rotate(720deg) scale(0.3);opacity:0}}
+    .success-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:fadeInOverlay 0.4s ease}
+    @keyframes fadeInOverlay{from{opacity:0}to{opacity:1}}
+    .success-checkmark{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);margin-bottom:24px}
+    .success-checkmark svg{width:40px;height:40px;color:#fff}
+    @keyframes popIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+    .success-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px;animation:slideUp 0.5s ease 0.2s both}
+    .success-subtitle{font-size:14px;color:#888;font-weight:500;animation:slideUp 0.5s ease 0.3s both}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ---- Map fullscreen background ---- */
+    #map-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+    #map{height:100%;width:100%;filter:brightness(.85) saturate(1.1)}
+    .leaflet-routing-container{display:none}
+    .leaflet-top.leaflet-right{top:calc(var(--dd-bar-h,0px) + 62px)}
+
+    /* ---- Top bar ---- */
+    .top-bar{position:fixed;top:var(--dd-bar-h,0px);left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,0) 100%);pointer-events:none}
+    .top-bar>*{pointer-events:auto}
+    .top-bar-left{display:flex;align-items:center;gap:10px;cursor:pointer}
+    .top-bar-logo{width:36px;height:36px;background:url('/static/dormdash.png') center/contain no-repeat}
+    .top-bar-title{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.02em}
+    .location-pill{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(253,45,0,.12);border:1px solid rgba(253,45,0,.3);border-radius:20px;font-size:11px;color:#FD2D00;font-weight:600}
+    .location-dot{width:7px;height:7px;background:#FD2D00;border-radius:50%;animation:pulse 2s infinite;box-shadow:0 0 8px rgba(253,45,0,.5)}
+
+    /* ---- Bottom sheet ---- */
+    .bottom-sheet{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#111;border-radius:24px 24px 0 0;max-height:78vh;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,.6);transition:transform .35s cubic-bezier(.4,0,.2,1);max-width:480px;margin:0 auto;width:100%}
+    .sheet-handle{display:flex;justify-content:center;padding:10px 0 4px;cursor:grab;flex-shrink:0}
+    .sheet-handle-bar{width:40px;height:4px;background:rgba(255,255,255,.12);border-radius:4px}
+    .sheet-content{flex:1;overflow-y:auto;padding:0 20px calc(20px + env(safe-area-inset-bottom, 0px));-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column}
+    .sheet-content::-webkit-scrollbar{width:6px}
+    .sheet-content::-webkit-scrollbar-track{background:transparent}
+    .sheet-content::-webkit-scrollbar-thumb{background:rgba(253,45,0,.4);border-radius:6px}
+
+    /* ---- Step indicator ---- */
+    .step-indicator{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 0 16px;flex-shrink:0}
+    .step-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+    .step-dot.active{background:#FD2D00;width:24px;border-radius:4px}
+    .step-dot.completed{background:#FD2D00}
+
+    /* ---- Step containers ---- */
+    .step{display:none;animation:fadeStep .3s ease}
+    .step.active{display:flex;flex-direction:column;min-height:100%}
+    @keyframes fadeStep{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ---- Step header ---- */
+    .step-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:16px;letter-spacing:-.02em}
+
+    /* ---- Search ---- */
+    .search-row{display:flex;gap:8px;margin-bottom:16px}
+    .search-input{flex:1;height:52px;padding:0 16px;background:#0a0a0a;border:1px solid rgba(255,255,255,.15);border-radius:12px;font-size:15px;color:#f4f4f5;font-family:inherit;font-weight:500;min-width:0}
+    .search-input:focus{outline:none;border-color:#FD2D00;box-shadow:0 0 0 3px rgba(253,45,0,.15)}
+    .search-input::placeholder{color:#555}
+    .search-go{height:52px;padding:0 20px;background:#FD2D00;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;transition:transform .15s}
+    .search-go:hover{transform:scale(1.04)}
+    .search-go:active{transform:scale(.97)}
+
+    /* ---- Result cards ---- */
+    .results-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    .result-card{padding:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;cursor:pointer;transition:all .2s}
+    .result-card:hover{background:rgba(253,45,0,.08);border-color:rgba(253,45,0,.25);transform:translateX(3px)}
+    .result-card:active{transform:scale(.98)}
+    .result-name{font-weight:700;color:#f4f4f5;font-size:15px;margin-bottom:2px}
+    .result-address{font-size:12px;color:#9ca3af;font-weight:500}
+    .result-meta{font-size:12px;color:#a1a1aa;margin-top:6px;line-height:1.5}
+    .google-attribution{font-family:Roboto,sans-serif;font-style:normal;font-weight:400;font-size:14px;letter-spacing:normal;white-space:nowrap;color:#ffffff;text-align:center;padding:8px 0 4px;background:rgba(255,255,255,.03);margin:8px 0;border-radius:6px}
+
+    /* ---- Manual entry btn ---- */
+    .manual-btn{width:100%;padding:14px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.25);border-radius:12px;color:#fff;font-weight:600;font-size:14px;cursor:pointer;transition:.2s;text-align:center;margin-top:4px}
+    .manual-btn:hover{background:rgba(253,45,0,.08);border-color:rgba(253,45,0,.4)}
+
+    /* ---- Restaurant selected card ---- */
+    .restaurant-card{background:#0a0a0a;border:1px solid rgba(255,255,255,.12);padding:16px;border-radius:14px;margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .restaurant-card-info{flex:1;min-width:0}
+    .restaurant-card-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:2px}
+    .restaurant-card-addr{font-size:12px;color:#9ca3af;margin-bottom:4px}
+    .restaurant-card-stats{font-size:12px;color:#a1a1aa}
+    .change-btn{padding:8px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;flex-shrink:0}
+    .change-btn:hover{background:rgba(253,45,0,.1);border-color:rgba(253,45,0,.3);color:#FD2D00}
+
+    /* ---- Menu items ---- */
+    .menu-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .menu-header h3{font-size:15px;font-weight:700;color:#fff}
+    .price-toggle{font-size:12px;color:#FD2D00;cursor:pointer;font-weight:600;background:none;border:none;padding:4px 0}
+    .menu-item-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+    .mi-name{flex:1;min-width:0}
+    .mi-qty{width:56px;flex-shrink:0;text-align:center}
+    .mi-price{width:72px;flex-shrink:0}
+    .mi-input{width:100%;height:44px;padding:0 12px;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:10px;font-size:14px;color:#f4f4f5;font-family:inherit;font-weight:500}
+    .mi-input:focus{outline:none;border-color:#FD2D00;box-shadow:0 0 0 3px rgba(253,45,0,.1)}
+    .mi-input::placeholder{color:#555;font-size:12px}
+    .mi-remove{width:36px;height:44px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#ef4444;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;padding:0}
+    .mi-remove:hover:not(:disabled){background:rgba(239,68,68,.1);border-color:#ef4444}
+    .mi-remove:disabled{opacity:.25;cursor:not-allowed}
+    .add-item-btn{width:100%;padding:12px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.25);border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;margin-top:4px}
+    .add-item-btn:hover{background:rgba(253,45,0,.08);border-color:rgba(253,45,0,.4)}
+    .menu-summary{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12);font-size:13px;color:#e4e4e7;line-height:1.7}
+    .menu-summary div{font-weight:500}
+    .price-note{font-size:11px;color:#71717a;margin-top:8px;line-height:1.5}
+
+    /* ---- Delivery chips (location type toggle) ---- */
+    .chip-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:nowrap}
+    .chip{height:44px;padding:0 18px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.12);border-radius:22px;color:#ccc;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;justify-content:center}
+    .chip:hover{border-color:rgba(253,45,0,.3)}
+    .chip.active{background:#FD2D00;border-color:#FD2D00;color:#fff}
+
+    /* ---- Styled select dropdowns ---- */
+    .select-wrap{position:relative;margin-bottom:14px}
+    .select-label{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px}
+    .styled-select{
+      width:100%;height:52px;padding:0 44px 0 16px;
+      background:#0a0a0a;border:1.5px solid rgba(255,255,255,.12);border-radius:14px;
+      color:#f4f4f5;font-size:15px;font-weight:600;font-family:inherit;
+      appearance:none;-webkit-appearance:none;cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FD2D00' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 16px center;
+      transition:border-color .2s,box-shadow .2s,background-color .2s;
+    }
+    .styled-select:focus{outline:none;border-color:#FD2D00;box-shadow:0 0 0 3px rgba(253,45,0,.12)}
+    .styled-select option{background:#111;color:#f4f4f5;padding:10px}
+    .styled-select.has-value{border-color:rgba(253,45,0,.35);background-color:rgba(253,45,0,.04)}
+    .add-loc-link{font-size:12px;color:#FD2D00;cursor:pointer;font-weight:600;background:none;border:none;padding:0 0 12px;display:inline-block}
+
+    /* ---- Form inputs ---- */
+    .form-row{margin-bottom:16px}
+    .form-label{display:block;margin-bottom:6px;font-weight:600;color:#fff;font-size:13px}
+    .form-input{width:100%;height:48px;padding:0 16px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:14px;font-family:inherit;color:#f4f4f5;font-weight:500;transition:.2s}
+    .form-input:focus{outline:none;border-color:#FD2D00;box-shadow:0 0 0 3px rgba(253,45,0,.12)}
+    .form-input::placeholder{color:#555}
+    .form-textarea{width:100%;padding:12px 16px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:14px;font-family:inherit;color:#f4f4f5;font-weight:500;resize:vertical;min-height:80px;transition:.2s}
+    .form-textarea:focus{outline:none;border-color:#FD2D00;box-shadow:0 0 0 3px rgba(253,45,0,.12)}
+    .notes-toggle{font-size:13px;color:#a1a1aa;cursor:pointer;font-weight:600;background:none;border:none;padding:4px 0;margin-bottom:8px}
+    .notes-toggle:hover{color:#FD2D00}
+
+    /* ---- Cost breakdown ---- */
+    .cost-card{background:#0a0a0a;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;margin-bottom:18px}
+    .cost-title{font-weight:700;color:#FD2D00;font-size:15px;margin-bottom:6px}
+    .cost-eta{font-size:12px;color:#71717a;margin-bottom:14px;line-height:1.5}
+    .cost-line{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:13px;color:#d4d4d8}
+    .cost-line .label{flex:1;overflow:hidden}
+    .cost-line .label::after{content:'';display:inline-block;width:100%;border-bottom:1px dotted rgba(255,255,255,.1);vertical-align:middle;margin:0 6px}
+    .cost-line .amount{font-weight:600;white-space:nowrap;flex-shrink:0}
+    .cost-divider{border:none;border-top:1px solid rgba(255,255,255,.1);margin:10px 0}
+    .cost-total{display:flex;justify-content:space-between;padding:8px 0 0;font-size:17px;font-weight:700;color:#10b981}
+    .cost-note{font-size:11px;color:#71717a;margin-top:8px;font-weight:600}
+
+    /* ---- Tip row ---- */
+    .tip-row{display:flex;gap:8px;margin-bottom:14px}
+    .tip-btn{flex:1;height:48px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.08);border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+    .tip-btn:hover{border-color:#FD2D00}
+    .tip-btn.active{background:#FD2D00;border-color:#FD2D00}
+    .custom-tip-row{display:none;gap:8px;margin-bottom:14px}
+    .custom-tip-row.show{display:flex}
+    .custom-tip-confirm{height:48px;padding:0 18px;background:#FD2D00;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+
+    /* ---- CTA buttons ---- */
+    .cta-btn{width:100%;height:56px;background:linear-gradient(135deg,#FD2D00,#e52600);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;box-shadow:0 4px 20px rgba(253,45,0,.3);transition:all .2s;flex-shrink:0}
+    .cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(253,45,0,.45)}
+    .cta-btn:active{transform:scale(.98)}
+    .cta-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+    .secondary-btn{width:100%;height:52px;background:rgba(255,255,255,.04);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+    .secondary-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);transform:translateY(-1px)}
+    .back-btn{background:none;border:none;color:#a1a1aa;font-size:13px;font-weight:600;cursor:pointer;padding:8px 0;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+    .back-btn:hover{color:#fff}
+
+    /* ---- Sticky CTA footer ---- */
+    .step-footer{margin-top:auto;padding:16px 20px calc(20px + env(safe-area-inset-bottom, 34px));background:#111;z-index:10;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+
+
+    /* ---- Modals ---- */
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:20px}
+    .modal.active{display:flex}
+    .modal-content{background:#131824;border:1px solid rgba(255,255,255,.1);padding:28px 24px;border-radius:16px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+    .modal-header{font-size:20px;font-weight:800;margin-bottom:20px;color:#fff}
+    .modal-close{float:right;font-size:28px;font-weight:700;color:#a1a1aa;cursor:pointer;line-height:1;transition:.2s}
+    .modal-close:hover{color:#FD2D00}
+    .modal-input{width:100%;height:48px;padding:0 16px;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:14px;font-family:inherit;color:#f4f4f5;font-weight:500;transition:.2s;margin-bottom:16px}
+    .modal-input:focus{outline:none;border-color:#FD2D00;box-shadow:0 0 0 3px rgba(253,45,0,.12)}
+
+    /* ---- Spinner ---- */
+    .spinner{display:inline-block;width:48px;height:48px;position:relative}
+    .spinner::before,.spinner::after{content:'';position:absolute;border-radius:50%;width:100%;height:100%;top:0;left:0}
+    .spinner::before{border:3px solid #27272a}
+    .spinner::after{border:3px solid transparent;border-top-color:#FD2D00;animation:spin 1s linear infinite}
+
+    /* ---- Keyframes ---- */
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+    /* ---- Fullscreen mode (no map, steps 3+) ---- */
+    .bottom-sheet.fullscreen{top:var(--dd-bar-h,0px);max-height:calc(100vh - var(--dd-bar-h,0px));height:calc(100vh - var(--dd-bar-h,0px));border-radius:0;z-index:300}
+    .bottom-sheet.fullscreen .sheet-handle{display:none}
+    .bottom-sheet.fullscreen .sheet-content{padding-top:12px}
+    #map-bg.hidden{opacity:0;pointer-events:none}
+
+    /* ---- iOS safe area ---- */
+    .bottom-sheet{padding-bottom:env(safe-area-inset-bottom)}
+
+    /* ---- Desktop tweaks ---- */
+    @media(min-width:481px){
+      .bottom-sheet{right:0;left:auto;margin:0;border-radius:24px 24px 0 0}
+    }
+  </style>
 </head>
 <body>
-<div class="dd-archive-bar">DormDash wound down in spring 2026. This is a working demo — no order is placed and nothing you type leaves your browser except place searches. <a href="/#about">About the project</a></div>
+<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
 
-<header>
-  <a class="logo" href="/"><i></i><span>DormDash</span></a>
-  <a class="back" href="/">← Back home</a>
-</header>
+  <style>
+    @keyframes gridSlide {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(50px); }
+    }
+    @keyframes cardFloat {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
 
-<div class="wrap">
-  <div class="stack">
-    <div>
-      <h1>Order from anywhere.</h1>
-      <p class="lede">This is the real DormDash flow: pick any restaurant, list what you want, choose your dorm. Prices use the production fee schedule.</p>
+  <div id="main-content">
+
+  <!-- Map background -->
+  <div id="map-bg"><div id="map"></div></div>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="top-bar-left" onclick="window.location.href='/'">
+      <div class="top-bar-logo"></div>
+      <div class="top-bar-title">DormDash</div>
     </div>
-
-    <!-- 1. Restaurant -->
-    <section class="card" aria-labelledby="s1">
-      <div class="step"><b>1</b><h2 id="s1">Pick a restaurant</h2></div>
-      <div id="restSearch">
-        <form class="search" onsubmit="event.preventDefault(); findRestaurant();">
-          <input id="restInput" placeholder="Search any restaurant near Malibu…" autocomplete="off" aria-label="Restaurant search">
-          <button class="btn" type="submit">Search</button>
-        </form>
-        <div class="chips" id="restChips">
-          <button type="button" data-q="Chick-fil-A">🐔 Chick-fil-A</button>
-          <button type="button" data-q="In-N-Out Burger">🍔 In-N-Out</button>
-          <button type="button" data-q="Starbucks Malibu">☕ Starbucks</button>
-          <button type="button" data-q="Chipotle">🌯 Chipotle</button>
-          <button type="button" data-q="Taco Bell">🌮 Taco Bell</button>
-          <button type="button" data-q="Malibu Farm">🥗 Malibu Farm</button>
-        </div>
-        <div class="searching" id="restSearching">Searching OpenStreetMap…</div>
-        <div class="results" id="restResults"></div>
-      </div>
-      <div class="picked" id="restPicked">
-        <div><b id="restName"></b><span id="restAddr"></span></div>
-        <button class="link-btn" type="button" onclick="clearRestaurant()">Change</button>
-      </div>
-      <div class="msg" id="restMsg" role="alert"></div>
-    </section>
-
-    <!-- 2. Items -->
-    <section class="card" aria-labelledby="s2">
-      <div class="step"><b>2</b><h2 id="s2">What do you want?</h2></div>
-      <div class="item-head"><span>Item</span><span>Qty</span><span>Price</span><span></span></div>
-      <div id="items"></div>
-      <button class="btn btn-ghost" type="button" onclick="addItem()">+ Add another item</button>
-      <p class="hint">Rough prices are fine. On the live service the driver entered the exact prices from the receipt, and you paid that, not a padded menu price.</p>
-    </section>
-
-    <!-- 3. Delivery -->
-    <section class="card" aria-labelledby="s3">
-      <div class="step"><b>3</b><h2 id="s3">Where should it go?</h2></div>
-      <div class="two">
-        <div>
-          <label for="dorm">Dorm or building</label>
-          <select id="dorm"></select>
-        </div>
-        <div>
-          <label for="room">Room / meeting spot</label>
-          <input id="room" placeholder="e.g. Room 214, front door">
-        </div>
-      </div>
-      <div style="margin-top:12px">
-        <label for="notes">Notes for your driver</label>
-        <textarea id="notes" rows="2" placeholder="No pickles, extra sauce, text when outside…"></textarea>
-      </div>
-      <div style="margin-top:16px">
-        <label>Tip for your driver (100% goes to them)</label>
-        <div class="tips" id="tips">
-          <button type="button" data-t="0">None</button>
-          <button type="button" data-t="0.15">15%</button>
-          <button type="button" data-t="0.18" class="on">18%</button>
-          <button type="button" data-t="0.2">20%</button>
-        </div>
-      </div>
-    </section>
+    <div class="location-pill">
+      <div class="location-dot"></div>
+      <span id="locationText">Your Location</span>
+    </div>
   </div>
 
-  <!-- Summary -->
-  <aside class="card summary" aria-labelledby="sumTitle">
-    <h2 id="sumTitle">Your order</h2>
-    <div id="sumRows"></div>
-    <button class="btn" id="placeBtn" type="button" onclick="placeOrder()" disabled>Place demo order →</button>
-    <p class="fine" id="placeHint">Pick a restaurant and add at least one item.</p>
-    <div class="how">After you place it, you'll watch the order move through the real lifecycle: dispatched to a driver, receipt confirmed, paid, and delivered on a live map. Running at demo speed.</div>
-    <p class="fine">Sales tax is estimated at 9.75% (LA County). The live service looked up the exact rate for each restaurant's address from the CDTFA.</p>
-  </aside>
-</div>
+  <!-- Bottom Sheet -->
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"><div class="sheet-handle-bar"></div></div>
 
-<script src="/static/geo.js"></script>
-<script>
-const $ = id => document.getElementById(id);
-const F = DD.RATES.food;
-let restaurant = null, routeInfo = null, tipRate = 0.18, nextId = 0;
+    <!-- Step indicator -->
+    <div class="step-indicator">
+      <div class="step-dot active" data-step="1"></div>
+      <div class="step-dot" data-step="2"></div>
+      <div class="step-dot" data-step="3"></div>
+      <div class="step-dot" data-step="4"></div>
+      <div class="step-dot" data-step="5"></div>
+    </div>
 
-const DORMS = ['Seaside','Lovernich Apartments','Conner House','Phillips House','E. Pengilly House','Peppers House','Hayes House','White House','Fifield House','Pauley House','Banowsky House','DeBell House','Miller House','Darnell House','Eaton House','Knott House','J. Pengilly House','Crocker House','Shafer House','Krown Phi Alpha House','Eden House','Rockwell Towers Residence Hall'];
-const CAMPUS = ['Howard A. White Center (HAWC)','Cultural Arts Center (CAC)','Smothers Theatre','Rockwell Academic Center (RAC)','Music Building (MB)','Weisman Museum','Keck Science Center (KSC)','Appleby Center (AC)','Elkins Auditorium','Tyler Campus Center (TCC)','Payson Library (PAY)'];
-$('dorm').innerHTML = '<optgroup label="Dorms">' + DORMS.map(d => `<option>${d}</option>`).join('') + '</optgroup>'
-  + '<optgroup label="Campus buildings">' + CAMPUS.map(d => `<option>${d}</option>`).join('') + '</optgroup>';
+    <div class="sheet-content">
 
-function showMsg(t) { $('restMsg').textContent = t; $('restMsg').style.display = t ? 'block' : 'none'; }
+      <!-- ============ STEP 1: Search ============ -->
+      <div class="step active" id="step1">
+        <div class="step-title">What are you craving?</div>
+        <div class="search-row">
+          <input id="searchBox" class="search-input" placeholder="Search for restaurants nearby...">
+          <button class="search-go" id="searchGoBtn" onclick="searchRestaurants()">Search</button>
+        </div>
+        <div id="searchResults"></div>
+        <button class="manual-btn" onclick="openManualModal()" style="display:none;" id="manualEntryBtn">Can't find it? Add manually</button>
+      </div>
 
-async function findRestaurant(q) {
-  const query = (q ?? $('restInput').value).trim();
-  showMsg(''); $('restResults').innerHTML = '';
-  if (!query) return showMsg('Type a restaurant name to search.');
-  $('restSearching').style.display = 'block';
-  try {
-    const list = (await DD.search(query)).filter(r => r.miles < 45).slice(0, 5);
-    if (!list.length) return showMsg('Nothing found within delivery range. Try another name.');
-    $('restResults').innerHTML = list.map((r, i) => `<div class="result" tabindex="0" role="button" data-i="${i}"><b>${DD.esc(r.name)}</b><span>${DD.esc(r.address)} · ${r.miles.toFixed(1)} mi from campus</span></div>`).join('');
-    $('restResults').querySelectorAll('.result').forEach(el => {
-      const pick = () => pickRestaurant(list[+el.dataset.i]);
-      el.onclick = pick; el.onkeydown = e => { if (e.key === 'Enter') pick(); };
-    });
-  } catch (e) { showMsg(e.message || 'Search failed. Try again in a moment.'); }
-  finally { $('restSearching').style.display = 'none'; }
-}
-document.querySelectorAll('#restChips button').forEach(b => b.onclick = () => { $('restInput').value = b.dataset.q; findRestaurant(b.dataset.q); });
+      <!-- ============ STEP 2: Restaurant Preview ============ -->
+      <div class="step" id="step2">
+        <button class="back-btn" onclick="goToStep(1)">&larr; Back</button>
+        <div class="step-title">Confirm restaurant</div>
 
-async function pickRestaurant(r) {
-  restaurant = r; routeInfo = null;
-  $('restResults').innerHTML = '';
-  $('restName').textContent = r.name;
-  $('restAddr').textContent = r.address + ' · calculating route…';
-  $('restPicked').classList.add('on');
-  $('restSearch').style.display = 'none';
-  render();
-  routeInfo = await DD.route(r, DD.CAMPUS);
-  if (restaurant !== r) return;
-  $('restAddr').textContent = `${r.address} · ${routeInfo.miles.toFixed(1)} mi, ~${routeInfo.minutes} min drive to campus`;
-  render();
-}
-function clearRestaurant() {
-  restaurant = null; routeInfo = null;
-  $('restPicked').classList.remove('on'); $('restSearch').style.display = 'block';
-  render();
-}
+        <!-- Restaurant card -->
+        <div class="restaurant-card" id="restaurantCard" style="margin-bottom:8px">
+          <div class="restaurant-card-info">
+            <div class="restaurant-card-name" id="rcName"></div>
+            <div class="restaurant-card-addr" id="rcAddr"></div>
+            <div class="restaurant-card-stats" id="rcStats">Calculating route...</div>
+          </div>
+          <button class="change-btn" onclick="clearAndGoBack()">Change</button>
+        </div>
 
-function addItem(name = '', qty = 1, price = '') {
-  const id = nextId++;
-  const row = document.createElement('div');
-  row.className = 'item'; row.dataset.id = id;
-  row.innerHTML = `<input placeholder="e.g. Spicy chicken sandwich" aria-label="Item name" value="${DD.esc(name)}">
-    <input type="number" min="1" step="1" value="${qty}" aria-label="Quantity" inputmode="numeric">
-    <input type="number" min="0" step="0.01" placeholder="$0.00" value="${price}" aria-label="Price each" inputmode="decimal">
-    <button class="x" type="button" aria-label="Remove item">×</button>`;
-  row.querySelectorAll('input').forEach(i => i.addEventListener('input', render));
-  row.querySelector('.x').onclick = () => { row.remove(); if (!$('items').children.length) addItem(); render(); };
-  $('items').appendChild(row);
-  render();
-}
+        <div class="step-footer">
+          <button class="cta-btn" onclick="goToStep(3)">Continue</button>
+        </div>
+      </div>
 
-function readItems() {
-  return [...$('items').children].map(r => {
-    const [n, q, p] = r.querySelectorAll('input');
-    return { name: n.value.trim(), qty: Math.max(1, parseInt(q.value) || 1), price: Math.max(0, parseFloat(p.value) || 0) };
-  }).filter(i => i.name);
-}
+      <!-- ============ STEP 3: Your Order ============ -->
+      <div class="step" id="step3">
+        <button class="back-btn" onclick="goToStep(2)">&larr; Back</button>
+        <div class="step-title">Your Order</div>
 
-function totals() {
-  const items = readItems();
-  const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const miles = routeInfo ? routeInfo.miles : 0;
-  const t = {
-    items, subtotal,
-    base: F.base,
-    service: subtotal * F.service,
-    distance: miles * F.perMile,
-    far: miles > F.farLimit ? F.farAway : 0,
-    platform: F.platform,
-    tax: subtotal * F.tax,
-    tip: subtotal * tipRate,
-    miles
-  };
-  t.total = t.subtotal + t.base + t.service + t.distance + t.far + t.platform + t.tax + t.tip;
-  return t;
-}
+        <!-- Restaurant name reminder -->
+        <div style="font-size:13px;color:#a1a1aa;margin-bottom:16px;font-weight:600;" id="step3RestaurantName"></div>
 
-function render() {
-  const t = totals(), m = DD.money;
-  const rows = [
-    ['Food subtotal', t.subtotal],
-    ['Base delivery fee', t.base],
-    ['Service fee (15%)', t.service],
-    [routeInfo ? `Distance (${t.miles.toFixed(1)} mi × $0.39)` : 'Distance fee', t.distance],
+        <!-- Menu items -->
+        <div class="menu-header">
+          <h3>Enter What You Would Like to Order</h3>
+          <button class="price-toggle" id="priceToggleBtn" onclick="togglePriceColumn()">$ Show prices</button>
+        </div>
+        <div id="menuItemsList"></div>
+        <button type="button" class="add-item-btn" onclick="addMenuItem()">+ Add another item</button>
+        <div id="menuSummary" class="menu-summary" style="display:none;"></div>
+        <p class="price-note">Prices are optional. Add them for an estimated total.</p>
+
+        <div class="step-footer">
+          <button class="cta-btn" onclick="goToStep(4)">Continue</button>
+        </div>
+      </div>
+
+      <!-- ============ STEP 4: Delivery Details ============ -->
+      <div class="step" id="step4">
+        <button class="back-btn" onclick="goToStep(3)">&larr; Back</button>
+        <div class="step-title">Delivery Details</div>
+
+        <!-- Location type toggle -->
+        <div class="form-label">Delivery location</div>
+        <div class="chip-row">
+          <button class="chip active" data-loctype="dorm" onclick="switchLocationType('dorm')">Dorm</button>
+          <button class="chip" data-loctype="campus" onclick="switchLocationType('campus')">Campus</button>
+          <button class="chip" data-loctype="custom" onclick="switchLocationType('custom')">Custom</button>
+        </div>
+
+        <!-- Dorm dropdown -->
+        <div class="select-wrap" id="dormSelectWrap">
+          <select class="styled-select" id="dormSelect" onchange="selectDeliveryDropdown('dorm')">
+            <option value="">Select your dorm</option>
+            <option value="Seaside">Seaside</option>
+            <option value="Lovernich Apartments">Lovernich Apartments</option>
+            <option value="Conner House">Conner House</option>
+            <option value="Phillips House">Phillips House</option>
+            <option value="E. Pengilly House">E. Pengilly House</option>
+            <option value="Peppers House">Peppers House</option>
+            <option value="Hayes House">Hayes House</option>
+            <option value="White House">White House</option>
+            <option value="Fifield House">Fifield House</option>
+            <option value="Pauley House">Pauley House</option>
+            <option value="Banowsky House">Banowsky House</option>
+            <option value="DeBell House">DeBell House</option>
+            <option value="Miller House">Miller House</option>
+            <option value="Darnell House">Darnell House</option>
+            <option value="Eaton House">Eaton House</option>
+            <option value="Knott House">Knott House</option>
+            <option value="J. Pengilly House">J. Pengilly House</option>
+            <option value="Crocker House">Crocker House</option>
+            <option value="Shafer House">Shafer House</option>
+            <option value="Krown Phi Alpha House">Krown Phi Alpha House</option>
+            <option value="Eden House">Eden House</option>
+            <option value="Rockwell Towers Residence Hall">Rockwell Towers Residence Hall</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Campus dropdown -->
+        <div class="select-wrap" id="campusSelectWrap" style="display:none;">
+          <select class="styled-select" id="campusSelect" onchange="selectDeliveryDropdown('campus')">
+            <option value="">Select campus location</option>
+            <option value="Howard A. White Center (HAWC)">Howard A. White Center (HAWC)</option>
+            <option value="Cultural Arts Center (CAC)">Cultural Arts Center (CAC)</option>
+            <option value="Smothers Theatre">Smothers Theatre</option>
+            <option value="Rockwell Academic Center (RAC)">Rockwell Academic Center (RAC)</option>
+            <option value="Music Building (MB)">Music Building (MB)</option>
+            <option value="Weisman Museum">Weisman Museum</option>
+            <option value="Keck Science Center (KSC)">Keck Science Center (KSC)</option>
+            <option value="Appleby Center (AC)">Appleby Center (AC)</option>
+            <option value="Elkins Auditorium">Elkins Auditorium</option>
+            <option value="Tlyer Campus Center (TCC)">Tlyer Campus Center (TCC)</option>
+            <option value="Payson Library (PAY)">Payson Library (PAY)</option>
+            <option value="Pendleton Learning Center (PLC)">Pendleton Learning Center (PLC)</option>
+            <option value="Thornton Administrative Center (TAC)">Thornton Administrative Center (TAC)</option>
+            <option value="Adamson Plaza">Adamson Plaza</option>
+            <option value="Amphitheatre">Amphitheatre</option>
+            <option value="Stauffer Chapel">Stauffer Chapel</option>
+            <option value="Other">Other</option>
+          </select>
+          <button class="add-loc-link" id="addCampusLocBtn" onclick="openAddLocationModal()">+ Add campus location</button>
+        </div>
+
+        <!-- Custom address -->
+        <div id="customLocWrap" style="display:none;" class="form-row">
+          <input id="customAddress" class="form-input" placeholder="Enter custom location">
+        </div>
+
+        <!-- Name -->
+        <div class="form-row">
+          <label class="form-label" for="customerName">Your name</label>
+          <input id="customerName" class="form-input" placeholder="Full name" required>
+        </div>
+
+        <!-- Phone -->
+        <div class="form-row" id="phoneGroup">
+          <label class="form-label" for="phoneNumber">Phone number</label>
+          <input id="phoneNumber" class="form-input" type="tel" placeholder="(123) 456-7890" pattern="[\d\s\(\)\-\+]{10,}" minlength="10" title="Please enter a valid phone number (at least 10 digits)" required>
+        </div>
+
+        <!-- Confirm phone -->
+        <div class="form-row" id="confirmPhoneGroup">
+          <label class="form-label" for="confirmPhoneNumber">Confirm phone number</label>
+          <input id="confirmPhoneNumber" class="form-input" type="tel" placeholder="(123) 456-7890" pattern="[\d\s\(\)\-\+]{10,}" minlength="10" title="Please confirm your phone number" required>
+        </div>
+
+        <!-- Delivery preference -->
+        <div class="form-row">
+          <label class="form-label">Delivery preference</label>
+          <div class="chip-row">
+            <button class="chip active contact-method-btn" data-method="drop off" onclick="setContactMethod('drop off')">Drop Off</button>
+            <button class="chip contact-method-btn" data-method="hand off" onclick="setContactMethod('hand off')">Hand Off</button>
+          </div>
+          <input type="hidden" id="contactMethod" value="drop off">
+        </div>
+
+        <!-- Notes (collapsed) -->
+        <button class="notes-toggle" id="notesToggle" onclick="toggleNotes()">+ Add delivery notes</button>
+        <div id="notesWrap" style="display:none;" class="form-row">
+          <textarea id="orderDetails" class="form-textarea" placeholder="Special instructions, dietary restrictions, etc."></textarea>
+        </div>
+
+        <div class="step-footer">
+          <button class="cta-btn" onclick="goToStep(5)">Continue</button>
+        </div>
+      </div>
+
+      <!-- ============ STEP 5: Review & Pay ============ -->
+      <div class="step" id="step5">
+        <button class="back-btn" onclick="goToStep(4)">&larr; Back</button>
+        <div class="step-title">Review & Pay</div>
+
+        <!-- Cost card -->
+        <div class="cost-card" id="costEstimate">
+          <div id="costCardContent"></div>
+        </div>
+
+        <!-- Tip -->
+        <div class="form-row">
+          <label class="form-label">Tip your driver</label>
+          <div class="tip-row">
+            <button class="tip-btn" onclick="setTipAmount(1, this)">$1</button>
+            <button class="tip-btn" onclick="setTipAmount(3, this)">$3</button>
+            <button class="tip-btn" onclick="setTipAmount(5, this)">$5</button>
+            <button class="tip-btn" onclick="setTipAmount(0, this)">Custom</button>
+          </div>
+          <div class="custom-tip-row" id="customTipContainer">
+            <input id="tipAmount" class="form-input" type="number" min="0" step="0.01" placeholder="Enter tip amount" style="flex:1;">
+            <button class="custom-tip-confirm" onclick="confirmCustomTip()">Confirm</button>
+          </div>
+        </div>
+
+        <div class="step-footer">
+          <button class="cta-btn" id="submitBtn" onclick="submitOrder()">Place Order</button>
+        </div>
+      </div>
+
+    </div><!-- end sheet-content -->
+  </div><!-- end bottom-sheet -->
+
+  <!-- Manual Restaurant Modal -->
+  <div id="manualModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeManualModal()">&times;</span>
+      <h2 class="modal-header">Add Restaurant Manually</h2>
+      <form id="manualRestaurantForm">
+        <label class="form-label">Restaurant Address</label>
+        <input id="manualAddress" class="modal-input" placeholder="123 Main St, Malibu, CA 90263" required>
+        <div style="font-size:11px;color:#71717a;margin:-10px 0 16px;">We'll look up the restaurant name automatically</div>
+        <div id="manualSearchLoading" style="display:none;text-align:center;padding:20px;">
+          <div class="spinner"></div>
+          <div style="color:#a1a1aa;font-size:13px;margin-top:12px;" id="loadingText">Searching for restaurant...</div>
+        </div>
+        <button type="submit" class="cta-btn" id="manualSubmitBtn">Add Restaurant</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Campus Location Modal -->
+  <div id="addLocationModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeAddLocationModal()">&times;</span>
+      <h2 class="modal-header">Add Campus Location</h2>
+      <form id="addLocationForm">
+        <label class="form-label">Location Name</label>
+        <input id="newLocationName" class="modal-input" placeholder="e.g., Payson Library" required>
+        <button type="submit" class="cta-btn">Add Location</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  /* ===========================
+     Config
+  =========================== */
+  const API_URL      = '';  // demo: /api/* is answered by static/demo-api.js
+  const OSRM_BASE    = 'https://router.project-osrm.org/route/v1';
+  const OSRM_DRIVING = 'https://router.project-osrm.org/route/v1/driving';
+
+  // $1 delivery sale: Saturday March 28, 2026 (Pacific Time)
+  function isSaleActive() {
+    const now = new Date();
+    const pst = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    return pst.getFullYear() === 2026 && pst.getMonth() === 2 && pst.getDate() === 28 && pst.getHours() < 22;
+  }
+
+  const SALE_ACTIVE = isSaleActive();
+  const DELIVERY_FEE = SALE_ACTIVE ? 1.00 : 5.99;
+  const PER_MILE = SALE_ACTIVE ? 0 : 0.39;
+  const FAR_AWAY_FEE = SALE_ACTIVE ? 0 : 7.99;
+  const FAR_AWAY_THRESHOLD_MI = 10;
+  let SALES_TAX_RATE = 0.095;
+  const SERVICE_CHARGE_RATE = SALE_ACTIVE ? 0 : 0.15;
+  const PLATFORM_CUT_RATE = 0.1732;
+  const PLATFORM_FEE_FLAT = SALE_ACTIVE ? 0 : 0.49;
+  let currentFeesSubtotal = 0;
+
+  /* ===========================
+     State
+  =========================== */
+  let userLocation = { lat: 34.0366, lng: -118.7108 };
+  let map, selectedRestaurant = null;
+  let userMarker = null;
+  let markers = {};
+  let currentMarker = null;
+  let routingControl = null;
+  let currentLocationType = 'dorm';
+  let menuItems = [];
+  let menuItemCounter = 0;
+  let tipSelected = false;
+  let showPrices = false;
+  let currentStep = 1;
+  let lastRouteSummary = null;
+  let selectedDeliveryValue = '';
+  let notesExpanded = false;
+
+  /* ===========================
+     Dorm & Campus data
+  =========================== */
+  const DORMS = [
+    'Seaside','Lovernich Apartments','Conner House','Phillips House','E. Pengilly House',
+    'Peppers House','Hayes House','White House','Fifield House','Pauley House',
+    'Banowsky House','DeBell House','Miller House','Darnell House','Eaton House',
+    'Knott House','J. Pengilly House','Crocker House','Shafer House','Krown Phi Alpha House',
+    'Eden House','Rockwell Towers Residence Hall','Other'
   ];
-  if (t.far) rows.push(['Far-away fee (10+ mi)', t.far]);
-  rows.push(['Platform fee', t.platform], ['Sales tax (est.)', t.tax], [`Tip (${Math.round(tipRate * 100)}%)`, t.tip]);
-  $('sumRows').innerHTML = rows.map(([l, v]) => `<div class="row"><span>${l}</span><span>${m(v)}</span></div>`).join('')
-    + `<div class="row total"><span>Total</span><span>${m(t.total)}</span></div>`;
-  const ready = restaurant && routeInfo && t.items.length && t.subtotal > 0;
-  $('placeBtn').disabled = !ready;
-  $('placeHint').textContent = ready ? 'Demo only: no payment, no driver, nothing stored.'
-    : !restaurant ? 'Pick a restaurant and add at least one item.'
-    : !routeInfo ? 'Working out the route…'
-    : 'Add at least one item with a price.';
-}
+  const CAMPUS = [
+    'Howard A. White Center (HAWC)','Cultural Arts Center (CAC)','Smothers Theatre',
+    'Rockwell Academic Center (RAC)','Music Building (MB)','Weisman Museum',
+    'Keck Science Center (KSC)','Appleby Center (AC)','Elkins Auditorium',
+    'Tlyer Campus Center (TCC)','Payson Library (PAY)','Pendleton Learning Center (PLC)',
+    'Thornton Administrative Center (TAC)','Adamson Plaza','Amphitheatre','Stauffer Chapel','Other'
+  ];
 
-document.querySelectorAll('#tips button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('#tips button').forEach(x => x.classList.toggle('on', x === b));
-  tipRate = parseFloat(b.dataset.t); render();
-});
+  /* ===========================
+     Cloudflare Turnstile
+  =========================== */
+  window.turnstileToken = null;
+  window.turnstileTokenExpiry = null;
+  let turnstileRefreshWidget = null;
 
-function placeOrder() {
-  const t = totals();
-  if (!restaurant || !t.items.length) return;
-  const order = {
-    type: 'food',
-    restaurant: { name: restaurant.name, address: restaurant.address, lat: restaurant.lat, lng: restaurant.lng },
-    dorm: $('dorm').value, room: $('room').value.trim(),
-    items: t.items, subtotal: t.subtotal, tax: t.tax, tip: t.tip, total: t.total,
-    fees: t.base + t.service + t.distance + t.far + t.platform
-  };
-  try { sessionStorage.setItem('dd-demo-order', JSON.stringify(order)); } catch (e) {}
-  const p = new URLSearchParams({ type: 'food', name: restaurant.name, addr: restaurant.address, lat: restaurant.lat.toFixed(6), lng: restaurant.lng.toFixed(6), dorm: order.dorm, total: t.total.toFixed(2), n: t.items.reduce((s, i) => s + i.qty, 0) });
-  location.href = '/track.html?' + p.toString();
-}
+  function onTurnstileSuccess(token) {
+    window.turnstileToken = token;
+    window.turnstileTokenExpiry = Date.now() + (4 * 60 * 1000);
+    console.log('Turnstile verified, expires in 4 minutes');
+    setTimeout(() => {
+      console.log('Token about to expire, refreshing...');
+      if (turnstileRefreshWidget) { turnstile.reset(turnstileRefreshWidget); }
+    }, 4 * 60 * 1000);
+  }
 
-addItem();
-render();
-</script>
+  function onTurnstileRefresh(token) {
+    window.turnstileToken = token;
+    window.turnstileTokenExpiry = Date.now() + (4 * 60 * 1000);
+    console.log('Turnstile token refreshed automatically');
+    setTimeout(() => {
+      console.log('Token about to expire, refreshing...');
+      if (turnstileRefreshWidget) { turnstile.reset(turnstileRefreshWidget); }
+    }, 4 * 60 * 1000);
+  }
+
+  function isTurnstileTokenValid() {
+    if (!window.turnstileToken) return false;
+    if (!window.turnstileTokenExpiry) return true;
+    return Date.now() < window.turnstileTokenExpiry;
+  }
+
+  async function makeSecureAPICall(url, body) {
+    if (!isTurnstileTokenValid()) {
+      console.warn('Turnstile token expired, requesting new verification...');
+      if (turnstileRefreshWidget) { turnstile.reset(turnstileRefreshWidget); }
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!isTurnstileTokenValid()) {
+        throw new Error('Security verification expired. Please refresh the page.');
+      }
+    }
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, turnstile_token: window.turnstileToken })
+    });
+  }
+
+  /* ===========================
+     Utils
+  =========================== */
+  function metersToMilesNumber(m){ return m / 1609.344; }
+  function formatDuration(seconds){
+    const m = Math.round(seconds / 60);
+    if (m < 60) return `${m} min`;
+    const h = Math.floor(m / 60), r = m % 60;
+    return r ? `${h} hr ${r} min` : `${h} hr`;
+  }
+  function haversineMiles(lat1, lon1, lat2, lon2){
+    const R = 6371, toRad = v => v * Math.PI/180;
+    const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 0.621371;
+  }
+
+  /* ===========================
+     OSRM helpers
+  =========================== */
+  async function osrmSummary(from, to){
+    try{
+      const url = `${OSRM_DRIVING}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=false&alternatives=false&steps=false`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const route = json?.routes?.[0];
+      if (!route) return null;
+      return { meters: route.distance, seconds: route.duration };
+    }catch(e){
+      console.warn('OSRM fetch failed', e);
+      return null;
+    }
+  }
+
+  function drawRouteAndSummarizeSelected(){
+    return new Promise((resolve) => {
+      if (!selectedRestaurant || !userLocation) return resolve(null);
+
+      if (routingControl) {
+        try { map.removeControl(routingControl); } catch {}
+        routingControl = null;
+      }
+
+      const timeout = setTimeout(() => {
+        console.error('Routing timeout - falling back to straight-line estimate');
+        const R = 6371000;
+        const lat1 = userLocation.lat * Math.PI / 180;
+        const lat2 = selectedRestaurant.lat * Math.PI / 180;
+        const deltaLat = (selectedRestaurant.lat - userLocation.lat) * Math.PI / 180;
+        const deltaLng = (selectedRestaurant.lng - userLocation.lng) * Math.PI / 180;
+        const a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
+                  Math.cos(lat1) * Math.cos(lat2) *
+                  Math.sin(deltaLng/2) * Math.sin(deltaLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const meters = R * c;
+        const seconds = Math.round(meters / 13.41);
+        resolve({ meters, seconds });
+      }, 10000);
+
+      routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(userLocation.lat, userLocation.lng),
+          L.latLng(selectedRestaurant.lat, selectedRestaurant.lng)
+        ],
+        addWaypoints:false,
+        draggableWaypoints:false,
+        fitSelectedRoutes:false,
+        routeWhileDragging:false,
+        show:false,
+        createMarker: function(){ return null; },
+        router: L.Routing.osrmv1({
+          serviceUrl: OSRM_BASE,
+          profile: 'driving',
+          useHints: false,
+          timeout: 8000
+        }),
+        lineOptions: { styles: [{ color:'#ffffff', opacity:0.95, weight:5 }] }
+      })
+      .on('routesfound', (e) => {
+        clearTimeout(timeout);
+        const r = e.routes?.[0];
+        if (r && currentStep <= 2) {
+          // Remove white dot marker when route is displayed
+          if (currentMarker) { try{ map.removeLayer(currentMarker); }catch{} currentMarker = null; }
+          // Fit route on map with padding so it's visible above the bottom sheet
+          const sheetH = document.getElementById('bottomSheet').offsetHeight || 300;
+          const bounds = L.latLngBounds(r.coordinates);
+          map.fitBounds(bounds, { paddingBottomRight: [20, sheetH + 40], paddingTopLeft: [20, 80], animate: true });
+        }
+        resolve(r ? { meters: r.summary.totalDistance, seconds: r.summary.totalTime } : null);
+      })
+      .on('routingerror', (err) => {
+        clearTimeout(timeout);
+        console.error('Routing error:', err);
+        const R = 6371000;
+        const lat1 = userLocation.lat * Math.PI / 180;
+        const lat2 = selectedRestaurant.lat * Math.PI / 180;
+        const deltaLat = (selectedRestaurant.lat - userLocation.lat) * Math.PI / 180;
+        const deltaLng = (selectedRestaurant.lng - userLocation.lng) * Math.PI / 180;
+        const a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
+                  Math.cos(lat1) * Math.cos(lat2) *
+                  Math.sin(deltaLng/2) * Math.sin(deltaLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const meters = R * c;
+        const seconds = Math.round(meters / 13.41);
+        resolve({ meters, seconds });
+      })
+      .addTo(map);
+    });
+  }
+
+  /* ===========================
+     Sales Tax API
+  =========================== */
+  async function fetchSalesTaxRate(address){
+    try{
+      const fingerprint = generateBrowserFingerprint();
+      const res = await fetch(`${API_URL}/api/sales-tax/calculate`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ address, browser_fingerprint: fingerprint })
+      });
+      const data = await res.json();
+      if (data.success && data.tax_rate) {
+        console.log(`Sales tax rate for "${address}": ${data.tax_percentage}%`);
+        return data.tax_rate;
+      } else {
+        console.warn(`Using default tax rate for "${address}"`);
+        return 0.095;
+      }
+    }catch(err){
+      console.error('Sales tax fetch error:', err);
+      return 0.095;
+    }
+  }
+
+  /* ===========================
+     Pricing & Cost Card
+  =========================== */
+  function feeBreakdown(miles){
+    const mileage_cost = +(miles * PER_MILE).toFixed(2);
+    const far_away_fee = miles > FAR_AWAY_THRESHOLD_MI ? FAR_AWAY_FEE : 0;
+    const innout_fee = (selectedRestaurant && selectedRestaurant.name && selectedRestaurant.name.includes('In-N-Out')) ? 4.99 : 0;
+
+    const food_subtotal = menuItems.reduce((sum, item) => {
+      const price = parseFloat(item.price) || 0;
+      const qty = parseInt(item.quantity) || 1;
+      return sum + (price * qty);
+    }, 0);
+
+    const sales_tax = +(food_subtotal * SALES_TAX_RATE).toFixed(2);
+    const service_charge = +(food_subtotal * SERVICE_CHARGE_RATE).toFixed(2);
+
+    const delivery_fee = +DELIVERY_FEE.toFixed(2);
+    const fees_pool = +(delivery_fee + mileage_cost + far_away_fee + service_charge + innout_fee).toFixed(2);
+    const platform_cut = +(fees_pool * PLATFORM_CUT_RATE).toFixed(2);
+    const driver_payout = +(fees_pool - platform_cut).toFixed(2);
+
+    const fees_subtotal = fees_pool;
+    const est_total = +(fees_pool + food_subtotal + sales_tax + PLATFORM_FEE_FLAT).toFixed(2);
+
+    return {
+      delivery_fee,
+      per_mile_rate: PER_MILE,
+      mileage_cost,
+      far_away_fee,
+      innout_fee,
+      service_charge,
+      fees_pool,
+      fees_subtotal,
+      platform_cut,
+      platform_fee_flat: PLATFORM_FEE_FLAT,
+      driver_payout,
+      food_subtotal: +food_subtotal.toFixed(2),
+      sales_tax,
+      sales_tax_rate: SALES_TAX_RATE,
+      est_total,
+      miles
+    };
+  }
+
+  function renderCostCard(summary){
+    const card = document.getElementById('costEstimate');
+    if (!card) return;
+
+    if (!summary){
+      card.style.display = 'none';
+      return;
+    }
+
+    const miles = metersToMilesNumber(summary.meters);
+    const eta = formatDuration(summary.seconds);
+    const promisedEta = formatDuration(summary.seconds * 2);
+
+    const breakdown = feeBreakdown(miles);
+    const { mileage_cost, far_away_fee, fees_subtotal } = breakdown;
+
+    currentFeesSubtotal = fees_subtotal;
+
+    const foodTotal = breakdown.food_subtotal;
+    const salesTax = breakdown.sales_tax;
+    const serviceCharge = breakdown.service_charge;
+    const foodSubtotal = foodTotal + salesTax;
+
+    const tipAmount = +(document.getElementById('tipAmount').value || 0);
+    const grandTotal = +(breakdown.est_total + tipAmount).toFixed(2);
+
+    const hasPrices = menuItems.some(item => item.price && parseFloat(item.price) > 0);
+    const taxPercentage = (SALES_TAX_RATE * 100).toFixed(2);
+
+    const content = document.getElementById('costCardContent');
+
+    // Stat boxes row
+    const statsHtml = `
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <div style="flex:1;background:#1a1a1a;border-radius:12px;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Distance</div>
+          <div style="font-size:20px;font-weight:800;color:#fff">${miles.toFixed(1)} mi</div>
+        </div>
+        <div style="flex:1;background:#1a1a1a;border-radius:12px;padding:16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Est. Delivery</div>
+          <div style="font-size:20px;font-weight:800;color:#fff">~${promisedEta}</div>
+        </div>
+      </div>
+    `;
+
+    // Food items section (if prices exist)
+    let foodHtml = '';
+    if (hasPrices) {
+      foodHtml = `
+        ${menuItems.map(item => {
+          if (!item.price || parseFloat(item.price) === 0) return '';
+          const price = parseFloat(item.price);
+          const qty = parseInt(item.quantity) || 1;
+          const itemTotal = price * qty;
+          return `<div class="cost-line"><span class="label">${item.name || 'Item'} x${qty}</span><span class="amount">$${itemTotal.toFixed(2)}</span></div>`;
+        }).filter(x => x).join('')}
+        <div class="cost-line"><span class="label">Sales tax (${taxPercentage}%)</span><span class="amount">$${salesTax.toFixed(2)}</span></div>
+        <div class="cost-line"><span class="label">Service charge (15%)</span><span class="amount">$${serviceCharge.toFixed(2)}</span></div>
+        <hr class="cost-divider">
+      `;
+    }
+
+    // All delivery fees — always itemized
+    const feesAndTipTotal = +(fees_subtotal + tipAmount + (hasPrices ? foodTotal + salesTax + serviceCharge : 0)).toFixed(2);
+    content.innerHTML = `
+      ${statsHtml}
+      ${foodHtml}
+      ${SALE_ACTIVE ? (() => {
+        const normalMileage = miles * 0.39;
+        const normalFarAway = miles > 10 ? 7.99 : 0;
+        const normalService = hasPrices ? (foodTotal * 0.15) : 0;
+        return `
+        <div style="background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,165,0,0.04));border:1px solid rgba(255,215,0,0.25);border-radius:12px;padding:14px 16px;margin-bottom:8px">
+          <div style="font-size:11px;font-weight:800;color:#FFD700;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Saturday $1 Delivery Sale</div>
+          <div class="cost-line" style="opacity:0.5"><span class="label" style="text-decoration:line-through">Delivery fee</span><span class="amount" style="text-decoration:line-through">$5.99</span></div>
+          <div class="cost-line" style="opacity:0.5"><span class="label" style="text-decoration:line-through">Mileage (${miles.toFixed(1)} mi × $0.39)</span><span class="amount" style="text-decoration:line-through">$${normalMileage.toFixed(2)}</span></div>
+          ${normalFarAway > 0 ? `<div class="cost-line" style="opacity:0.5"><span class="label" style="text-decoration:line-through">Far-away surcharge</span><span class="amount" style="text-decoration:line-through">$7.99</span></div>` : ''}
+          ${normalService > 0 ? `<div class="cost-line" style="opacity:0.5"><span class="label" style="text-decoration:line-through">Service charge (15%)</span><span class="amount" style="text-decoration:line-through">$${normalService.toFixed(2)}</span></div>` : ''}
+          <div class="cost-line" style="opacity:0.5"><span class="label" style="text-decoration:line-through">Platform fee</span><span class="amount" style="text-decoration:line-through">$0.49</span></div>
+          <div class="cost-line" style="color:#FFD700;font-weight:800;margin-top:6px"><span class="label">You pay for delivery</span><span class="amount">$1.00</span></div>
+        </div>`;
+      })()
+        : `<div class="cost-line"><span class="label">Delivery fee</span><span class="amount">$5.99</span></div>
+      <div class="cost-line"><span class="label">Mileage (${miles.toFixed(1)} mi × $${PER_MILE.toFixed(2)})</span><span class="amount">$${mileage_cost.toFixed(2)}</span></div>
+      ${far_away_fee > 0 ? `<div class="cost-line"><span class="label">Far-away surcharge</span><span class="amount">$7.99</span></div>` : ''}
+      ${serviceCharge > 0 && !hasPrices ? '' : ''}
+      <div class="cost-line"><span class="label">Platform fee</span><span class="amount">$0.49</span></div>`}
+      ${breakdown.innout_fee > 0 ? `<div class="cost-line"><span class="label">In-N-Out surcharge</span><span class="amount">$4.99</span></div>` : ''}
+      ${tipAmount > 0 ? `<div class="cost-line"><span class="label">Tip</span><span class="amount">$${tipAmount.toFixed(2)}</span></div>` : ''}
+      <hr class="cost-divider" style="border-top-width:2px;">
+      <div class="cost-total"><span>${hasPrices ? 'Estimated Total' : 'Fees Total'}</span><span>$${(hasPrices ? grandTotal : +(fees_subtotal + PLATFORM_FEE_FLAT + tipAmount).toFixed(2)).toFixed(2)}</span></div>
+      ${hasPrices ? '<div class="cost-note">*Driver will confirm actual food cost</div>' : '<div class="cost-note">Food cost added by driver after ordering</div>'}
+    `;
+
+    card.style.display = 'block';
+  }
+
+  /* ===========================
+     Step Navigation
+  =========================== */
+  function goToStep(n){
+    // Validate before going forward
+    if (n > currentStep) {
+      if (currentStep === 1 && !selectedRestaurant) {
+        return showInlineMessage('Please select a restaurant first');
+      }
+      if (currentStep === 3) {
+        const hasItems = menuItems.some(item => item.name && item.name.trim());
+        if (!hasItems) return showInlineMessage('Please add at least one menu item');
+      }
+      if (currentStep === 4) {
+        // Validate delivery details
+        const addr = getDeliveryAddress();
+        if (!addr) return showInlineMessage('Please select a delivery location');
+        const name = document.getElementById('customerName').value.trim();
+        if (!name) return showInlineMessage('Please enter your name');
+        if (currentLocationType !== 'custom') {
+          const phone = document.getElementById('phoneNumber').value.trim();
+          if (!phone || phone.replace(/\D/g,'').length < 10) return showInlineMessage('Please enter a valid phone number');
+          const confirmPhone = document.getElementById('confirmPhoneNumber').value.replace(/\D/g,'');
+          const phoneDigits = phone.replace(/\D/g,'');
+          if (!confirmPhone || confirmPhone.length < 10) return showInlineMessage('Please confirm your phone number');
+          if (phoneDigits !== confirmPhone) return showInlineMessage('Phone numbers do not match');
+        }
+        // Save to localStorage
+        localStorage.setItem('dormdash_name', document.getElementById('customerName').value.trim());
+        localStorage.setItem('dormdash_phone', document.getElementById('phoneNumber').value.trim());
+      }
+    }
+
+    currentStep = n;
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+
+    // Update dots
+    document.querySelectorAll('.step-dot').forEach(dot => {
+      const s = parseInt(dot.dataset.step);
+      dot.classList.remove('active','completed');
+      if (s === n) dot.classList.add('active');
+      else if (s < n) dot.classList.add('completed');
+    });
+
+    // Fullscreen mode for steps 3+ (no map)
+    const sheet = document.getElementById('bottomSheet');
+    const mapBg = document.getElementById('map-bg');
+    if (n >= 3) {
+      sheet.classList.add('fullscreen');
+      mapBg.classList.add('hidden');
+    } else {
+      sheet.classList.remove('fullscreen');
+      mapBg.classList.remove('hidden');
+      // Recalc map size when returning to map view
+      setTimeout(() => { if (map) map.invalidateSize(); }, 50);
+    }
+
+    // Update restaurant name on step 3
+    if (n === 3 && selectedRestaurant) {
+      document.getElementById('step3RestaurantName').textContent = 'Ordering from ' + selectedRestaurant.name;
+    }
+
+    // Scroll sheet content to top
+    document.querySelector('.sheet-content').scrollTop = 0;
+
+    // Step 5: render costs immediately from cached route data
+    if (n === 5 && selectedRestaurant && lastRouteSummary) {
+      renderCostCard(lastRouteSummary);
+    }
+
+    // Adjust map view when on map steps
+    if (n <= 2) adjustMapForSheet();
+  }
+
+  function adjustMapForSheet(){
+    if (!map) return;
+    setTimeout(() => {
+      map.invalidateSize();
+      // If we have a restaurant selected, fit the view with bottom padding for the sheet
+      if (selectedRestaurant && currentMarker) {
+        const sheetHeight = document.getElementById('bottomSheet').offsetHeight || 300;
+        map.setView([selectedRestaurant.lat, selectedRestaurant.lng], 15, { animate: true });
+        // Pan up so marker is visible above the sheet
+        map.panBy([0, -sheetHeight / 3], { animate: true });
+      }
+    }, 100);
+  }
+
+  function getDeliveryAddress(){
+    if (currentLocationType === 'dorm') return selectedDeliveryValue || '';
+    if (currentLocationType === 'campus') return selectedDeliveryValue || '';
+    if (currentLocationType === 'custom') return document.getElementById('customAddress').value.trim();
+    return '';
+  }
+
+  /* ===========================
+     Geolocation + Map
+  =========================== */
+  function getUserLocation(){
+    if (!navigator.geolocation) {
+      console.warn('Geolocation not supported by browser');
+      document.getElementById('locationText').textContent = 'Pepperdine Campus';
+      userLocation = { lat: 34.0412, lng: -118.7107 };
+      return;
+    }
+
+    document.getElementById('locationText').textContent = 'Getting location...';
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        document.getElementById('locationText').textContent = 'Your Location';
+        map.setView([userLocation.lat, userLocation.lng], 14);
+
+        userMarker = L.marker([userLocation.lat, userLocation.lng], {
+          icon: L.divIcon({
+            className:'user-marker',
+            html:'<div style="background:#10b981;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px rgba(16,185,129,.6);"></div>',
+            iconSize:[20,20]
+          })
+        }).addTo(map);
+
+        if (selectedRestaurant) updateSelectedStats();
+      },
+      (err) => {
+        console.warn('Geolocation error:', err.code, err.message);
+        let errorMsg = 'Pepperdine Campus';
+        if (err.code === 1) errorMsg = 'Location Denied';
+        else if (err.code === 2) errorMsg = 'Unavailable';
+        else if (err.code === 3) errorMsg = 'Timeout';
+
+        document.getElementById('locationText').textContent = errorMsg;
+        userLocation = { lat: 34.0412, lng: -118.7107 };
+        map.setView([userLocation.lat, userLocation.lng], 14);
+
+        if (selectedRestaurant) updateSelectedStats();
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
+  map = L.map('map').setView([userLocation.lat, userLocation.lng], 15);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom:19
+  }).addTo(map);
+  map.attributionControl.setPosition('topright');
+  setTimeout(() => {
+    map.invalidateSize();
+    // Offset map center upward so content is visible above the bottom sheet
+    const sheetH = document.getElementById('bottomSheet')?.offsetHeight || 300;
+    map.panBy([0, sheetH / 3], { animate: false });
+  }, 200);
+  getUserLocation();
+
+  /* ===========================
+     Search + Results Enrichment
+  =========================== */
+  async function searchRestaurants(){
+    const searchBox = document.getElementById('searchBox');
+    const query = searchBox.value.trim();
+    if (!query) return showInlineMessage('Please enter a restaurant name');
+
+    const resultsDiv = document.getElementById('searchResults');
+    resultsDiv.innerHTML = `
+      <div style="text-align:center;padding:30px;">
+        <div class="spinner"></div>
+        <div style="color:#a1a1aa;font-size:13px;margin-top:14px;">Searching nearby restaurants...</div>
+      </div>
+    `;
+
+    document.getElementById('manualEntryBtn').style.display = 'none';
+    searchBox.value = '';
+
+    try{
+      const fingerprint = generateBrowserFingerprint();
+
+      let res = await fetch(`${API_URL}/api/restaurants/search`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          query,
+          lat:userLocation.lat,
+          lng:userLocation.lng,
+          radius:24140,
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+      let results = await res.json();
+
+      if (results && results.no_results && results.allow_manual_entry) {
+        resultsDiv.innerHTML = `<p style="color:#a1a1aa;text-align:center;padding:20px;">${results.message || 'No restaurants found nearby.'}</p>`;
+        document.getElementById('manualEntryBtn').style.display = 'block';
+        return;
+      }
+
+      results = results.map((r) => {
+        const crow = haversineMiles(userLocation.lat, userLocation.lng, r.lat, r.lng);
+        const drivingMiles = r.distance_value ? (r.distance_value / 1609.34) : crow;
+        return { ...r, crow, drivingMiles };
+      }).filter(r => r.drivingMiles <= 20);
+
+      if (!results.length){
+        resultsDiv.innerHTML = '<p style="color:#a1a1aa;text-align:center;padding:12px;">Nothing nearby. Searching wider area...</p>';
+
+        res = await fetch(`${API_URL}/api/restaurants/search`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            query,
+            lat:userLocation.lat,
+            lng:userLocation.lng,
+            radius:32187,
+            browser_fingerprint: fingerprint
+          })
+        });
+        results = await res.json();
+
+        results = results.map((r) => {
+          const crow = haversineMiles(userLocation.lat, userLocation.lng, r.lat, r.lng);
+          const drivingMiles = r.distance_value ? (r.distance_value / 1609.34) : crow;
+          return { ...r, crow, drivingMiles };
+        }).filter(r => r.drivingMiles <= 20);
+      }
+
+      if (!results.length){
+        resultsDiv.innerHTML = `<p style="color:#a1a1aa;text-align:center;padding:12px;">No results found within 20 miles</p>`;
+        document.getElementById('manualEntryBtn').style.display = 'block';
+        return;
+      }
+
+      let enriched = results
+        .sort((a,b) => {
+          const distA = a.distance_value !== undefined ? a.distance_value : (a.crow * 1609.34);
+          const distB = b.distance_value !== undefined ? b.distance_value : (b.crow * 1609.34);
+          return distA - distB;
+        })
+        .map((r, idx) => ({ ...r, index: idx }));
+
+      window.searchResultsData = enriched;
+
+      resultsDiv.innerHTML = '<div class="results-list">' + enriched.map((r) => {
+        const rating = r.rating ? '\u2B50'.repeat(Math.round(r.rating)) + ' ' + r.rating : '';
+        const attribution = r.attribution || r.html_attributions?.[0] || '';
+        const attributionHtml = attribution ? `<div style="font-size:10px;color:#71717a;margin-top:4px;" translate="no">${attribution}</div>` : '';
+        return `
+          <div class="result-card" onclick="selectSearchResultByIndex(${r.index})">
+            <div class="result-name">${r.name}</div>
+            <div class="result-address">${r.address || 'Address unavailable'}</div>
+            ${rating ? `<div style="font-size:12px;color:#fbbf24;margin-top:2px;">${rating}</div>` : ''}
+            <div class="result-meta" id="result-meta-${r.index}">Calculating road route...</div>
+            ${attributionHtml}
+          </div>`;
+      }).join('') + '</div>' +
+      `<div class="google-attribution" role="contentinfo" aria-label="Place data attribution" translate="no">Places from OpenStreetMap</div>`;
+
+      document.getElementById('manualEntryBtn').style.display = 'block';
+
+      enrichResultsWithRouting(enriched);
+    }catch(err){
+      console.error('Search error:', err);
+      resultsDiv.innerHTML = `<p style="color:#a1a1aa;text-align:center;padding:12px;">Couldn't find that restaurant within 20 miles</p>`;
+      document.getElementById('manualEntryBtn').style.display = 'block';
+    }
+  }
+
+  async function enrichResultsWithRouting(items){
+    for (let i = 0; i < items.length; i++){
+      const r = items[i];
+      const metaEl = document.getElementById(`result-meta-${r.index}`);
+      if (!metaEl) continue;
+
+      if (r.distance_value && r.drivingMiles && r.duration_text && r.duration_seconds) {
+        const miles = r.drivingMiles;
+        const eta = r.duration_text;
+        const promisedEta = formatDuration(r.duration_seconds * 2);
+        const mileageCost = +(miles * PER_MILE).toFixed(2);
+        const farAway = miles > FAR_AWAY_THRESHOLD_MI ? FAR_AWAY_FEE : 0;
+        const feesSubtotal = +(DELIVERY_FEE + mileageCost + farAway).toFixed(2);
+        metaEl.innerHTML = `${miles.toFixed(1)} mi &bull; ${eta} &bull; Fees: <strong>$${feesSubtotal.toFixed(2)}</strong><br><span style="color:#555;">Est. delivery: ${promisedEta}</span>`;
+        continue;
+      }
+
+      if (r.distance_text && r.duration_text) {
+        const distanceMatch = r.distance_text.match(/[\d.]+/);
+        const miles = distanceMatch ? parseFloat(distanceMatch[0]) : null;
+        if (miles) {
+          const eta = r.duration_text;
+          const promisedEta = formatDuration(r.duration_seconds * 2);
+          const mileageCost = +(miles * PER_MILE).toFixed(2);
+          const farAway = miles > FAR_AWAY_THRESHOLD_MI ? FAR_AWAY_FEE : 0;
+          const feesSubtotal = +(DELIVERY_FEE + mileageCost + farAway).toFixed(2);
+          metaEl.innerHTML = `${miles.toFixed(1)} mi &bull; ${eta} &bull; Fees: <strong>$${feesSubtotal.toFixed(2)}</strong><br><span style="color:#555;">Est. delivery: ${promisedEta}</span>`;
+          continue;
+        }
+      }
+
+      const to = { lat:r.lat, lng:r.lng };
+      const from = userLocation;
+      const summary = await osrmSummary(from, to);
+      if (!summary){
+        metaEl.textContent = 'Road route unavailable.';
+        continue;
+      }
+      const miles = metersToMilesNumber(summary.meters);
+      const eta = formatDuration(summary.seconds);
+      const promisedEta = formatDuration(summary.seconds * 2);
+      const mileageCost = +(miles * PER_MILE).toFixed(2);
+      const farAway = miles > FAR_AWAY_THRESHOLD_MI ? FAR_AWAY_FEE : 0;
+      const feesSubtotal = +(DELIVERY_FEE + mileageCost + farAway).toFixed(2);
+      metaEl.innerHTML = `${miles.toFixed(1)} mi &bull; ${eta} &bull; Fees: <strong>$${feesSubtotal.toFixed(2)}</strong><br><span style="color:#555;">Est. delivery: ${promisedEta}</span>`;
+
+      await new Promise(r => setTimeout(r, 120));
+    }
+  }
+
+  function selectSearchResultByIndex(i){
+    i = Number(i);
+    if (!window.searchResultsData || !Number.isInteger(i) || !window.searchResultsData[i]) {
+      console.error('Restaurant not found at index', i);
+      return;
+    }
+    selectSearchResult(window.searchResultsData[i]);
+  }
+
+  /* ===========================
+     Select Result
+  =========================== */
+  async function selectSearchResult(restaurant){
+    selectedRestaurant = restaurant;
+
+    // Update restaurant card on step 2
+    document.getElementById('rcName').textContent = restaurant.name;
+    document.getElementById('rcAddr').textContent = restaurant.address || '';
+    document.getElementById('rcStats').textContent = 'Calculating route...';
+
+    if (menuItems.length === 0) addMenuItem();
+
+    // Clear search results
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('manualEntryBtn').style.display = 'none';
+
+    // Map markers — remove user pin when showing route
+    if (userMarker) { try{ map.removeLayer(userMarker); }catch{} userMarker = null; }
+    Object.values(markers).forEach(m => map.removeLayer(m));
+    markers = {};
+    if (currentMarker) { try{ map.removeLayer(currentMarker); }catch{} currentMarker = null; }
+
+    currentMarker = L.marker([restaurant.lat, restaurant.lng], {
+      icon: L.divIcon({
+        className:'custom-marker',
+        html:'<div style="background:#fff;width:30px;height:30px;border-radius:50%;border:3px solid #000;box-shadow:0 4px 12px rgba(255,255,255,.6);"></div>',
+        iconSize:[30,30]
+      })
+    }).addTo(map);
+
+    // Go to step 2 (restaurant preview)
+    goToStep(2);
+
+    // Fetch sales tax
+    if (restaurant.address) {
+      SALES_TAX_RATE = await fetchSalesTaxRate(restaurant.address);
+    }
+
+    await updateSelectedStats();
+  }
+
+  async function updateSelectedStats(){
+    const summary = await drawRouteAndSummarizeSelected();
+    lastRouteSummary = summary;
+
+    if (summary){
+      const miles = metersToMilesNumber(summary.meters).toFixed(1);
+      const promisedEta = formatDuration(summary.seconds * 2);
+      const rating = selectedRestaurant.rating ? '\u2B50'.repeat(Math.round(selectedRestaurant.rating)) + ' ' + selectedRestaurant.rating + ' \u2022 ' : '';
+
+      document.getElementById('rcStats').textContent = `${rating}${miles} mi \u2022 Delivery: ${promisedEta}`;
+
+    }
+
+    // Only render cost card if on step 4
+    if (currentStep === 5) renderCostCard(summary);
+  }
+
+  function clearAndGoBack(){
+    clearSelectedRestaurant();
+    goToStep(1);
+  }
+
+  function clearSelectedRestaurant(){
+    selectedRestaurant = null;
+    menuItems = [];
+    menuItemCounter = 0;
+    document.getElementById('menuItemsList').innerHTML = '';
+    document.getElementById('menuSummary').style.display = 'none';
+
+    tipSelected = false;
+    document.getElementById('tipAmount').value = '';
+    document.getElementById('customTipContainer').classList.remove('show');
+    document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('active'));
+
+    if (routingControl){ try{ map.removeControl(routingControl); }catch{} routingControl = null; }
+    if (currentMarker){ try{ map.removeLayer(currentMarker); }catch{} currentMarker = null; }
+    Object.values(markers).forEach(m => { try{ map.removeLayer(m);}catch{} });
+    markers = {};
+    lastRouteSummary = null;
+
+    // Restore user location marker
+    if (!userMarker && userLocation) {
+      userMarker = L.marker([userLocation.lat, userLocation.lng], {
+        icon: L.divIcon({
+          className:'user-marker',
+          html:'<div style="background:#10b981;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px rgba(16,185,129,.6);"></div>',
+          iconSize:[20,20]
+        })
+      }).addTo(map);
+    }
+  }
+
+  /* ===========================
+     Menu Items Management
+  =========================== */
+  function addMenuItem(){
+    const id = menuItemCounter++;
+    menuItems.push({ id, name: '', quantity: 1, price: '' });
+    renderMenuItems();
+  }
+
+  function removeMenuItem(id){
+    menuItems = menuItems.filter(item => item.id !== id);
+    renderMenuItems();
+  }
+
+  function updateMenuItem(id, field, value){
+    const item = menuItems.find(i => i.id === id);
+    if (item) {
+      item[field] = value;
+      updateMenuSummary();
+      if (selectedRestaurant && currentStep === 5) {
+        drawRouteAndSummarizeSelected().then(s => renderCostCard(s));
+      }
+    }
+  }
+
+  function renderMenuItems(){
+    const list = document.getElementById('menuItemsList');
+    list.innerHTML = menuItems.map(item => `
+      <div class="menu-item-row">
+        <div class="mi-name"><input type="text" class="mi-input" placeholder="Item name" value="${(item.name || '').replace(/"/g, '&quot;')}" onchange="updateMenuItem(${item.id}, 'name', this.value)"></div>
+        <div class="mi-qty"><input type="number" class="mi-input" placeholder="Qty" min="1" value="${item.quantity || 1}" onchange="updateMenuItem(${item.id}, 'quantity', this.value)" style="text-align:center;"></div>
+        ${showPrices ? `<div class="mi-price"><input type="number" class="mi-input" placeholder="$" step="0.01" min="0" value="${item.price || ''}" onchange="updateMenuItem(${item.id}, 'price', this.value)"></div>` : ''}
+        <button type="button" class="mi-remove" onclick="removeMenuItem(${item.id})" ${menuItems.length === 1 ? 'disabled' : ''}>&times;</button>
+      </div>
+    `).join('');
+    updateMenuSummary();
+  }
+
+  function togglePriceColumn(){
+    showPrices = !showPrices;
+    document.getElementById('priceToggleBtn').textContent = showPrices ? '$ Hide prices' : '$ Show prices';
+    renderMenuItems();
+  }
+
+  function updateMenuSummary(){
+    const summary = document.getElementById('menuSummary');
+    const hasPrices = menuItems.some(item => item.price && parseFloat(item.price) > 0);
+
+    if (!hasPrices) {
+      summary.style.display = 'none';
+      return;
+    }
+
+    const foodTotal = menuItems.reduce((sum, item) => {
+      const price = parseFloat(item.price) || 0;
+      const qty = parseInt(item.quantity) || 1;
+      return sum + (price * qty);
+    }, 0);
+
+    const salesTax = foodTotal * SALES_TAX_RATE;
+    const serviceCharge = foodTotal * SERVICE_CHARGE_RATE;
+    const totalWithTax = foodTotal + salesTax + serviceCharge;
+    const taxPercentage = (SALES_TAX_RATE * 100).toFixed(2);
+
+    summary.innerHTML = `
+      <div>Food subtotal: <strong>$${foodTotal.toFixed(2)}</strong></div>
+      <div>Sales tax (${taxPercentage}%): <strong>$${salesTax.toFixed(2)}</strong></div>
+      <div>Service charge (15%): <strong>$${serviceCharge.toFixed(2)}</strong></div>
+      <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.12);font-weight:600;">
+        Food total: <strong>$${totalWithTax.toFixed(2)}</strong>
+      </div>
+    `;
+    summary.style.display = 'block';
+  }
+
+  /* ===========================
+     Delivery Location Dropdowns
+  =========================== */
+  function switchLocationType(type){
+    currentLocationType = type;
+    selectedDeliveryValue = '';
+
+    // Update top-level chips
+    document.querySelectorAll('.chip[data-loctype]').forEach(c => c.classList.remove('active'));
+    document.querySelector(`.chip[data-loctype="${type}"]`).classList.add('active');
+
+    // Show/hide dropdowns
+    document.getElementById('dormSelectWrap').style.display = type === 'dorm' ? 'block' : 'none';
+    document.getElementById('campusSelectWrap').style.display = type === 'campus' ? 'block' : 'none';
+    document.getElementById('customLocWrap').style.display = type === 'custom' ? 'block' : 'none';
+
+    // Reset selections
+    document.getElementById('dormSelect').value = '';
+    document.getElementById('dormSelect').classList.remove('has-value');
+    document.getElementById('campusSelect').value = '';
+    document.getElementById('campusSelect').classList.remove('has-value');
+
+    // Phone field visibility for custom
+    const phoneGroup = document.getElementById('phoneGroup');
+    const phoneInput = document.getElementById('phoneNumber');
+    if (type === 'custom') {
+      phoneGroup.style.display = 'none';
+      phoneInput.removeAttribute('required');
+    } else {
+      phoneGroup.style.display = 'block';
+      phoneInput.setAttribute('required', 'required');
+    }
+  }
+
+  function selectDeliveryDropdown(type){
+    const selectEl = document.getElementById(type === 'dorm' ? 'dormSelect' : 'campusSelect');
+    selectedDeliveryValue = selectEl.value;
+    selectEl.classList.toggle('has-value', !!selectEl.value);
+  }
+
+  /* ===========================
+     Contact Method
+  =========================== */
+  function setContactMethod(method){
+    document.querySelectorAll('.contact-method-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.contact-method-btn[data-method="${method}"]`).classList.add('active');
+    document.getElementById('contactMethod').value = method;
+  }
+
+  /* ===========================
+     Notes toggle
+  =========================== */
+  function toggleNotes(){
+    notesExpanded = !notesExpanded;
+    document.getElementById('notesWrap').style.display = notesExpanded ? 'block' : 'none';
+    document.getElementById('notesToggle').textContent = notesExpanded ? '- Hide delivery notes' : '+ Add delivery notes';
+  }
+
+  /* ===========================
+     Tip Functions
+  =========================== */
+  function setTipAmount(amount, btnEl){
+    const tipInput = document.getElementById('tipAmount');
+    const customTipContainer = document.getElementById('customTipContainer');
+
+    document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('active'));
+
+    if(amount === 0){
+      btnEl.classList.add('active');
+      customTipContainer.classList.add('show');
+      tipInput.value = '';
+      tipInput.focus();
+      tipSelected = false;
+    } else {
+      tipInput.value = amount.toFixed(2);
+      customTipContainer.classList.remove('show');
+      btnEl.classList.add('active');
+      tipSelected = true;
+      if(selectedRestaurant && lastRouteSummary){
+        renderCostCard(lastRouteSummary);
+      }
+    }
+  }
+
+  function confirmCustomTip(){
+    const tipInput = document.getElementById('tipAmount');
+    const tipAmount = parseFloat(tipInput.value);
+
+    if(isNaN(tipAmount) || tipAmount < 0){
+      showInlineMessage('Please enter a valid tip amount', 'info');
+      return;
+    }
+
+    tipSelected = true;
+    if(selectedRestaurant && lastRouteSummary){
+      renderCostCard(lastRouteSummary);
+    }
+    showInlineMessage('Custom tip confirmed!', 'success', 2000);
+  }
+
+  /* ===========================
+     Manual Restaurant Modal
+  =========================== */
+  function openManualModal(prefillQuery = ''){
+    document.getElementById('manualModal').classList.add('active');
+    document.getElementById('manualSearchLoading').style.display = 'none';
+    document.getElementById('manualSubmitBtn').disabled = false;
+    document.getElementById('manualSubmitBtn').textContent = 'Add Restaurant';
+    document.getElementById('manualAddress').disabled = false;
+    if (prefillQuery) {
+      document.getElementById('manualAddress').value = prefillQuery;
+    }
+  }
+
+  function closeManualModal(){
+    document.getElementById('manualModal').classList.remove('active');
+    document.getElementById('manualRestaurantForm').reset();
+    document.getElementById('manualSearchLoading').style.display = 'none';
+    document.getElementById('loadingText').textContent = 'Searching for restaurant...';
+  }
+
+  document.getElementById('manualRestaurantForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const address = document.getElementById('manualAddress').value.trim();
+
+    const loadingEl = document.getElementById('manualSearchLoading');
+    const submitBtn = document.getElementById('manualSubmitBtn');
+    const addressInput = document.getElementById('manualAddress');
+
+    loadingEl.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Searching...';
+    addressInput.disabled = true;
+
+    try{
+      const fingerprint = generateBrowserFingerprint();
+
+      const res = await fetch('/api/geocode', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          address,
+          browser_fingerprint: fingerprint,
+          turnstile_token: window.turnstileToken
+        })
+      });
+
+      if (!res.ok){
+        const errorData = await res.json();
+        loadingEl.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Restaurant';
+        addressInput.disabled = false;
+        return showInlineMessage(errorData.error || 'Could not find that address. Try a more specific address.');
+      }
+
+      const data = await res.json();
+      document.getElementById('loadingText').textContent = `Found: ${data.place_name}`;
+
+      const restaurant = {
+        name: data.place_name || data.formatted_address.split(',')[0],
+        address: data.formatted_address || address,
+        phone: '',
+        lat: data.lat,
+        lng: data.lng,
+        place_id: `manual_${Date.now()}`
+      };
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      loadingEl.style.display = 'none';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add Restaurant';
+      addressInput.disabled = false;
+
+      closeManualModal();
+      selectSearchResult(restaurant);
+    }catch(err){
+      console.error('Geocoding error:', err);
+      loadingEl.style.display = 'none';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add Restaurant';
+      addressInput.disabled = false;
+      showInlineMessage('Failed to geocode address: ' + err.message);
+    }
+  });
+
+  /* ===========================
+     Add Campus Location Modal
+  =========================== */
+  function openAddLocationModal(){
+    document.getElementById('addLocationModal').classList.add('active');
+  }
+
+  function closeAddLocationModal(){
+    document.getElementById('addLocationModal').classList.remove('active');
+    document.getElementById('addLocationForm').reset();
+  }
+
+  document.getElementById('addLocationForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newLocation = document.getElementById('newLocationName').value.trim();
+    if (!newLocation) return;
+
+    // Add to campus dropdown
+    CAMPUS.push(newLocation);
+    const campusSelect = document.getElementById('campusSelect');
+    const option = document.createElement('option');
+    option.value = newLocation;
+    option.textContent = newLocation;
+    campusSelect.appendChild(option);
+
+    // Select it
+    campusSelect.value = newLocation;
+    selectDeliveryDropdown('campus');
+    closeAddLocationModal();
+  });
+
+  /* ===========================
+     Inline Error/Success Messaging System
+  =========================== */
+  function showInlineMessage(message, type = 'error', duration = 4000) {
+    const existingMsg = document.querySelector('.inline-toast-message');
+    if (existingMsg) existingMsg.remove();
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `inline-toast-message ${type}`;
+    msgDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'error' ? 'linear-gradient(135deg, #dc2626, #991b1b)' : type === 'success' ? 'linear-gradient(135deg, #059669, #047857)' : 'linear-gradient(135deg, #d97706, #b45309)'};
+      color: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 10001;
+      font-size: 14px;
+      font-weight: 600;
+      max-width: 360px;
+      animation: slideInRight 0.3s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    `;
+
+    const icon = type === 'error' ? '\u274C' : type === 'success' ? '\u2705' : '\u2139\uFE0F';
+    msgDiv.innerHTML = `<span style="font-size:18px;">${icon}</span><span>${message}</span>`;
+
+    document.body.appendChild(msgDiv);
+
+    setTimeout(() => {
+      msgDiv.style.animation = 'slideOutRight 0.3s ease-out';
+      setTimeout(() => msgDiv.remove(), 300);
+    }, duration);
+  }
+
+  // Toast animation styles
+  if (!document.getElementById('toast-animations')) {
+    const style = document.createElement('style');
+    style.id = 'toast-animations';
+    style.textContent = `
+      @keyframes slideInRight {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  /* ===========================
+     Browser Fingerprinting for Security
+  =========================== */
+  function generateBrowserFingerprint() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(125, 1, 62, 20);
+    ctx.fillStyle = '#069';
+    ctx.fillText('DormDash Security', 2, 15);
+    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+    ctx.fillText('DormDash Security', 4, 17);
+
+    const canvasFingerprint = canvas.toDataURL();
+
+    let webglVendor = '';
+    let webglRenderer = '';
+    try {
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+          webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+          webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        }
+      }
+    } catch (e) {
+      console.log('WebGL not available');
+    }
+
+    return {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      platform: navigator.platform,
+      screenWidth: screen.width,
+      screenHeight: screen.height,
+      colorDepth: screen.colorDepth,
+      timezone: new Date().getTimezoneOffset(),
+      cookieEnabled: navigator.cookieEnabled,
+      canvasFingerprint: canvasFingerprint,
+      webglVendor: webglVendor,
+      webglRenderer: webglRenderer,
+      hardwareConcurrency: navigator.hardwareConcurrency || 0,
+      deviceMemory: navigator.deviceMemory || 0,
+      plugins: Array.from(navigator.plugins || []).map(p => p.name).join(','),
+      touchSupport: 'ontouchstart' in window
+    };
+  }
+
+  /* ===========================
+     Order Submission
+  =========================== */
+  async function submitOrder(){
+    if (!selectedRestaurant){
+      return showInlineMessage('Please select a restaurant first');
+    }
+
+    const hasItems = menuItems.some(item => item.name && item.name.trim());
+    if (!hasItems){
+      return showInlineMessage('Please add at least one menu item');
+    }
+
+    const customerName = document.getElementById('customerName').value.trim();
+    const phoneNumber = document.getElementById('phoneNumber').value.trim();
+    const orderDetails = document.getElementById('orderDetails').value.trim();
+    const contactMethod = document.getElementById('contactMethod').value;
+
+    let deliveryAddress = getDeliveryAddress();
+
+    if (!deliveryAddress){
+      return showInlineMessage('Please select a delivery location');
+    }
+
+    if (!tipSelected){
+      showInlineMessage('Please select a tip amount to continue', 'info');
+      return;
+    }
+
+    const summary = await drawRouteAndSummarizeSelected();
+    if (!summary){
+      return showInlineMessage('Could not calculate route. Please try again.');
+    }
+
+    const miles = metersToMilesNumber(summary.meters);
+    const breakdown = feeBreakdown(miles);
+
+    const routeSummaryData = {
+      meters: summary.meters,
+      seconds: summary.seconds,
+      miles: miles,
+      eta_text: formatDuration(summary.seconds),
+      est_delivery_text: formatDuration(summary.seconds * 2)
+    };
+
+    const fingerprint = generateBrowserFingerprint();
+
+    const orderData = {
+      restaurant_id: selectedRestaurant.place_id || selectedRestaurant.id,
+      restaurant_name: selectedRestaurant.name,
+      restaurant_address: selectedRestaurant.address || '',
+      customer_name: customerName,
+      delivery_address: deliveryAddress,
+      order_details: orderDetails,
+      phone_number: phoneNumber,
+      contact_method: contactMethod,
+      menu_items: menuItems.filter(item => item.name && item.name.trim()),
+      cost_breakdown: breakdown,
+      route_summary: routeSummaryData,
+      driver_payout: breakdown.driver_payout,
+      tip_amount: +(document.getElementById('tipAmount').value || 0),
+      browser_fingerprint: fingerprint
+    };
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Placing order...';
+
+    try{
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      if (res.ok){
+        const result = await res.json();
+        // Save to localStorage on success
+        localStorage.setItem('dormdash_name', customerName);
+        localStorage.setItem('dormdash_phone', phoneNumber);
+        launchConfetti();
+        showSuccessOverlay(result.order_token, 'food');
+      } else {
+        const errorText = await res.text();
+        console.error('Order submission failed:', errorText);
+        showInlineMessage('Failed to place order. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Place Order';
+      }
+    }catch(err){
+      console.error('Order submission error:', err);
+      showInlineMessage('Connection error. Please check your internet and try again.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Place Order';
+    }
+  }
+
+  function goToTracking(){
+    window.location.href = '/tracking.html';
+  }
+
+  function launchConfetti(){
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    const colors = ['#ff3e3e','#ff9f43','#feca57','#48dbfb','#ff6b81','#6366f1','#10b981','#ff75a0','#a29bfe','#fd2d00','#00d2ff','#7c3aed'];
+
+    function burst(){
+      for(let i = 0; i < 80; i++){
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.6 + 's';
+        piece.style.animationDuration = (2.5 + Math.random() * 2.5) + 's';
+        piece.style.width = (5 + Math.random() * 10) + 'px';
+        piece.style.height = (5 + Math.random() * 10) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.transform = `rotate(${Math.random()*360}deg)`;
+        container.appendChild(piece);
+      }
+    }
+
+    // Multiple bursts for continuous confetti
+    burst();
+    setTimeout(burst, 400);
+    setTimeout(burst, 900);
+    setTimeout(burst, 1500);
+  }
+
+  function showSuccessOverlay(orderToken, type){
+    const overlay = document.createElement('div');
+    overlay.className = 'success-overlay';
+    const title = type === 'food' ? 'Order Placed!' : 'Ride Requested!';
+    const redirectUrl = type === 'food' ? `/track.html?token=${encodeURIComponent(orderToken)}` : `/ride-tracking.html?token=${encodeURIComponent(orderToken)}`;
+    overlay.innerHTML = `
+      <div class="success-checkmark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title">${title}</div>
+      <div class="success-subtitle">Redirecting to tracking...</div>
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => { window.location.href = redirectUrl; }, 2500);
+  }
+
+  /* ===========================
+     Phone formatting
+  =========================== */
+  function formatPhoneNumber(value) {
+    const digits = value.replace(/\D/g, '');
+    let formatted = '';
+    if (digits.length > 0) {
+      if (digits.length <= 3) {
+        formatted = '(' + digits;
+      } else if (digits.length <= 6) {
+        formatted = '(' + digits.slice(0, 3) + ') ' + digits.slice(3);
+      } else {
+        formatted = '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6, 10);
+      }
+    }
+    return formatted;
+  }
+
+  /* ===========================
+     Init on DOM ready
+  =========================== */
+  document.addEventListener('DOMContentLoaded', () => {
+    // Pre-fill from localStorage
+    const savedName = localStorage.getItem('dormdash_name');
+    const savedPhone = localStorage.getItem('dormdash_phone');
+    if (savedName) document.getElementById('customerName').value = savedName;
+    if (savedPhone) document.getElementById('phoneNumber').value = savedPhone;
+
+    // Phone formatting
+    const phoneInput = document.getElementById('phoneNumber');
+    const confirmPhoneInput = document.getElementById('confirmPhoneNumber');
+    const confirmPhoneGroup = document.getElementById('confirmPhoneGroup');
+
+    if (phoneInput) {
+      phoneInput.addEventListener('input', (e) => {
+        e.target.value = formatPhoneNumber(e.target.value);
+      });
+    }
+
+    if (confirmPhoneInput) {
+      confirmPhoneInput.addEventListener('input', (e) => {
+        e.target.value = formatPhoneNumber(e.target.value);
+        const phone = phoneInput.value.replace(/\D/g, '');
+        const confirmPhone = e.target.value.replace(/\D/g, '');
+        if (phone === confirmPhone || confirmPhone.length < 10) {
+          confirmPhoneInput.setCustomValidity('');
+        }
+      });
+
+      confirmPhoneInput.addEventListener('blur', () => {
+        const phone = phoneInput.value.replace(/\D/g, '');
+        const confirmPhone = confirmPhoneInput.value.replace(/\D/g, '');
+        if (confirmPhone.length >= 10 && phone !== confirmPhone) {
+          confirmPhoneInput.setCustomValidity('Phone numbers do not match');
+          confirmPhoneInput.reportValidity();
+        } else {
+          confirmPhoneInput.setCustomValidity('');
+        }
+      });
+    }
+
+    // Tip input listener
+    document.getElementById('tipAmount').addEventListener('input', () => {
+      tipSelected = false;
+      document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('active'));
+    });
+
+    // Search on Enter
+    document.getElementById('searchBox').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        searchRestaurants();
+      }
+    });
+  });
+
+
+  /* ===========================
+     Page Load Turnstile Gate
+  =========================== */
+  function onPageLoadTurnstileSuccess(token) {
+    console.log('Page load verification passed');
+
+    window.turnstileToken = token;
+    window.turnstileTokenExpiry = Date.now() + (4 * 60 * 1000);
+
+    fetch(`${API_URL}/api/security/validate-turnstile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        turnstile_token: token,
+        browser_fingerprint: generateBrowserFingerprint()
+      })
+    }).then(response => {
+      if (response.ok) {
+        console.log('Token pre-cached with backend');
+      } else {
+        console.warn('Token pre-cache failed, but proceeding anyway');
+      }
+    }).catch(err => {
+      console.warn('Token pre-cache request failed:', err);
+    });
+
+    document.getElementById('main-content').style.display = 'block';
+
+    setTimeout(() => {
+      console.log('Token about to expire, refreshing...');
+      if (turnstileRefreshWidget) {
+        turnstile.reset(turnstileRefreshWidget);
+      }
+    }, 4 * 60 * 1000);
+
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+        console.log('Map size recalculated');
+      }
+    }, 100);
+  }
+
+  // Demo mode: no Cloudflare Turnstile, continue as if verification passed
+  window.addEventListener('DOMContentLoaded', () => {
+    onPageLoadTurnstileSuccess('demo-token');
+  });
+
+  </script>
+  </div><!-- end main-content -->
 </body>
 </html>
