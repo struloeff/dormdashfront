@@ -3,7 +3,7 @@
 .dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline}
 
 /* Map tiles, recoloured to the original black-and-grey dark map. */
-.leaflet-tile-pane{filter:grayscale(1) invert(1) brightness(.74) contrast(1.32)}
+.dd-raster{filter:grayscale(1) invert(1) brightness(.74) contrast(1.32)}
 .leaflet-container{background:#0b0b0c}
 #map{filter:none!important}
 

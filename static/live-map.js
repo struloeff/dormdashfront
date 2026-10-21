@@ -74,9 +74,7 @@
     host.insertBefore(card, host.firstChild);
 
     map = L.map('ddLiveMap', { zoomControl: false, attributionControl: true, scrollWheelZoom: false });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    DD.baseLayer().addTo(map);
     L.control.zoom({ position: 'topright' }).addTo(map);
     map.setView([C.lat, C.lng], 12);
 

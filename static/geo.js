@@ -108,5 +108,30 @@
     ride: { base: 4.99, perMile: 0.89, perMinute: 0.39 }
   };
 
-  window.DD = { CAMPUS, RATES, search, reverse, route, haversineMiles, money, esc };
+  // Dark base map: sharp vector tiles when WebGL is available, recoloured
+  // raster tiles otherwise.
+  const OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  function hasWebGL() {
+    try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); }
+    catch (e) { return false; }
+  }
+  function baseLayer() {
+    if (window.L && L.maplibreGL && window.maplibregl && hasWebGL()) {
+      const layer = L.maplibreGL({
+        style: 'https://tiles.openfreemap.org/styles/dark',
+        attribution: '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> ' + OSM_ATTR
+      });
+      // The style names a few fill patterns its sprite does not ship; draw them blank
+      layer.once('add', () => {
+        const gl = layer.getMaplibreMap && layer.getMaplibreMap();
+        if (gl) gl.on('styleimagemissing', e => {
+          if (!gl.hasImage(e.id)) gl.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) });
+        });
+      });
+      return layer;
+    }
+    return L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: OSM_ATTR, className: 'dd-raster' });
+  }
+
+  window.DD = { CAMPUS, RATES, search, reverse, route, haversineMiles, money, esc, baseLayer };
 })();

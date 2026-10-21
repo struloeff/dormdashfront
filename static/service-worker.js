@@ -1,5 +1,5 @@
 // DormDash Service Worker
-const CACHE_NAME = 'dormdash-v4';
+const CACHE_NAME = 'dormdash-v5';
 const urlsToCache = [
   '/',
   '/static/dormdash.png',
