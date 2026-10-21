@@ -23,7 +23,7 @@
             }
         })();
     </script>
-    <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+    <!-- Demo mode -->
     <link rel="stylesheet" href="/static/demo.css">
     <script src="/static/geo.js"></script>
     <script src="/static/demo-api.js"></script>
@@ -890,8 +890,8 @@
         const orderToken = urlParams.get('token');  // New secure method
         let currentOrder = null;
 
-        const socket = io(API_URL, {
-            transports: ['websocket', 'polling'],
+        const socket = liveChannel(API_URL, {
+            transports: [],
             reconnection: true,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 30000, // Max 30 seconds between reconnection attempts
@@ -900,7 +900,7 @@
         });
 
         socket.on('connect', () => {
-            console.log('✅ Connected to WebSocket');
+            console.log('✅ Connected to live updates');
             // Reload order data when reconnecting to get latest status
             if (currentOrder) {
                 console.log('Reconnected - refreshing order data');
@@ -909,11 +909,11 @@
         });
 
         socket.on('disconnect', (reason) => {
-            console.log(`❌ Disconnected from WebSocket: ${reason} - will auto-reconnect`);
+            console.log(`❌ Disconnected from live updates: ${reason} - will auto-reconnect`);
         });
 
         socket.on('connect_error', (error) => {
-            console.log(`❌ WebSocket connection error: ${error.message} - will retry`);
+            console.log(`❌ live updates connection error: ${error.message} - will retry`);
         });
 
         socket.on('reconnect_attempt', (attemptNumber) => {
@@ -928,7 +928,7 @@
             // Check against currentOrder.id since orderId may be null when using token
             const orderIdToCheck = currentOrder ? currentOrder.id : orderId;
             if (data.id == orderIdToCheck) {
-                console.log('📦 Order updated via WebSocket:', data);
+                console.log('📦 Order updated via live updates:', data);
                 loadOrder();
             }
         });
@@ -2120,7 +2120,7 @@
             paymentBtn.textContent = 'Processing...';
 
             try {
-                // Create Stripe checkout session using the current order's ID
+                // Create checkout session using the current order's ID
                 // Include order_token for security validation
                 const response = await fetch(`${API_URL}/api/orders/${currentOrder.id}/create-payment`, {
                     method: 'POST',
@@ -2145,7 +2145,7 @@
                 const data = await response.json();
 
                 if (data.checkout_url) {
-                    // Redirect to Stripe checkout
+                    // Redirect to checkout
                     window.location.href = data.checkout_url;
                 } else {
                     throw new Error('No checkout URL received');

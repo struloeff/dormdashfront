@@ -16,7 +16,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
-  <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+  <!-- Demo mode -->
   <link rel="stylesheet" href="/static/demo.css">
   <script src="/static/geo.js"></script>
   <script src="/static/demo-api.js"></script>
@@ -99,7 +99,7 @@
     .result-name{font-weight:700;color:#f4f4f5;font-size:15px;margin-bottom:2px}
     .result-address{font-size:12px;color:#9ca3af;font-weight:500}
     .result-meta{font-size:12px;color:#a1a1aa;margin-top:6px;line-height:1.5}
-    .google-attribution{font-family:Roboto,sans-serif;font-style:normal;font-weight:400;font-size:14px;letter-spacing:normal;white-space:nowrap;color:#ffffff;text-align:center;padding:8px 0 4px;background:rgba(255,255,255,.03);margin:8px 0;border-radius:6px}
+    .place-attribution{font-family:Roboto,sans-serif;font-style:normal;font-weight:400;font-size:14px;letter-spacing:normal;white-space:nowrap;color:#ffffff;text-align:center;padding:8px 0 4px;background:rgba(255,255,255,.03);margin:8px 0;border-radius:6px}
 
     /* ---- Manual entry btn ---- */
     .manual-btn{width:100%;padding:14px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.25);border-radius:12px;color:#fff;font-weight:600;font-size:14px;cursor:pointer;transition:.2s;text-align:center;margin-top:4px}
@@ -531,8 +531,8 @@
      Config
   =========================== */
   const API_URL      = '';  // demo: /api/* is answered by static/demo-api.js
-  const OSRM_BASE    = 'https://router.project-osrm.org/route/v1';
-  const OSRM_DRIVING = 'https://router.project-osrm.org/route/v1/driving';
+  const ROUTE_BASE    = 'https://router.project-osrm.org/route/v1';
+  const ROUTE_DRIVING = 'https://router.project-osrm.org/route/v1/driving';
 
   // $1 delivery sale: Saturday March 28, 2026 (Pacific Time)
   function isSaleActive() {
@@ -590,51 +590,51 @@
   ];
 
   /* ===========================
-     Cloudflare Turnstile
+     Human check
   =========================== */
-  window.turnstileToken = null;
-  window.turnstileTokenExpiry = null;
-  let turnstileRefreshWidget = null;
+  window.humanCheckToken = null;
+  window.humanCheckTokenExpiry = null;
+  let humanCheckRefreshWidget = null;
 
-  function onTurnstileSuccess(token) {
-    window.turnstileToken = token;
-    window.turnstileTokenExpiry = Date.now() + (4 * 60 * 1000);
-    console.log('Turnstile verified, expires in 4 minutes');
+  function onHumanCheckSuccess(token) {
+    window.humanCheckToken = token;
+    window.humanCheckTokenExpiry = Date.now() + (4 * 60 * 1000);
+    console.log('HumanCheck verified, expires in 4 minutes');
     setTimeout(() => {
       console.log('Token about to expire, refreshing...');
-      if (turnstileRefreshWidget) { turnstile.reset(turnstileRefreshWidget); }
+      if (humanCheckRefreshWidget) { humanCheck.reset(humanCheckRefreshWidget); }
     }, 4 * 60 * 1000);
   }
 
-  function onTurnstileRefresh(token) {
-    window.turnstileToken = token;
-    window.turnstileTokenExpiry = Date.now() + (4 * 60 * 1000);
-    console.log('Turnstile token refreshed automatically');
+  function onHumanCheckRefresh(token) {
+    window.humanCheckToken = token;
+    window.humanCheckTokenExpiry = Date.now() + (4 * 60 * 1000);
+    console.log('HumanCheck token refreshed automatically');
     setTimeout(() => {
       console.log('Token about to expire, refreshing...');
-      if (turnstileRefreshWidget) { turnstile.reset(turnstileRefreshWidget); }
+      if (humanCheckRefreshWidget) { humanCheck.reset(humanCheckRefreshWidget); }
     }, 4 * 60 * 1000);
   }
 
-  function isTurnstileTokenValid() {
-    if (!window.turnstileToken) return false;
-    if (!window.turnstileTokenExpiry) return true;
-    return Date.now() < window.turnstileTokenExpiry;
+  function isHumanCheckTokenValid() {
+    if (!window.humanCheckToken) return false;
+    if (!window.humanCheckTokenExpiry) return true;
+    return Date.now() < window.humanCheckTokenExpiry;
   }
 
   async function makeSecureAPICall(url, body) {
-    if (!isTurnstileTokenValid()) {
-      console.warn('Turnstile token expired, requesting new verification...');
-      if (turnstileRefreshWidget) { turnstile.reset(turnstileRefreshWidget); }
+    if (!isHumanCheckTokenValid()) {
+      console.warn('HumanCheck token expired, requesting new verification...');
+      if (humanCheckRefreshWidget) { humanCheck.reset(humanCheckRefreshWidget); }
       await new Promise(resolve => setTimeout(resolve, 2000));
-      if (!isTurnstileTokenValid()) {
+      if (!isHumanCheckTokenValid()) {
         throw new Error('Security verification expired. Please refresh the page.');
       }
     }
     return fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...body, turnstile_token: window.turnstileToken })
+      body: JSON.stringify({ ...body, check_token: window.humanCheckToken })
     });
   }
 
@@ -656,18 +656,18 @@
   }
 
   /* ===========================
-     OSRM helpers
+     Routing helpers
   =========================== */
-  async function osrmSummary(from, to){
+  async function routeSummary(from, to){
     try{
-      const url = `${OSRM_DRIVING}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=false&alternatives=false&steps=false`;
+      const url = `${ROUTE_DRIVING}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=false&alternatives=false&steps=false`;
       const res = await fetch(url);
       const json = await res.json();
       const route = json?.routes?.[0];
       if (!route) return null;
       return { meters: route.distance, seconds: route.duration };
     }catch(e){
-      console.warn('OSRM fetch failed', e);
+      console.warn('Route fetch failed', e);
       return null;
     }
   }
@@ -709,7 +709,7 @@
         show:false,
         createMarker: function(){ return null; },
         router: L.Routing.osrmv1({
-          serviceUrl: OSRM_BASE,
+          serviceUrl: ROUTE_BASE,
           profile: 'driving',
           useHints: false,
           timeout: 8000
@@ -1103,7 +1103,7 @@
           lng:userLocation.lng,
           radius:24140,
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
       let results = await res.json();
@@ -1172,7 +1172,7 @@
             ${attributionHtml}
           </div>`;
       }).join('') + '</div>' +
-      `<div class="google-attribution" role="contentinfo" aria-label="Place data attribution" translate="no">Places from OpenStreetMap</div>`;
+      `<div class="place-attribution" role="contentinfo" aria-label="Place data attribution" translate="no">Places from OpenStreetMap</div>`;
 
       document.getElementById('manualEntryBtn').style.display = 'block';
 
@@ -1217,7 +1217,7 @@
 
       const to = { lat:r.lat, lng:r.lng };
       const from = userLocation;
-      const summary = await osrmSummary(from, to);
+      const summary = await routeSummary(from, to);
       if (!summary){
         metaEl.textContent = 'Road route unavailable.';
         continue;
@@ -1555,7 +1555,7 @@
         body: JSON.stringify({
           address,
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
 
@@ -1962,19 +1962,19 @@
 
 
   /* ===========================
-     Page Load Turnstile Gate
+     Page Load HumanCheck Gate
   =========================== */
-  function onPageLoadTurnstileSuccess(token) {
+  function onPageLoadHumanCheckSuccess(token) {
     console.log('Page load verification passed');
 
-    window.turnstileToken = token;
-    window.turnstileTokenExpiry = Date.now() + (4 * 60 * 1000);
+    window.humanCheckToken = token;
+    window.humanCheckTokenExpiry = Date.now() + (4 * 60 * 1000);
 
-    fetch(`${API_URL}/api/security/validate-turnstile`, {
+    fetch(`${API_URL}/api/security/validate-check`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        turnstile_token: token,
+        check_token: token,
         browser_fingerprint: generateBrowserFingerprint()
       })
     }).then(response => {
@@ -1991,8 +1991,8 @@
 
     setTimeout(() => {
       console.log('Token about to expire, refreshing...');
-      if (turnstileRefreshWidget) {
-        turnstile.reset(turnstileRefreshWidget);
+      if (humanCheckRefreshWidget) {
+        humanCheck.reset(humanCheckRefreshWidget);
       }
     }, 4 * 60 * 1000);
 
@@ -2004,9 +2004,9 @@
     }, 100);
   }
 
-  // Demo mode: no Cloudflare Turnstile, continue as if verification passed
+  // Demo mode: no Human check, continue as if verification passed
   window.addEventListener('DOMContentLoaded', () => {
-    onPageLoadTurnstileSuccess('demo-token');
+    onPageLoadHumanCheckSuccess('demo-token');
   });
 
   </script>

@@ -1,7 +1,4 @@
-// DormDash demo: client-side place search + routing.
-// The live service did this server-side (Google Places, with OpenStreetMap
-// Nominatim + OSRM as the free fallback). The archived site calls the
-// OpenStreetMap services directly from the browser and stores nothing.
+// DormDash demo: client-side place search + routing. Stores nothing.
 (function () {
   const CAMPUS = {
     name: 'Pepperdine University',
@@ -10,10 +7,10 @@
     lng: -118.7108
   };
 
-  const NOMINATIM = 'https://nominatim.openstreetmap.org';
-  const OSRM = 'https://router.project-osrm.org/route/v1/driving';
+  const GEOCODER = 'https://nominatim.openstreetmap.org';
+  const ROUTER = 'https://router.project-osrm.org/route/v1/driving';
 
-  // Nominatim's usage policy allows ~1 request per second per client.
+  // The geocoder allows ~1 request per second per client.
   let lastCall = 0;
   async function throttle() {
     const wait = lastCall + 1100 - Date.now();
@@ -41,7 +38,7 @@
     if (cache.has(key)) return cache.get(key);
     await throttle();
     const box = [near.lng - 0.6, near.lat + 0.6, near.lng + 0.6, near.lat - 0.6].join(',');
-    const url = `${NOMINATIM}/search?format=jsonv2&limit=${limit}&countrycodes=us&viewbox=${box}&q=${encodeURIComponent(q)}`;
+    const url = `${GEOCODER}/search?format=jsonv2&limit=${limit}&countrycodes=us&viewbox=${box}&q=${encodeURIComponent(q)}`;
     const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
     if (!res.ok) throw new Error('Place search is unavailable right now (' + res.status + ')');
     const data = await res.json();
@@ -56,7 +53,7 @@
 
   async function reverse(lat, lng) {
     await throttle();
-    const res = await fetch(`${NOMINATIM}/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, { headers: { 'Accept-Language': 'en' } });
+    const res = await fetch(`${GEOCODER}/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, { headers: { 'Accept-Language': 'en' } });
     if (!res.ok) throw new Error('Could not look up that location');
     const r = await res.json();
     return splitName(r).address || r.display_name || 'Your location';
@@ -75,7 +72,7 @@
     if (cache.has(key)) return cache.get(key);
     let out;
     try {
-      const res = await fetch(`${OSRM}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`);
+      const res = await fetch(`${ROUTER}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`);
       const data = await res.json();
       if (!res.ok || data.code !== 'Ok' || !data.routes.length) throw new Error(data.message || 'no route');
       const r = data.routes[0];
@@ -86,7 +83,7 @@
         estimated: false
       };
     } catch (e) {
-      // Public OSRM is best-effort; fall back to a road-factor estimate.
+      // Public routing is best-effort; fall back to a road-factor estimate.
       const miles = haversineMiles(from, to) * 1.35;
       out = {
         miles,
@@ -105,7 +102,7 @@
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
-  // Real DormDash rate cards (from the production backend)
+  // Real DormDash rate cards
   const RATES = {
     food: { base: 5.99, service: 0.15, perMile: 0.39, farAway: 7.99, farLimit: 10, platform: 0.49, tax: 0.0975 },
     ride: { base: 4.99, perMile: 0.89, perMinute: 0.39 }

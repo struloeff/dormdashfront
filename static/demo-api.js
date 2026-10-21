@@ -1,13 +1,12 @@
 // DormDash demo backend.
 //
-// The original customer pages talked to a Flask API (main.py) plus Socket.IO.
-// The server is gone, so this file answers those same /api/* requests inside
-// the browser with responses shaped like the ones main.py returned. The page
-// code itself is the original code, unchanged in how it calls the API.
+// The original service is gone, so this file answers the pages' /api/*
+// requests inside the browser with the same response shapes. The page code
+// itself is the original code, unchanged in how it calls the API.
 //
 // Nothing leaves the browser: demo orders (including any name or phone number
 // typed into the form) live only in this browser's localStorage. Place search,
-// reverse geocoding and routing go to OpenStreetMap services via static/geo.js.
+// reverse geocoding and routing go through static/geo.js.
 //
 // Load order: geo.js, then this file, then the page's own scripts.
 (function () {
@@ -49,7 +48,7 @@
 
   /* ------------------------------------------------------------------
      Status timeline (compressed: the whole lifecycle takes about a minute)
-     Uses the real status strings from main.py / the driver dashboard.
+     Uses the real status strings from the live service.
   ------------------------------------------------------------------ */
   const DRIVER = 'Demo Driver';
   // Before payment: offsets from when the order was placed.
@@ -80,7 +79,7 @@
     return (4.99 + (h % 9)).toFixed(2);
   }
 
-  // Same formula as PATCH /api/orders/<id>/menu-items in main.py
+  // Same formula the live service used when a bill was confirmed
   function recomputeFoodBreakdown(order) {
     const old = order.cost_breakdown || {};
     const rate = parseFloat(old.sales_tax_rate || 0.0975);
@@ -182,7 +181,7 @@
     return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} hr ${minutes % 60} min`;
   }
 
-  // Google polyline encoding (precision 5), what the `polyline` lib produced.
+  // Encoded polyline (precision 5), the format the ride page decodes.
   function encodePolyline(coords) {
     let out = '', pLat = 0, pLng = 0;
     const enc = v => {
@@ -201,7 +200,7 @@
 
   function placeResult(r, near) {
     const miles = window.DD.haversineMiles(near, { lat: r.lat, lng: r.lng });
-    const seconds = Math.round((miles / 30) * 3600); // main.py: 30 mph estimate
+    const seconds = Math.round((miles / 30) * 3600); // 30 mph estimate
     const text = durationText(seconds / 60);
     return {
       place_id: `osm_${r.lat.toFixed(6)}_${r.lng.toFixed(6)}`,
@@ -232,7 +231,7 @@
     return db.orders[String(id)];
   }
   function tokenOk(o, body) {
-    // main.py required the order token on customer actions
+    // the order token is required on customer actions
     return o && (!body.order_token || body.order_token === o.order_token);
   }
 
@@ -282,8 +281,8 @@
       return json({ success: true, address: body.address || '', tax_rate: 0.0975, tax_percentage: 9.75 });
     }
 
-    // --- Security (Turnstile, form tokens) -------------------------------
-    if (path === '/api/security/validate-turnstile') {
+    // --- Security checks ----------------------------------------------
+    if (path === '/api/security/validate-check') {
       return json({ success: true, message: 'Token validated and cached' });
     }
     if (path === '/api/security/form-token') {
@@ -322,7 +321,7 @@
       const d = { lat: +body.dropoff_lat, lng: +body.dropoff_lng };
       if (!body.customer_name || [p.lat, p.lng, d.lat, d.lng].some(isNaN)) return json({ error: 'Error code: 4026' }, 400);
       const r = await window.DD.route(p, d);
-      // Same pricing as create_rideshare_ride() in main.py
+      // Same pricing the live service used for rides
       const BASE_FARE = 4.99, PER_MILE = 0.89, PER_MINUTE = 0.39, CUT = 0.1732, FLAT = 0.49;
       const minutes = r.minutes;
       const tip = parseFloat(body.tip_amount) || 0;
@@ -387,8 +386,8 @@
 
       if (action === 'create-payment' && method === 'POST') {
         if (!tokenOk(o, body)) return json({ error: 'Error code: 5041' }, 403);
-        // No Stripe in the demo: mark the order paid and send the customer to
-        // the page Stripe's success_url pointed at.
+        // No payments in the demo: mark the order paid and send the customer
+        // back to the tracking page as a completed checkout would.
         if (!o.payment_confirmed) {
           const now = Date.now();
           o.payment_confirmed = true;
@@ -463,7 +462,7 @@
   };
 
   /* ------------------------------------------------------------------
-     Socket.IO stand-in: emits 'order_update' when a demo order moves on.
+     Live-updates stand-in: emits 'order_update' when a demo order moves on.
   ------------------------------------------------------------------ */
   const sockets = new Set();
   function makeSocket() {
@@ -483,7 +482,7 @@
     setTimeout(() => { if (sock.connected) sock._fire('connect'); }, 0);
     return sock;
   }
-  window.io = function () { return makeSocket(); };
+  window.liveChannel = function () { return makeSocket(); };
 
   const lastStatus = {};
   setInterval(() => {

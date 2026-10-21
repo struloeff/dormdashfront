@@ -668,8 +668,8 @@
     text-align: center;
   }
 
-  /* Turnstile Verification Modal */
-  .turnstile-modal {
+  /* HumanCheck Verification Modal */
+  .humanCheck-modal {
     display: none;
     position: fixed;
     top: 0;
@@ -685,11 +685,11 @@
     animation: fadeIn 0.3s ease-out;
   }
 
-  .turnstile-modal.active {
+  .humanCheck-modal.active {
     display: flex;
   }
 
-  .turnstile-modal-content {
+  .humanCheck-modal-content {
     background: linear-gradient(145deg, rgba(26, 35, 50, 0.95), rgba(19, 24, 36, 0.95));
     border: 1px solid rgba(253, 45, 0, 0.2);
     border-radius: 24px;
@@ -712,12 +712,12 @@
     }
   }
 
-  .turnstile-modal-header {
+  .humanCheck-modal-header {
     text-align: center;
     margin-bottom: 32px;
   }
 
-  .turnstile-modal-icon {
+  .humanCheck-modal-icon {
     width: 64px;
     height: 64px;
     margin: 0 auto 20px;
@@ -741,7 +741,7 @@
     }
   }
 
-  .turnstile-modal-title {
+  .humanCheck-modal-title {
     font-size: 24px;
     font-weight: 800;
     color: var(--text-primary);
@@ -749,19 +749,19 @@
     letter-spacing: -0.02em;
   }
 
-  .turnstile-modal-subtitle {
+  .humanCheck-modal-subtitle {
     font-size: 15px;
     color: var(--text-secondary);
     line-height: 1.6;
   }
 
-  .turnstile-widget-container {
+  .humanCheck-widget-container {
     display: flex;
     justify-content: center;
     margin-bottom: 24px;
   }
 
-  .turnstile-modal-note {
+  .humanCheck-modal-note {
     text-align: center;
     font-size: 13px;
     color: var(--text-muted);
@@ -2337,12 +2337,11 @@
         <ul class="driver-benefits">
           <li><div><strong>$18–$25 / hour</strong><br><span style="color: var(--text-muted);">Most of each fare and 100% of tips went to the driver</span></div></li>
           <li><div><strong>Work between classes</strong><br><span style="color: var(--text-muted);">Claim jobs when you're free, ignore them when you're not</span></div></li>
-          <li><div><strong>A real contract</strong><br><span style="color: var(--text-muted);">Independent-contractor agreement, signed in the browser before the first job</span></div></li>
+          <li><div><strong>A real contract</strong><br><span style="color: var(--text-muted);">Every driver signed an independent-contractor agreement before their first job</span></div></li>
         </ul>
 
         <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;" class="driver-cta-buttons">
           <a href="/drivers.html" class="btn btn-primary driver-cta-btn">How driving worked</a>
-          <a href="/static/driver_contract.pdf" class="btn btn-primary driver-cta-btn" target="_blank" rel="noopener">Read the driver contract (PDF)</a>
         </div>
       </div>
     </div>

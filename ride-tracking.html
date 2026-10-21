@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/static/icon.ico">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-    <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+    <!-- Demo mode -->
     <link rel="stylesheet" href="/static/demo.css">
     <script src="/static/geo.js"></script>
     <script src="/static/demo-api.js"></script>
@@ -1297,19 +1297,19 @@
             // Update timeline
             updateTimeline(order);
 
-            // Connect to WebSocket for real-time updates
-            connectWebSocket(order.id);
+            // Connect to live updates for real-time updates
+            connectLive(order.id);
         }
 
         let reconnectAttempts = 0;
         const MAX_RECONNECT_DELAY = 30000; // Max 30 seconds between reconnection attempts
 
-        function connectWebSocket(orderId) {
+        function connectLive(orderId) {
             if (socket) {
                 socket.close();
             }
 
-            socket = io(API_URL, {
+            socket = liveChannel(API_URL, {
                 reconnection: true,
                 reconnectionDelay: 1000,
                 reconnectionDelayMax: MAX_RECONNECT_DELAY,
@@ -1319,7 +1319,7 @@
             });
 
             socket.on('connect', () => {
-                console.log('✅ Connected to WebSocket');
+                console.log('✅ Connected to live updates');
                 reconnectAttempts = 0; // Reset on successful connection
                 socket.emit('join_order', { order_id: orderId });
             });
@@ -1336,14 +1336,14 @@
             });
 
             socket.on('disconnect', (reason) => {
-                console.log(`❌ Disconnected from WebSocket: ${reason}`);
-                // Socket.IO will automatically try to reconnect - no manual intervention needed
+                console.log(`❌ Disconnected from live updates: ${reason}`);
+                // live updates will automatically try to reconnect - no manual intervention needed
             });
 
             socket.on('connect_error', (error) => {
                 reconnectAttempts++;
                 const delay = Math.min(1000 * Math.pow(2, Math.min(reconnectAttempts, 5)), MAX_RECONNECT_DELAY);
-                console.log(`❌ WebSocket connection error: ${error.message} - will retry in ${delay/1000}s`);
+                console.log(`❌ live updates connection error: ${error.message} - will retry in ${delay/1000}s`);
             });
 
             socket.on('reconnect_attempt', (attemptNumber) => {
@@ -1361,10 +1361,10 @@
 
             socket.on('reconnect_failed', () => {
                 console.log('⚠️ Reconnection attempts paused, will retry in 30s...');
-                // Even if Socket.IO pauses, we manually retry after a delay
+                // Even if live updates pauses, we manually retry after a delay
                 setTimeout(() => {
                     console.log('🔄 Manual reconnection attempt');
-                    connectWebSocket(orderId);
+                    connectLive(orderId);
                 }, MAX_RECONNECT_DELAY);
             });
         }
@@ -1474,7 +1474,7 @@
             paymentBtn.textContent = 'Processing...';
 
             try {
-                // Create Stripe checkout session using the current order's ID
+                // Create checkout session using the current order's ID
                 // Include order_token for security validation
                 const response = await fetch(`${API_URL}/api/orders/${currentOrder.id}/create-payment`, {
                     method: 'POST',
@@ -1493,7 +1493,7 @@
                 const data = await response.json();
 
                 if (data.checkout_url) {
-                    // Redirect to Stripe checkout
+                    // Redirect to checkout
                     window.location.href = data.checkout_url;
                 } else {
                     throw new Error('No checkout URL received');
@@ -1838,18 +1838,18 @@
             loadOrder();
         });
 
-        // Reconnect WebSocket when page becomes visible
+        // Reconnect live updates when page becomes visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && currentOrderId) {
-                console.log('👀 Page became visible, checking WebSocket connection...');
+                console.log('👀 Page became visible, checking live updates connection...');
 
                 // If socket is disconnected or not initialized, reconnect
                 if (!socket || !socket.connected) {
-                    console.log('🔄 WebSocket not connected, reconnecting...');
-                    connectWebSocket(currentOrderId);
+                    console.log('🔄 live updates not connected, reconnecting...');
+                    connectLive(currentOrderId);
                     loadOrder(); // Also reload data
                 } else {
-                    console.log('✅ WebSocket already connected');
+                    console.log('✅ live updates already connected');
                     // Still reload order to get latest data
                     loadOrder();
                 }

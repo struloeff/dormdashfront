@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Demo mode: the Flask API and Socket.IO server are gone; static/demo-api.js answers /api/* in the browser -->
+  <!-- Demo mode -->
   <link rel="stylesheet" href="/static/demo.css">
   <script src="/static/geo.js"></script>
   <script src="/static/demo-api.js"></script>
@@ -147,7 +147,7 @@
     .sr-name{font-weight:700;font-size:15px;margin-bottom:2px}
     .sr-addr{font-size:12px;color:#888;font-weight:500}
     .sr-meta{font-size:11px;color:#666;margin-top:4px}
-    .google-attr{font-size:11px;color:#555;text-align:center;padding:6px 0;font-weight:500}
+    .place-attr{font-size:11px;color:#555;text-align:center;padding:6px 0;font-weight:500}
 
     /* ---- Selected Location Card ---- */
     .selected-card{
@@ -742,8 +742,8 @@
      Config
   =========================== */
   const API_URL = '';  // demo: /api/* is answered by static/demo-api.js
-  const OSRM_BASE = 'https://router.project-osrm.org/route/v1';
-  const OSRM_DRIVING = 'https://router.project-osrm.org/route/v1/driving';
+  const ROUTE_BASE = 'https://router.project-osrm.org/route/v1';
+  const ROUTE_DRIVING = 'https://router.project-osrm.org/route/v1/driving';
 
   const BASE_FARE = 4.99;
   const PER_MILE = 0.89;
@@ -777,28 +777,28 @@
   let selectedCampusDropoff = '';
 
   /* ===========================
-     Cloudflare Turnstile
+     Human check
   =========================== */
-  window.turnstileToken = null;
-  window.turnstileTokenExpiry = null;
-  let turnstileRefreshWidget = null;
+  window.humanCheckToken = null;
+  window.humanCheckTokenExpiry = null;
+  let humanCheckRefreshWidget = null;
 
-  function onTurnstileSuccess(token) {
-    window.turnstileToken = token;
-    window.turnstileTokenExpiry = Date.now() + (5 * 60 * 1000);
-    console.log('Turnstile verified, token valid for 5 minutes');
+  function onHumanCheckSuccess(token) {
+    window.humanCheckToken = token;
+    window.humanCheckTokenExpiry = Date.now() + (5 * 60 * 1000);
+    console.log('HumanCheck verified, token valid for 5 minutes');
   }
 
-  function onTurnstileRefresh(token) {
-    window.turnstileToken = token;
-    window.turnstileTokenExpiry = Date.now() + (5 * 60 * 1000);
-    console.log('Turnstile token refreshed');
+  function onHumanCheckRefresh(token) {
+    window.humanCheckToken = token;
+    window.humanCheckTokenExpiry = Date.now() + (5 * 60 * 1000);
+    console.log('HumanCheck token refreshed');
 
-    fetch(`${API_URL}/api/security/validate-turnstile`, {
+    fetch(`${API_URL}/api/security/validate-check`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        turnstile_token: token,
+        check_token: token,
         browser_fingerprint: generateBrowserFingerprint()
       })
     }).then(response => {
@@ -809,42 +809,42 @@
   }
 
   function initializeRefreshWidget() {
-    if (turnstileRefreshWidget) {
-      turnstile.reset(turnstileRefreshWidget);
+    if (humanCheckRefreshWidget) {
+      humanCheck.reset(humanCheckRefreshWidget);
       return;
     }
-    if (typeof turnstile === 'undefined') {
-      console.error('Turnstile API not loaded');
+    if (typeof humanCheck === 'undefined') {
+      console.error('HumanCheck API not loaded');
       return;
     }
-    const container = document.getElementById('turnstile-refresh');
+    const container = document.getElementById('humanCheck-refresh');
     if (!container) return;
 
     const widgetDiv = document.createElement('div');
-    widgetDiv.className = 'cf-turnstile';
+    widgetDiv.className = 'human-check';
     widgetDiv.setAttribute('data-sitekey', 'demo');
-    widgetDiv.setAttribute('data-callback', 'onTurnstileRefresh');
+    widgetDiv.setAttribute('data-callback', 'onHumanCheckRefresh');
     widgetDiv.setAttribute('data-theme', 'light');
     widgetDiv.setAttribute('data-size', 'invisible');
     container.appendChild(widgetDiv);
 
-    turnstileRefreshWidget = turnstile.render(widgetDiv);
+    humanCheckRefreshWidget = humanCheck.render(widgetDiv);
   }
 
-  function isTurnstileTokenValid() {
-    if (!window.turnstileToken) return false;
-    if (!window.turnstileTokenExpiry) return true;
-    return Date.now() < window.turnstileTokenExpiry;
+  function isHumanCheckTokenValid() {
+    if (!window.humanCheckToken) return false;
+    if (!window.humanCheckTokenExpiry) return true;
+    return Date.now() < window.humanCheckTokenExpiry;
   }
 
   async function makeSecureAPICall(url, body) {
-    if (!isTurnstileTokenValid()) {
-      console.warn('Turnstile token expired, requesting new verification...');
-      if (turnstileRefreshWidget) {
-        turnstile.reset(turnstileRefreshWidget);
+    if (!isHumanCheckTokenValid()) {
+      console.warn('HumanCheck token expired, requesting new verification...');
+      if (humanCheckRefreshWidget) {
+        humanCheck.reset(humanCheckRefreshWidget);
       }
       await new Promise(resolve => setTimeout(resolve, 2000));
-      if (!isTurnstileTokenValid()) {
+      if (!isHumanCheckTokenValid()) {
         throw new Error('Security verification expired. Please refresh the page.');
       }
     }
@@ -853,7 +853,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...body,
-        turnstile_token: window.turnstileToken
+        check_token: window.humanCheckToken
       })
     });
   }
@@ -1350,7 +1350,7 @@
           lng: PEPPERDINE_LOCATION.lng,
           service_type: 'rideshare',
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
       const results = await res.json();
@@ -1377,7 +1377,7 @@
             ${attrHtml}
           </div>
         `;
-      }).join('') + '<div class="google-attr" translate="no">Places from OpenStreetMap</div>';
+      }).join('') + '<div class="place-attr" translate="no">Places from OpenStreetMap</div>';
 
       resultsDiv.querySelectorAll('.search-result').forEach((item, idx) => {
         item.onclick = () => selectDestinationResult(results[idx]);
@@ -1425,8 +1425,8 @@
     const origin = userLocation || PEPPERDINE_LOCATION;
     const sheetH = document.getElementById('bottomSheet').offsetHeight || 300;
 
-    // Fetch route from OSRM and draw it
-    fetch(`${OSRM_DRIVING}/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=polyline`)
+    // Fetch route and draw it
+    fetch(`${ROUTE_DRIVING}/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=polyline`)
       .then(r => r.json())
       .then(data => {
         if(data.routes && data.routes.length > 0){
@@ -1486,7 +1486,7 @@
         body: JSON.stringify({
           address: address,
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
       const data = await res.json();
@@ -1557,7 +1557,7 @@
           lng: searchLng,
           service_type: 'rideshare',
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
       const results = await res.json();
@@ -1584,7 +1584,7 @@
             ${attrHtml}
           </div>
         `;
-      }).join('') + '<div class="google-attr" translate="no">Places from OpenStreetMap</div>';
+      }).join('') + '<div class="place-attr" translate="no">Places from OpenStreetMap</div>';
 
       resultsDiv.querySelectorAll('.search-result').forEach((item, idx) => {
         item.onclick = () => selectPickupResult(results[idx]);
@@ -1683,7 +1683,7 @@
           lat: userLocation.lat,
           lng: userLocation.lng,
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
       const data = await res.json();
@@ -1721,7 +1721,7 @@
         body: JSON.stringify({
           address: address,
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
       const data = await res.json();
@@ -1788,8 +1788,8 @@
         browser_fingerprint: fingerprint
       };
 
-      if (window.turnstileToken) {
-        requestBody.cf_turnstile_response = window.turnstileToken;
+      if (window.humanCheckToken) {
+        requestBody.check_response = window.humanCheckToken;
       }
 
       const res = await fetch(`${API_URL}/api/directions`, {
@@ -2288,7 +2288,7 @@
           lat: userLocation.lat,
           lng: userLocation.lng,
           browser_fingerprint: fingerprint,
-          turnstile_token: window.turnstileToken
+          check_token: window.humanCheckToken
         })
       });
       const data = await res.json();
@@ -2324,19 +2324,19 @@
   });
 
   /* ===========================
-     Page Load Turnstile Gate
+     Page Load HumanCheck Gate
   =========================== */
-  function onPageLoadTurnstileSuccess(token) {
+  function onPageLoadHumanCheckSuccess(token) {
     console.log('Page load verification passed');
 
-    window.turnstileToken = token;
-    window.turnstileTokenExpiry = Date.now() + (5 * 60 * 1000);
+    window.humanCheckToken = token;
+    window.humanCheckTokenExpiry = Date.now() + (5 * 60 * 1000);
 
-    fetch(`${API_URL}/api/security/validate-turnstile`, {
+    fetch(`${API_URL}/api/security/validate-check`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        turnstile_token: token,
+        check_token: token,
         browser_fingerprint: generateBrowserFingerprint()
       })
     }).then(response => {
@@ -2354,9 +2354,9 @@
     }, 100);
   }
 
-  // Demo mode: no Cloudflare Turnstile, continue as if verification passed
+  // Demo mode: no Human check, continue as if verification passed
   window.addEventListener('DOMContentLoaded', () => {
-    onPageLoadTurnstileSuccess('demo-token');
+    onPageLoadHumanCheckSuccess('demo-token');
     // after the (campus) location fix has picked a direction
     setTimeout(applyEstimatorPrefill, 700);
   });

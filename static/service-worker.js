@@ -49,11 +49,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip WebSocket connections
-  if (event.request.url.includes('socket.io')) {
-    return;
-  }
-
   const url = new URL(event.request.url);
   const isStaticAsset = url.pathname.includes('/static/');
 

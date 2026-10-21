@@ -2,12 +2,12 @@
 .dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px;position:relative;z-index:10000}
 .dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline}
 
-/* OpenStreetMap tiles, recoloured to keep the original dark map look
-   (the CARTO dark tiles the live app used now need an API key). */
+/* Map tiles, recoloured to keep the original dark map look. */
 .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6)}
 .leaflet-container{background:#1b1d22}
 
-/* OSM's licence requires attribution: keep it, small and dark. */
+/* Map data attribution: small and dark. */
 .leaflet-control-attribution.leaflet-control{display:block!important;background:rgba(10,10,12,.62)!important;color:#8b8b94!important;font:500 10px/1.5 Inter,system-ui,sans-serif!important;padding:1px 7px!important;border-radius:0 0 0 6px;margin:0!important}
 .leaflet-control-attribution a{color:#c4c4cc!important;text-decoration:none}
 .leaflet-control-attribution svg{display:none!important}
+.leaflet-control-attribution a[href*="leafletjs"],.leaflet-control-attribution a[href*="leafletjs"] + span{display:none}
