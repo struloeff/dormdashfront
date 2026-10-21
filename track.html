@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0a0e1a" />
+<title>DormDash — Live Tracking Demo</title>
+<link rel="icon" type="image/x-icon" href="/static/icon.ico">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{--brand:#FD2D00;--ride:#8b5cf6;--bg:#0a0e1a;--text:#fff;--text-2:#a0aec0;--muted:#6b7280;--border:rgba(255,255,255,.08);--ok:#10b981}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  .dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px}
+  .dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;text-decoration:none;color:#fff}
+  .logo i{width:34px;height:34px;background:url('/static/dormdash.png') center/contain no-repeat}
+  .back{color:var(--text-2);text-decoration:none;font-weight:600;font-size:14px}
+  .layout{display:grid}
+  #map{height:46vh;min-height:280px;background:#0d111c}
+  @media(min-width:900px){.layout{grid-template-columns:1fr 420px;height:calc(100vh - 106px)}#map{height:100%}.panel{overflow-y:auto}}
+  .panel{padding:22px 20px 40px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:26px;font-weight:900;letter-spacing:-.03em;line-height:1.15;margin-top:4px}
+  .sub{color:var(--text-2);font-size:14px;margin-top:4px}
+  .eta{display:flex;gap:12px;margin:18px 0}
+  .eta div{flex:1;border:1px solid var(--border);border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.02)}
+  .eta b{display:block;font-size:24px;font-weight:900;letter-spacing:-.02em}
+  .eta span{font-size:12px;color:var(--muted)}
+  .bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:20px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),#ff8a3d);transition:width .3s linear}
+  .ride .bar i{background:linear-gradient(90deg,#6366f1,var(--ride))}
+  ol{list-style:none;position:relative}
+  ol li{position:relative;padding:0 0 18px 34px;color:var(--muted)}
+  ol li::before{content:'';position:absolute;left:8px;top:6px;width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:var(--bg)}
+  ol li::after{content:'';position:absolute;left:13px;top:22px;bottom:0;width:2px;background:rgba(255,255,255,.08)}
+  ol li:last-child::after{display:none}
+  ol li b{display:block;font-weight:700;font-size:15px}
+  ol li small{font-size:13px}
+  ol li.done{color:var(--text-2)}
+  ol li.done::before{background:var(--ok);border-color:var(--ok)}
+  ol li.now{color:#fff}
+  ol li.now::before{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 6px rgba(253,45,0,.2);animation:pulse 1.4s ease-in-out infinite}
+  .ride ol li.now::before{background:var(--ride);border-color:var(--ride);box-shadow:0 0 0 6px rgba(139,92,246,.22)}
+  @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(253,45,0,.05)}}
+  .action{display:none;margin:4px 0 20px;padding:16px;border-radius:14px;border:1px solid rgba(253,45,0,.35);background:rgba(253,45,0,.08)}
+  .action.on{display:block}
+  .action p{font-size:14px;color:var(--text-2);margin:4px 0 12px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:12px;border:none;font:700 14px Inter,system-ui,sans-serif;color:#fff;background:linear-gradient(135deg,#FD2D00,#ff4500);cursor:pointer;text-decoration:none}
+  .btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .photo{height:120px;border-radius:12px;margin:10px 0 12px;display:grid;place-items:center;text-align:center;font-size:13px;color:var(--text-2);background:repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0 12px,rgba(255,255,255,.06) 12px 24px);border:1px solid var(--border)}
+  .stars button{background:none;border:none;font-size:26px;cursor:pointer;filter:grayscale(1);opacity:.5}
+  .stars button.on{filter:none;opacity:1}
+  .receipt{margin-top:22px;border-top:1px solid var(--border);padding-top:16px;font-size:14px}
+  .receipt .r{display:flex;justify-content:space-between;gap:10px;padding:4px 0;color:var(--text-2)}
+  .receipt .r span:last-child{color:#fff}
+  .receipt .r.t{font-weight:800;color:#fff;font-size:16px;padding-top:8px}
+  .speed{margin-top:18px;font-size:12px;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:#1a2332;border:1px solid rgba(255,255,255,.12);padding:12px 18px;border-radius:12px;font-size:14px;transition:transform .3s;z-index:2000;max-width:calc(100% - 32px)}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+  .pin{font-size:24px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+  .car{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:#fff;box-shadow:0 0 0 4px rgba(253,45,0,.45),0 4px 12px rgba(0,0,0,.5)}
+  .ride .car{box-shadow:0 0 0 4px rgba(139,92,246,.5),0 4px 12px rgba(0,0,0,.5)}
+  .leaflet-container{font-family:Inter,system-ui,sans-serif;background:#0d111c}
+  .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6)}
+  .leaflet-control-attribution{background:rgba(10,14,26,.75)!important;color:#8b93a7!important}
+  .leaflet-control-attribution a{color:#c3c9d6!important}
+</style>
+</head>
+<body>
+<div class="dd-archive-bar">Simulated tracking: the routes are real, the driver isn't. DormDash wound down in spring 2026. <a href="/#about">About the project</a></div>
+<header>
+  <a class="logo" href="/"><i></i><span>DormDash</span></a>
+  <a class="back" id="backLink" href="/order.html">← New order</a>
+</header>
+
+<div class="layout">
+  <div id="map" role="img" aria-label="Map showing the delivery route"></div>
+  <div class="panel">
+    <div class="eyebrow" id="eyebrow">Order #DD-0000</div>
+    <h1 id="title">Loading…</h1>
+    <p class="sub" id="sub"></p>
+
+    <div class="eta">
+      <div><b id="etaMin">–</b><span id="etaLabel">min to delivery</span></div>
+      <div><b id="distLeft">–</b><span>miles left</span></div>
+    </div>
+    <div class="bar"><i id="progress"></i></div>
+
+    <div class="action" id="payCard">
+      <b>Receipt confirmed: <span id="billAmt"></span></b>
+      <p>Your driver entered the real prices from the receipt. On the live service you'd pay through Stripe Checkout here.</p>
+      <div class="btns"><button class="btn" id="payBtn" type="button">Pay (demo) →</button></div>
+    </div>
+
+    <div class="action" id="doneCard">
+      <b id="doneTitle">Delivered!</b>
+      <div class="photo" id="photo">📸<br>Delivery photo uploaded by your driver</div>
+      <p id="doneText">How did it go?</p>
+      <div class="stars" id="stars"></div>
+      <div class="btns" style="margin-top:10px">
+        <button class="btn" type="button" onclick="toast('Delivery confirmed. In production this released the driver\'s payout.')">Confirm delivery</button>
+        <button class="btn btn-ghost" type="button" onclick="toast('Disputes went to the admin panel for a refund or credit.')">Report a problem</button>
+      </div>
+    </div>
+
+    <ol id="steps"></ol>
+
+    <div class="receipt" id="receipt"></div>
+    <p class="speed">Running at demo speed. Distances and drive times come from a real OSRM route; the timing is compressed so the whole trip takes about 40 seconds.</p>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/static/geo.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const qs = new URLSearchParams(location.search);
+const type = qs.get('type') === 'ride' ? 'ride' : 'food';
+const C = DD.CAMPUS;
+document.body.classList.toggle('ride', type === 'ride');
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 3200);
+}
+
+// Place from the URL, or a sensible default so the page still works if opened directly
+const lat = parseFloat(qs.get('lat')), lng = parseFloat(qs.get('lng'));
+const place = Number.isFinite(lat) && Number.isFinite(lng)
+  ? { name: qs.get('name') || 'Selected place', address: qs.get('addr') || '', lat, lng }
+  : type === 'ride'
+    ? { name: 'Santa Monica Pier', address: 'Santa Monica, CA', lat: 34.0092, lng: -118.4976 }
+    : { name: 'Chick-fil-A', address: 'Calabasas, CA', lat: 34.1446, lng: -118.6981 };
+
+let order = null;
+try { order = JSON.parse(sessionStorage.getItem('dd-demo-order') || 'null'); } catch (e) {}
+if (order && (order.type !== 'food' || order.restaurant.name !== place.name)) order = null;
+const dorm = qs.get('dorm') || (order && order.dorm) || 'Seaside';
+const orderNo = 'DD-' + String(1000 + Math.floor(Math.random() * 9000));
+
+// Map
+const map = L.map('map', { zoomControl: false, attributionControl: true });
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · routes <a href="https://project-osrm.org/">OSRM</a>'
+}).addTo(map);
+const pin = (emoji) => L.divIcon({ className: '', html: `<div class="pin">${emoji}</div>`, iconSize: [26, 26], iconAnchor: [13, 24] });
+const car = L.marker([C.lat, C.lng], { icon: L.divIcon({ className: '', html: `<div class="car">${type === 'ride' ? '🚗' : '🛵'}</div>`, iconSize: [34, 34], iconAnchor: [17, 17] }), zIndexOffset: 1000 });
+
+// Walk a polyline by distance fraction
+function prepare(coords) {
+  const cum = [0];
+  for (let i = 1; i < coords.length; i++) {
+    cum.push(cum[i - 1] + DD.haversineMiles({ lat: coords[i - 1][0], lng: coords[i - 1][1] }, { lat: coords[i][0], lng: coords[i][1] }));
+  }
+  return { coords, cum, len: cum[cum.length - 1] || 1 };
+}
+function pointAt(p, f) {
+  const d = f * p.len;
+  let i = p.cum.findIndex(c => c >= d);
+  if (i <= 0) return p.coords[Math.max(0, i)];
+  const seg = p.cum[i] - p.cum[i - 1] || 1, t = (d - p.cum[i - 1]) / seg;
+  const a = p.coords[i - 1], b = p.coords[i];
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let steps = [];
+function setSteps(list) {
+  steps = list;
+  $('steps').innerHTML = list.map(s => `<li><b>${s[0]}</b><small>${s[1]}</small></li>`).join('');
+}
+function markStep(i) {
+  [...$('steps').children].forEach((li, k) => { li.className = k < i ? 'done' : k === i ? 'now' : ''; });
+}
+
+let legs = [], totalMiles = 0, totalMin = 0;
+function updateEta(legIdx, f) {
+  let miles = 0, min = 0;
+  legs.forEach((l, k) => {
+    const rem = k < legIdx ? 0 : k === legIdx ? 1 - f : 1;
+    miles += l.miles * rem; min += l.minutes * rem;
+  });
+  $('etaMin').textContent = Math.max(0, Math.ceil(min));
+  $('distLeft').textContent = miles.toFixed(1);
+  const done = 1 - (totalMiles ? miles / totalMiles : 0);
+  $('progress').style.width = (done * 100).toFixed(1) + '%';
+}
+
+function animate(legIdx, ms) {
+  const p = legs[legIdx].path;
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    function frame(now) {
+      const f = Math.min(1, (now - t0) / ms);
+      const e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
+      car.setLatLng(pointAt(p, e));
+      updateEta(legIdx, e);
+      if (f < 1) requestAnimationFrame(frame); else resolve();
+    }
+    requestAnimationFrame(frame);
+  });
+}
+const legTime = l => Math.min(16000, Math.max(6000, l.minutes * 600));
+
+function receipt(rows) {
+  $('receipt').innerHTML = rows.map(([l, v, t]) => `<div class="r${t ? ' t' : ''}"><span>${DD.esc(l)}</span><span>${v}</span></div>`).join('');
+}
+
+function stars() {
+  $('stars').innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-label="${n} star">⭐</button>`).join('');
+  $('stars').querySelectorAll('button').forEach(b => b.onclick = () => {
+    $('stars').querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.n <= +b.dataset.n));
+    toast('Thanks! Ratings fed each driver\'s profile on the live service.');
+  });
+}
+
+async function runFood() {
+  $('eyebrow').textContent = `Order #${orderNo} · demo`;
+  $('title').textContent = place.name;
+  $('sub').textContent = `To ${dorm}${order && order.room ? ', ' + order.room : ''}`;
+  $('etaLabel').textContent = 'min to delivery';
+  setSteps([
+    ['Order placed', 'Sent to the DormDash driver channel on Discord'],
+    ['Driver claimed it', 'First verified driver to tap Claim gets the job'],
+    ['Heading to the restaurant', place.address || 'Driving from campus'],
+    ['Ordering & confirming the receipt', 'Driver enters the real prices, bill is sent to you'],
+    ['On the way to campus', `Up PCH to ${dorm}`],
+    ['Delivered', 'Photo at drop-off, then confirm or dispute']
+  ]);
+  markStep(0);
+
+  const [toRest, toDorm] = await Promise.all([DD.route(C, place), DD.route(place, C)]);
+  legs = [toRest, toDorm].map(l => ({ ...l, path: prepare(l.coords) }));
+  totalMiles = legs.reduce((s, l) => s + l.miles, 0);
+  totalMin = legs.reduce((s, l) => s + l.minutes, 0) + 6;
+  L.polyline(toRest.coords, { color: '#ffffff', weight: 3, opacity: .35, dashArray: '6 8' }).addTo(map);
+  const line = L.polyline(toDorm.coords, { color: '#FD2D00', weight: 5, opacity: .9 }).addTo(map);
+  L.marker([place.lat, place.lng], { icon: pin('🍔') }).addTo(map).bindTooltip(place.name);
+  L.marker([C.lat, C.lng], { icon: pin('🏠') }).addTo(map).bindTooltip(dorm);
+  map.fitBounds(line.getBounds(), { padding: [40, 40] });
+  car.addTo(map);
+  updateEta(0, 0);
+
+  const items = order ? order.items : [];
+  const subtotal = order ? order.subtotal : parseFloat(qs.get('total')) || 0;
+  const rows = items.map(i => [`${i.qty}× ${i.name}`, DD.money(i.qty * i.price)]);
+  if (order) rows.push(['Fees', DD.money(order.fees)], ['Sales tax (est.)', DD.money(order.tax)], ['Tip', DD.money(order.tip)]);
+  rows.push(['Total', DD.money(order ? order.total : subtotal), true]);
+  receipt(rows);
+
+  await sleep(2200); markStep(1);
+  await sleep(2200); markStep(2);
+  await animate(0, legTime(toRest));
+  markStep(3);
+  await sleep(2000);
+  $('billAmt').textContent = DD.money(order ? order.total : subtotal);
+  $('payCard').classList.add('on');
+  await new Promise(res => {
+    const go = () => { clearTimeout(auto); $('payCard').classList.remove('on'); toast('Paid (demo). Stripe would now hold the charge until delivery.'); res(); };
+    const auto = setTimeout(go, 9000);
+    $('payBtn').onclick = go;
+  });
+  markStep(4);
+  await animate(1, legTime(toDorm));
+  markStep(6);
+  $('doneTitle').textContent = 'Delivered!';
+  $('photo').innerHTML = `📸<br>Left at ${DD.esc(dorm)}${order && order.room ? ', ' + DD.esc(order.room) : ''}`;
+  $('doneCard').classList.add('on');
+  stars();
+}
+
+async function runRide() {
+  const dir = qs.get('dir') === 'to' ? 'to' : 'from';
+  const pickup = dir === 'to' ? place : { ...C, name: 'Pepperdine University' };
+  const dropoff = dir === 'to' ? { ...C, name: 'Pepperdine University' } : place;
+  $('backLink').href = '/#rides'; $('backLink').textContent = '← New ride';
+  $('eyebrow').textContent = `Ride #${orderNo} · demo`;
+  $('title').textContent = `To ${dropoff.name}`;
+  $('sub').textContent = `Pickup at ${pickup.name}`;
+  $('etaLabel').textContent = 'min to arrival';
+  setSteps([
+    ['Ride requested', 'Posted to drivers with the upfront fare'],
+    ['Driver accepted', 'A student driver nearby took the ride'],
+    ['Driver on the way', `Heading to ${pickup.name}`],
+    ['Driver arrived', 'Meet at the pickup spot'],
+    ['On your trip', `To ${dropoff.name}`],
+    ['Arrived', 'Fare charged as quoted, no surge']
+  ]);
+  markStep(0);
+
+  const start = { lat: pickup.lat + 0.012, lng: pickup.lng - 0.018 };
+  const [approach, trip] = await Promise.all([DD.route(start, pickup), DD.route(pickup, dropoff)]);
+  legs = [approach, trip].map(l => ({ ...l, path: prepare(l.coords) }));
+  totalMiles = legs.reduce((s, l) => s + l.miles, 0);
+  L.polyline(approach.coords, { color: '#ffffff', weight: 3, opacity: .35, dashArray: '6 8' }).addTo(map);
+  const line = L.polyline(trip.coords, { color: '#8b5cf6', weight: 5, opacity: .95 }).addTo(map);
+  L.marker([pickup.lat, pickup.lng], { icon: pin('📍') }).addTo(map).bindTooltip('Pickup: ' + pickup.name);
+  L.marker([dropoff.lat, dropoff.lng], { icon: pin('🏁') }).addTo(map).bindTooltip(dropoff.name);
+  map.fitBounds(line.getBounds(), { padding: [40, 40] });
+  car.setLatLng([start.lat, start.lng]).addTo(map);
+  updateEta(0, 0);
+
+  const R = DD.RATES.ride;
+  const mileage = trip.miles * R.perMile, time = trip.minutes * R.perMinute;
+  receipt([
+    ['Base fare', DD.money(R.base)],
+    [`Mileage (${trip.miles.toFixed(1)} mi × $0.89)`, DD.money(mileage)],
+    [`Time (${trip.minutes} min × $0.39)`, DD.money(time)],
+    ['Surge', '$0.00'],
+    ['Fare', DD.money(R.base + mileage + time), true]
+  ]);
+
+  await sleep(2200); markStep(1);
+  await sleep(1800); markStep(2);
+  await animate(0, 6000);
+  markStep(3);
+  await sleep(2500); markStep(4);
+  await animate(1, legTime(trip));
+  markStep(6);
+  $('doneTitle').textContent = `You've arrived at ${dropoff.name}`;
+  $('photo').style.display = 'none';
+  $('doneText').textContent = 'Rate your driver';
+  $('doneCard').querySelector('.btns').innerHTML = `<a class="btn" href="/#rides">Estimate another ride</a><a class="btn btn-ghost" href="/order.html">Order food instead</a>`;
+  $('doneCard').classList.add('on');
+  stars();
+}
+
+(type === 'ride' ? runRide() : runFood()).catch(err => {
+  $('title').textContent = 'Could not load the route';
+  $('sub').textContent = (err && err.message) || 'Try again in a moment.';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FD2D00">
+    <meta name="description" content="How driving for DormDash worked (archived)">
+    <title>Drivers - DormDash</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+.dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px}.dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            color: #e4e4e7;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+
+        .hero-content {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text h1 {
+            font-size: 80px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            line-height: 1.05;
+        }
+
+        .hero-text h1 .gradient-text {
+            color: #fff;
+        }
+
+        .hero-text .highlight {
+            color: #fff;
+        }
+
+        .hero-text p {
+            font-size: 20px;
+            color: #a1a1aa;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 20px rgba(255, 106, 0, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(255, 106, 0, 0.6);
+        }
+
+        .btn-closed {
+            padding: 18px 40px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #a1a1aa;
+            border: 1px dashed rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: default;
+        }
+
+        .btn-secondary {
+            padding: 18px 40px;
+            background: #1a2332;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-secondary:hover {
+            background: #131824;
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 106, 0, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Benefits Section */
+        .benefits {
+            padding: 120px 20px;
+            background: #050810;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 60px;
+        }
+
+        .benefits-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .benefit-card {
+            background: #131824;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px;
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        .benefit-card:hover {
+            border-color: rgba(255, 106, 0, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .benefit-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .benefit-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .benefit-description {
+            font-size: 16px;
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 120px 20px;
+            background: #0a0e1a;
+        }
+
+        .steps {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #fff;
+            font-size: 32px;
+            font-weight: 900;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(255, 106, 0, 0.4);
+        }
+
+        .step:hover .step-number {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 32px rgba(255, 106, 0, 0.6);
+        }
+
+        .step-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .step-description {
+            font-size: 14px;
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+
+        /* Requirements */
+        .requirements {
+            padding: 120px 20px;
+            background: #050810;
+        }
+
+        .requirements-list {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            gap: 20px;
+        }
+
+        .requirement-item {
+            background: #131824;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 24px 30px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        .requirement-item:hover {
+            border-color: rgba(255, 106, 0, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .requirement-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .requirement-text {
+            font-size: 16px;
+            color: #e4e4e7;
+            line-height: 1.5;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 120px 20px;
+            background: #0a0e1a;
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 56px;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+
+        .cta-description {
+            font-size: 20px;
+            color: #a1a1aa;
+            margin-bottom: 40px;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 14, 26, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        header.scrolled {
+            background: rgba(10, 14, 26, 0.95);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 40px;
+            gap: 20px;
+            min-height: 80px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 24px;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: url('/static/dormdash.png') center/contain no-repeat;
+        }
+
+        .nav-links {
+            display: none;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        @media (min-width: 768px) {
+            .nav-links {
+                display: flex;
+            }
+        }
+
+        .btn-header {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: white;
+            box-shadow: 0 4px 20px rgba(255, 106, 0, 0.4);
+        }
+
+        .btn-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 106, 0, 0.6);
+        }
+
+        /* Footer */
+        .footer {
+            background: #050810;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px 20px;
+            text-align: center;
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #ff8c3a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            color: #ff6a00;
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            nav {
+                padding: 20px;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 40px 20px 60px;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 48px;
+            }
+
+            .cta-buttons {
+                justify-content: center;
+            }
+
+            .hero-stats {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .section-title {
+                font-size: 36px;
+            }
+
+            .cta-title {
+                font-size: 40px;
+            }
+
+            .benefits, .how-it-works, .requirements, .cta-section {
+                padding: 80px 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            nav {
+                padding: 16px 20px;
+                min-height: 68px;
+            }
+
+            .logo {
+                font-size: 18px;
+            }
+
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .btn-header {
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+
+            .hero {
+                padding: 40px 20px 50px;
+            }
+
+            .hero-content {
+                text-align: left;
+            }
+
+            .hero-text h1 {
+                font-size: 56px;
+                margin-bottom: 24px;
+                line-height: 1.1;
+                text-align: left;
+            }
+
+            .hero-text h1 .gradient-text {
+                display: block;
+            }
+
+            .hero-text p {
+                font-size: 20px;
+                margin-bottom: 36px;
+                line-height: 1.6;
+                text-align: left;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+
+            .btn-primary, .btn-secondary, .btn-closed {
+                width: 100%;
+                text-align: center;
+                padding: 20px 32px;
+                font-size: 17px;
+                font-weight: 700;
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+                max-width: 90%;
+                margin: 0 auto;
+            }
+
+            .stat-card {
+                padding: 20px 32px;
+            }
+
+            .stat-number {
+                font-size: 32px;
+                margin-bottom: 6px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+                line-height: 1.3;
+            }
+
+            .section-title {
+                font-size: 28px;
+                margin-bottom: 40px;
+            }
+
+            .benefits, .how-it-works, .requirements, .cta-section {
+                padding: 60px 15px;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .benefit-card {
+                padding: 28px 24px;
+            }
+
+            .benefit-icon {
+                font-size: 40px;
+                margin-bottom: 16px;
+            }
+
+            .benefit-title {
+                font-size: 20px;
+            }
+
+            .benefit-description {
+                font-size: 15px;
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .step-number {
+                width: 64px;
+                height: 64px;
+                font-size: 28px;
+                margin-bottom: 16px;
+            }
+
+            .step-title {
+                font-size: 18px;
+            }
+
+            .step-description {
+                font-size: 13px;
+            }
+
+            .requirements-list {
+                gap: 16px;
+            }
+
+            .requirement-item {
+                padding: 20px;
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+
+            .requirement-icon {
+                font-size: 28px;
+            }
+
+            .requirement-text {
+                font-size: 15px;
+            }
+
+            .cta-title {
+                font-size: 32px;
+                margin-bottom: 16px;
+            }
+
+            .cta-description {
+                font-size: 16px;
+                margin-bottom: 32px;
+            }
+
+            .cta-section .btn-primary {
+                font-size: 16px !important;
+                padding: 18px 32px !important;
+            }
+
+            .footer {
+                padding: 32px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-text h1 {
+                font-size: 48px;
+            }
+
+            .hero-text p {
+                font-size: 19px;
+            }
+
+            .btn-primary, .btn-secondary, .btn-closed {
+                font-size: 14px;
+                padding: 16px 24px;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                width: 90%;
+            }
+
+            .stat-card {
+                padding: 24px 36px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: left;
+            }
+
+            .stat-number {
+                font-size: 36px;
+                margin-bottom: 0;
+                order: 2;
+            }
+
+            .stat-label {
+                font-size: 13px;
+                text-align: left;
+                order: 1;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .hero {
+                padding: 40px 18px 40px;
+            }
+
+            .hero-text h1 {
+                font-size: 44px;
+            }
+
+            .hero-text p {
+                font-size: 18px;
+            }
+
+            .btn-primary, .btn-secondary, .btn-closed {
+                font-size: 14px;
+                padding: 15px 20px;
+            }
+
+            .stat-card {
+                padding: 20px 32px;
+            }
+
+            .stat-number {
+                font-size: 32px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dd-archive-bar">DormDash wound down in spring 2026. This site is a working demo — nothing here places a real order. <a href="/#about">About the project</a></div>
+    <!-- Header -->
+    <header id="header">
+        <nav>
+            <a href="/" class="logo">
+                <div class="logo-icon"></div>
+                <span>DormDash</span>
+            </a>
+            <div class="nav-links">
+                <a href="/#services">Services</a>
+                <a href="/#pricing">Pricing</a>
+                <a href="/order.html">Food Demo</a>
+                <a href="/support.html">Support</a>
+            </div>
+            <a href="/" class="btn-header">Home</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>
+                    <span class="gradient-text">Drive. Earn.</span>
+                    <span class="highlight">On Your Schedule.</span>
+                </h1>
+                <p>
+                    Driving for DormDash meant earning money delivering food to students.
+                    Drivers worked when they wanted, got paid quickly, and were part of the campus community.
+                </p>
+                <div class="cta-buttons">
+                    <span class="btn-closed">Driver sign-ups are closed</span>
+                    <a href="/static/driver_contract.pdf" class="btn-secondary">View the driver contract</a>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number">$18-25</div>
+                    <div class="stat-label">Per Hour Avg.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2 Days</div>
+                    <div class="stat-label">Payout Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">82.68%</div>
+                    <div class="stat-label">Of Delivery Fees</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Work Anytime</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits">
+        <h2 class="section-title">Why Drive with DormDash?</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">💰</div>
+                <h3 class="benefit-title">Competitive Earnings</h3>
+                <p class="benefit-description">
+                    Drivers kept 82.68% of all delivery fees plus 100% of food costs. Average was $18-25/hour during peak times.
+                </p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">⚡</div>
+                <h3 class="benefit-title">Fast Payouts</h3>
+                <p class="benefit-description">
+                    Drivers were paid automatically via Stripe. New drivers received funds in 7-14 days, then every 2 business days.
+                </p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🕐</div>
+                <h3 class="benefit-title">Total Flexibility</h3>
+                <p class="benefit-description">
+                    No schedules, no bosses. Drivers worked whenever they wanted, around classes and other commitments.
+                </p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🎓</div>
+                <h3 class="benefit-title">Campus Community</h3>
+                <p class="benefit-description">
+                    Drivers delivered to fellow students on campus: short distances, familiar locations, and friendly customers.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <h2 class="section-title">How Driver Onboarding Worked</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Join Discord</h3>
+                <p class="step-description">
+                    Drivers joined the DormDash Discord server and were given the "Driver" role by an admin.
+                </p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Create Account</h3>
+                <p class="step-description">
+                    Drivers signed up with their Discord username and phone number, and the app verified they held the Driver role.
+                </p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Connect Bank</h3>
+                <p class="step-description">
+                    Drivers linked a bank account via Stripe for automatic payouts. Setup was quick and secure.
+                </p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Deliver & Earn</h3>
+                <p class="step-description">
+                    Orders came in via Discord; drivers delivered to students and tracked their earnings.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Requirements -->
+    <section class="requirements">
+        <h2 class="section-title">Driver Requirements</h2>
+        <div class="requirements-list">
+            <div class="requirement-item">
+                <div class="requirement-icon">✅</div>
+                <div class="requirement-text">
+                    <strong>Pepperdine Student</strong> - Had to be currently enrolled at Pepperdine University
+                </div>
+            </div>
+            <div class="requirement-item">
+                <div class="requirement-icon">✅</div>
+                <div class="requirement-text">
+                    <strong>Car & Valid Driver's License</strong> - Reliable vehicle with valid registration and license
+                </div>
+            </div>
+            <div class="requirement-item">
+                <div class="requirement-icon">✅</div>
+                <div class="requirement-text">
+                    <strong>Car Insurance</strong> - Active auto insurance policy was required
+                </div>
+            </div>
+            <div class="requirement-item">
+                <div class="requirement-icon">✅</div>
+                <div class="requirement-text">
+                    <strong>Smartphone</strong> - For receiving orders, navigation, and customer communication
+                </div>
+            </div>
+            <div class="requirement-item">
+                <div class="requirement-icon">✅</div>
+                <div class="requirement-text">
+                    <strong>Bank Account</strong> - To receive earnings via Stripe automatic payouts
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="cta-title">Driver sign-ups are closed</h2>
+            <p class="cta-description">
+                DormDash wound down in spring 2026, so there is nothing to sign up for.
+                You can read the real driver contract drivers agreed to, or head back to the demo.
+            </p>
+            <div class="cta-buttons" style="justify-content:center">
+                <a href="/static/driver_contract.pdf" class="btn-primary">View the driver contract</a>
+                <a href="/" class="btn-secondary">Back to home</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>
+            DormDash &copy; 2025&ndash;2026 |
+            <a href="/static/driver_contract.pdf">Driver Contract</a> |
+            <a href="/">Home</a>
+        </p>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

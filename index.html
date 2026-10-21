@@ -4,14 +4,14 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#FD2D00" />
-<meta name="description" content="Fast food and rideshare delivery for Pepperdine students">
+<meta name="description" content="DormDash was a student-run food delivery and rideshare service at Pepperdine (2025–2026). This archived site is a working demo of the product.">
 <title>DormDash — Campus Food Delivery Reimagined</title>
+<meta property="og:title" content="DormDash — student food delivery & rides at Pepperdine">
+<meta property="og:description" content="An archived student startup, kept running as a working demo: order flow, live ride estimator and tracking.">
 <link rel="icon" type="image/x-icon" href="/static/icon.ico">
 <link rel="manifest" href="/static/manifest.json">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 
-<!-- Cloudflare Turnstile -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -2040,24 +2040,53 @@
       font-size: 15px;
     }
   }
+
+  /* ---- Archive demo additions ---- */
+  .dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px}
+  .dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+  .hero{padding-top:150px}
+  .badge::before{color:#f59e0b;animation:none}
+  .nav-cta{display:flex;gap:12px;align-items:center}
+  @media (max-width:420px){.nav-cta .btn{padding:9px 12px;font-size:13px}.logo span{display:none}}
+  .estimator-search-box{background:rgba(0,0,0,.25)}
+  .estimator-quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .estimator-quick button{padding:8px 14px;border-radius:100px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-secondary);font:600 13px Inter,system-ui,sans-serif;cursor:pointer}
+  .estimator-quick button:hover{color:#fff;border-color:rgba(99,102,241,.6)}
+  .estimator-note{margin-top:10px;font-size:13px;color:var(--text-muted)}
+  .estimator-credit{margin-top:20px;text-align:center;font-size:12px;color:var(--text-muted)}
+  .estimator-result-item:focus{outline:2px solid #6366f1;outline-offset:-2px}
+  .fee-calc{max-width:800px;margin:32px auto 0}
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:960px;margin:0 auto 56px}
+  @media (min-width:768px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+  .stat{border:1px solid var(--border);border-radius:18px;padding:24px 20px;text-align:center;background:rgba(255,255,255,.02)}
+  .stat-num{font-size:clamp(32px,6vw,44px);font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,#FD2D00,#ff6a00 50%,#8b5cf6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .stat-label{color:var(--text-muted);font-size:14px;margin-top:4px}
+  .flow{list-style:none;display:grid;gap:14px;max-width:820px;margin:0 auto 56px}
+  .flow li{display:flex;gap:18px;align-items:flex-start;padding:20px 22px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.02)}
+  .flow-n{flex:0 0 36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:rgba(253,45,0,.15);color:#ff7a5c;border:1px solid rgba(253,45,0,.35)}
+  .flow strong{font-size:17px}
+  .flow p{color:var(--text-secondary);margin-top:4px;font-size:15px}
+  .stack-grid .service-card p{margin-bottom:0}
 </style>
 </head>
 <body>
 
 <header id="header">
+  <div class="dd-archive-bar">DormDash wound down in spring 2026. This site is a working demo — nothing here places a real order. <a href="#about">About the project</a></div>
   <nav class="container">
-    <div class="logo">
+    <a class="logo" href="/" style="color:inherit;text-decoration:none">
       <div class="logo-icon"></div>
       <span>DormDash</span>
-    </div>
+    </a>
     <div class="nav-links">
-      <a href="#services">Services</a>
+      <a href="#rides">Rides</a>
       <a href="#pricing">Pricing</a>
-      <a href="#drivers">Become a Driver</a>
+      <a href="#about">How it worked</a>
+      <a href="/drivers.html">Drivers</a>
     </div>
-    <div style="display: flex; gap: 12px; align-items: center;">
-      <a href="/suspended.html" class="btn btn-primary order-btn">🍕 Food</a>
-      <a href="/suspended.html" class="btn btn-primary btn-ride order-btn">🚗 Rides</a>
+    <div class="nav-cta">
+      <a href="/order.html" class="btn btn-primary order-btn">🍕 Food</a>
+      <a href="#rides" class="btn btn-primary btn-ride order-btn">🚗 Rides</a>
     </div>
   </nav>
 </header>
@@ -2068,22 +2097,22 @@
     <div class="container">
       <div class="hero-content">
         <div class="hero-text">
-          <div class="badge">Live on Campus</div>
+          <div class="badge">Pepperdine · Oct 2025 – Spring 2026</div>
           <h1>Food<br><span class="highlight">Delivered.</span><br>Rides<br><span class="highlight">Anywhere.</span></h1>
           <p class="hero-description">
-            Get <strong>any restaurant</strong> delivered to your dorm. Book <strong>affordable rides anywhere</strong> (like Uber, but way cheaper). Built for Waves.
+            DormDash brought <strong>any restaurant</strong> to Pepperdine dorms and ran <strong>student-driven rides</strong> for less than Uber. The service is closed, but the product still works here as a demo. Try it.
           </p>
 
           <div class="cta-buttons">
-            <a href="/suspended.html" class="btn btn-primary order-btn">Order Food Now</a>
-            <a href="/suspended.html" class="btn btn-primary btn-ride order-btn">Book a Ride</a>
+            <a href="/order.html" class="btn btn-primary order-btn">Try the order demo</a>
+            <a href="#rides" class="btn btn-primary btn-ride order-btn">Estimate a ride</a>
           </div>
 
           <ul class="feature-list">
-            <li><span class="feature-icon">🎯</span> Direct to Your Dorm</li>
-            <li><span class="feature-icon">⚡</span> Fast & Reliable</li>
+            <li><span class="feature-icon">🎯</span> Delivered to 22 dorms</li>
+            <li><span class="feature-icon">🧾</span> Pay the real receipt, not a markup</li>
             <li><span class="innout-logo">🍔</span> In-N-Out, Chick-fil-A & More</li>
-            <li><span class="feature-icon">🚗</span> Affordable Rides (Like Uber, but Cheaper)</li>
+            <li><span class="feature-icon">🚗</span> Rides at $0.89 / mile</li>
           </ul>
         </div>
       </div>
@@ -2091,145 +2120,86 @@
   </section>
 
   <!-- RIDESHARE SECTION -->
-  <section id="services">
+  <section id="rides">
     <div class="container">
       <div class="section-header">
         <div class="section-badge">CAMPUS RIDESHARE</div>
-        <h2 style="font-size: 46px; line-height: 1.1;">Need a ride?</h2>
+        <h2 style="line-height: 1.1;">Need a ride?</h2>
         <p class="section-description">
-          Need a ride to the airport? Car broke down? Headed to the beach? We got you.
+          Airport run, car in the shop, beach day. Search a real place and this estimator prices it with DormDash's actual rate card and a live driving route.
         </p>
       </div>
 
-      <!-- Rideshare Estimator in Services Section -->
       <div class="estimator-wrapper">
         <div class="estimator-card">
           <div class="estimator-header">
-            <h3 class="estimator-title">See How Much Cheaper</h3>
-            <p class="estimator-subtitle">Quickly estimate your ride cost.</p>
+            <h3 class="estimator-title">Estimate a ride</h3>
+            <p class="estimator-subtitle">Base fare + $0.89/mile + $0.39/minute. No surge, ever.</p>
           </div>
 
-          <!-- Direction Toggle -->
           <div class="estimator-toggle">
-            <button id="toCampusBtn" class="direction-toggle-btn" onclick="toggleEstimatorDirection('to')">
-              🏛️ To Campus
-            </button>
-            <button id="fromCampusBtn" class="direction-toggle-btn active" onclick="toggleEstimatorDirection('from')">
-              🏠 From Campus
-            </button>
+            <button id="toCampusBtn" class="direction-toggle-btn" onclick="toggleEstimatorDirection('to')">🏛️ To Campus</button>
+            <button id="fromCampusBtn" class="direction-toggle-btn active" onclick="toggleEstimatorDirection('from')">🏠 From Campus</button>
           </div>
 
           <div class="estimator-form">
-            <!-- To Campus Flow -->
-            <div id="toCampusSection" class="estimator-section" style="display: none;">
-              <div class="estimator-input-group">
-                <label class="estimator-label">📍 Where are you now?</label>
+            <div class="estimator-input-group">
+              <label class="estimator-label" id="estimatorLabel" for="estimatorInput">Where do you want to go?</label>
 
-                <!-- Selected Location Display -->
-                <div class="estimator-selected-location estimator-selected-display">
-                  <div class="estimator-selected-header">
-                    <div class="estimator-selected-info">
-                      <div class="estimator-selected-name"></div>
-                      <div class="estimator-selected-address"></div>
-                    </div>
-                    <button class="estimator-clear-btn" onclick="clearEstimatorLocation()">Change</button>
+              <div class="estimator-selected-location" id="estimatorSelected">
+                <div class="estimator-selected-header">
+                  <div class="estimator-selected-info">
+                    <div class="estimator-selected-name" id="estimatorSelectedName"></div>
+                    <div class="estimator-selected-address" id="estimatorSelectedAddress"></div>
                   </div>
-                </div>
-
-                <!-- Search Container -->
-                <div class="estimator-search-container estimator-search-input">
-                  <div class="estimator-search-wrapper">
-                    <input type="text" id="estimatorPickupInput" class="estimator-search-box" placeholder="Search for your location..." onkeypress="if(event.key==='Enter') searchEstimatorLocation()">
-                    <button class="estimator-search-btn" onclick="searchEstimatorLocation()">Search</button>
-                  </div>
-                  <button class="estimator-location-pill" onclick="useEstimatorLocation()">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M8 1a3 3 0 0 1 3 3c0 1.657-1.343 3-3 3S5 5.657 5 4a3 3 0 0 1 3-3zm0 1a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 7c3.314 0 6 2.686 6 6v1H2v-1c0-3.314 2.686-6 6-6zm0 1c-2.761 0-5 2.239-5 5h10c0-2.761-2.239-5-5-5z"/>
-                    </svg>
-                    Use My Location
-                  </button>
-                  <div class="estimator-search-results"></div>
-                  <div class="estimator-searching" style="display: none;">
-                    <div class="spinner"></div>
-                    <span>Searching...</span>
-                  </div>
+                  <button class="estimator-clear-btn" onclick="clearEstimatorLocation()">Change</button>
                 </div>
               </div>
-            </div>
 
-            <!-- From Campus Flow -->
-            <div id="fromCampusSection" class="estimator-section">
-              <div class="estimator-input-group">
-                <label class="estimator-label">Where do you want to go?</label>
-
-                <!-- Selected Location Display -->
-                <div class="estimator-selected-location estimator-selected-display">
-                  <div class="estimator-selected-header">
-                    <div class="estimator-selected-info">
-                      <div class="estimator-selected-name"></div>
-                      <div class="estimator-selected-address"></div>
-                    </div>
-                    <button class="estimator-clear-btn" onclick="clearEstimatorLocation()">Change</button>
-                  </div>
+              <div class="estimator-search-container" id="estimatorSearch">
+                <form class="estimator-search-wrapper" onsubmit="event.preventDefault(); searchEstimatorLocation();">
+                  <input type="text" id="estimatorInput" class="estimator-search-box" placeholder="Try LAX, Santa Monica Pier, Zuma Beach…" autocomplete="off">
+                  <button type="submit" class="estimator-search-btn">Search</button>
+                </form>
+                <div class="estimator-quick" id="estimatorQuick">
+                  <button type="button" data-q="Los Angeles International Airport">✈️ LAX</button>
+                  <button type="button" data-q="Santa Monica Pier">🎡 Santa Monica Pier</button>
+                  <button type="button" data-q="Zuma Beach">🏖️ Zuma Beach</button>
+                  <button type="button" data-q="The Grove Los Angeles">🛍️ The Grove</button>
                 </div>
-
-                <!-- Search Container -->
-                <div class="estimator-search-container estimator-search-input">
-                  <div class="estimator-search-wrapper">
-                    <input type="text" id="estimatorDropoffInput" class="estimator-search-box" placeholder="Search for your destination..." onkeypress="if(event.key==='Enter') searchEstimatorLocation()">
-                    <button class="estimator-search-btn" onclick="searchEstimatorLocation()">Search</button>
-                  </div>
-                  <div class="estimator-search-results"></div>
-                  <div class="estimator-searching" style="display: none;">
-                    <div class="spinner"></div>
-                    <span>Searching...</span>
-                  </div>
+                <button class="estimator-location-pill" id="useLocationBtn" onclick="useEstimatorLocation()" style="display:none">
+                  📍 Use my location
+                </button>
+                <div class="estimator-searching" id="estimatorSearching">
+                  <div class="spinner"></div>
+                  <span>Searching…</span>
                 </div>
+                <div class="estimator-search-results" id="estimatorResults"></div>
               </div>
             </div>
-          </div>
-
-          <!-- Turnstile Widget - Hidden until needed -->
-          <div id="estimatorTurnstileContainer" style="display: none; justify-content: center; margin: 24px 0; padding: 20px; background: rgba(255, 255, 255, 0.02); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
-            <div id="estimatorTurnstileWidget"></div>
           </div>
 
           <div id="estimateResults" class="estimator-results">
             <div class="estimator-total">
               <div class="estimator-total-label">Estimated Fare</div>
               <div class="estimator-total-amount" id="estimateTotal">$0.00</div>
+              <div class="estimator-note" id="estimateNote"></div>
             </div>
 
             <div class="estimator-breakdown">
-              <div class="estimator-breakdown-row">
-                <span>Distance</span>
-                <span id="estimateDistance">-</span>
-              </div>
-              <div class="estimator-breakdown-row">
-                <span>Time to Arrival</span>
-                <span id="estimateDuration">-</span>
-              </div>
+              <div class="estimator-breakdown-row"><span>Distance</span><span id="estimateDistance">-</span></div>
+              <div class="estimator-breakdown-row"><span>Drive time</span><span id="estimateDuration">-</span></div>
               <div class="estimator-breakdown-divider"></div>
-              <div class="estimator-breakdown-row">
-                <span>Base Fare</span>
-                <span>$4.99</span>
-              </div>
-              <div class="estimator-breakdown-row">
-                <span>Mileage</span>
-                <span id="estimateMileage">$0.00</span>
-              </div>
-              <div class="estimator-breakdown-row">
-                <span>Time</span>
-                <span id="estimateTime">$0.00</span>
-              </div>
+              <div class="estimator-breakdown-row"><span>Base Fare</span><span>$4.99</span></div>
+              <div class="estimator-breakdown-row"><span>Mileage</span><span id="estimateMileage">$0.00</span></div>
+              <div class="estimator-breakdown-row"><span>Time</span><span id="estimateTime">$0.00</span></div>
             </div>
 
-            <button class="estimator-book-btn" onclick="bookEstimatedRide()">
-              🚗 Book This Ride Now →
-            </button>
+            <button class="estimator-book-btn" onclick="bookEstimatedRide()">🚗 Watch this ride on a live map →</button>
           </div>
 
-          <div id="estimateError" class="estimator-error"></div>
+          <div id="estimateError" class="estimator-error" role="alert"></div>
+          <p class="estimator-credit">Places &amp; routes © OpenStreetMap contributors, routing by OSRM.</p>
         </div>
       </div>
     </div>
@@ -2242,87 +2212,99 @@
         <div class="section-badge">TRANSPARENT PRICING</div>
         <h2>Simple, Honest Pricing</h2>
         <p class="section-description">
-          No hidden fees, no surge pricing, no surprises. What you see is what you pay.
+          No hidden fees, no surge pricing, no surprises. These are the rates the live service charged.
         </p>
       </div>
 
-      <!-- Pricing Toggle -->
       <div style="display: flex; justify-content: center; margin-bottom: 32px;">
         <div style="display: inline-flex; background: rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 4px; gap: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
-          <button id="foodPricingBtn" class="pricing-toggle-btn active" onclick="showPricing('food')">
-            🍕 Food
-          </button>
-          <button id="ridesharePricingBtn" class="pricing-toggle-btn" onclick="showPricing('rideshare')">
-            🚗 Rides
-          </button>
+          <button id="foodPricingBtn" class="pricing-toggle-btn active" onclick="showPricing('food')">🍕 Food</button>
+          <button id="ridesharePricingBtn" class="pricing-toggle-btn" onclick="showPricing('rideshare')">🚗 Rides</button>
         </div>
       </div>
 
-      <!-- Food Pricing -->
-      <div id="foodPricing" class="pricing-grid">
-        <div class="price-item">
-          <span class="price-label">Base Delivery Fee</span>
-          <span class="price-value">$5.99</span>
+      <div id="foodPricing">
+        <div class="pricing-grid">
+          <div class="price-item"><span class="price-label">Base Delivery Fee</span><span class="price-value">$5.99</span></div>
+          <div class="price-item"><span class="price-label">Service Fee</span><span class="price-value">15% of order</span></div>
+          <div class="price-item"><span class="price-label">Distance Fee</span><span class="price-value">$0.39 / mile</span></div>
+          <div class="price-item"><span class="price-label">Far-Away Fee (10+ miles)</span><span class="price-value">$7.99</span></div>
+          <div class="price-item"><span class="price-label">Platform Fee</span><span class="price-value">$0.49</span></div>
+          <div class="price-item"><span class="price-label">Small Order Fee</span><span class="price-value success">$0 — None!</span></div>
+          <div class="price-item"><span class="price-label">Surge / Busy Hour Fees</span><span class="price-value success">$0 — None!</span></div>
         </div>
-        <div class="price-item">
-          <span class="price-label">Service Fee</span>
-          <span class="price-value">15% of order</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Distance Fee</span>
-          <span class="price-value">$0.39 / mile</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Far-Away Fee (10+ miles)</span>
-          <span class="price-value">$7.99</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Platform Fee</span>
-          <span class="price-value">$0.49</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Small Order Fee</span>
-          <span class="price-value success">$0 — None!</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Surge / Busy Hour Fees</span>
-          <span class="price-value success">$0 — None!</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Hidden Fees</span>
-          <span class="price-value success">$0 — None!</span>
+
+        <div class="card fee-calc">
+          <h3>🧮 What would my order cost?</h3>
+          <div class="calculator-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="orderTotal">Food subtotal ($)</label>
+                <input id="orderTotal" class="input" type="number" min="0" step="0.01" value="18.50" inputmode="decimal">
+              </div>
+              <div class="form-group">
+                <label for="miles">Restaurant distance (miles)</label>
+                <input id="miles" class="input" type="number" min="0" step="0.1" value="4" inputmode="decimal">
+              </div>
+            </div>
+          </div>
+          <div class="results" id="results"></div>
+          <a href="/order.html" class="btn btn-primary" style="margin-top:20px;width:100%">Build a real order in the demo →</a>
         </div>
       </div>
 
-      <!-- Rideshare Pricing -->
       <div id="ridesharePricing" class="pricing-grid" style="display: none;">
-        <div class="price-item">
-          <span class="price-label">Base Fare</span>
-          <span class="price-value">$4.99</span>
+        <div class="price-item"><span class="price-label">Base Fare</span><span class="price-value">$4.99</span></div>
+        <div class="price-item"><span class="price-label">Distance Fee</span><span class="price-value">$0.89 / mile</span></div>
+        <div class="price-item"><span class="price-label">Time Fee</span><span class="price-value">$0.39 / minute</span></div>
+        <div class="price-item"><span class="price-label">Surge Pricing</span><span class="price-value success">$0 — None!</span></div>
+        <div class="price-item"><span class="price-label">Booking Fees</span><span class="price-value success">$0 — None!</span></div>
+        <div class="price-item"><span class="price-label">Cancellation Fees</span><span class="price-value success">$0 — None!</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKED -->
+  <section id="about">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">UNDER THE HOOD</div>
+        <h2>How DormDash worked</h2>
+        <p class="section-description">
+          A student-run delivery and rideshare service for Pepperdine, built and operated by one founder. Students ordered from any restaurant, a student driver bought and brought it, and the customer paid what the receipt actually said.
+        </p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-num">417</div><div class="stat-label">commits to the backend</div></div>
+        <div class="stat"><div class="stat-num">10.5k</div><div class="stat-label">lines of Python</div></div>
+        <div class="stat"><div class="stat-num">19</div><div class="stat-label">customer, driver &amp; admin screens</div></div>
+        <div class="stat"><div class="stat-num">22</div><div class="stat-label">dorms on the delivery map</div></div>
+      </div>
+
+      <ol class="flow">
+        <li><span class="flow-n">1</span><div><strong>Order anything</strong><p>Pick any restaurant, list the items, choose a dorm. Search ran on Google Places with OpenStreetMap as the free fallback.</p></div></li>
+        <li><span class="flow-n">2</span><div><strong>Dispatch on Discord</strong><p>A Discord bot posted each order to verified student drivers; the first to claim it got the job.</p></div></li>
+        <li><span class="flow-n">3</span><div><strong>Confirm the real bill</strong><p>The driver entered prices from the actual receipt. California sales tax came from the CDTFA rate API for the restaurant's address.</p></div></li>
+        <li><span class="flow-n">4</span><div><strong>Pay through Stripe</strong><p>Customers paid by Stripe Checkout; drivers were paid out through Stripe Connect accounts they set up in their dashboard.</p></div></li>
+        <li><span class="flow-n">5</span><div><strong>Track &amp; deliver</strong><p>Live status over WebSockets, a delivery photo at drop-off, then confirm, rate, or open a dispute.</p></div></li>
+      </ol>
+
+      <div class="grid grid-3 stack-grid">
+        <div class="service-card">
+          <div class="service-icon">🧱</div>
+          <h3>Stack</h3>
+          <p>Flask + Socket.IO on gunicorn/gevent, PostgreSQL, Stripe &amp; Stripe Connect, Google Maps Platform, OSRM, discord.py, deployed on Render. Installable as a PWA.</p>
         </div>
-        <div class="price-item">
-          <span class="price-label">Distance Fee</span>
-          <span class="price-value">$0.89 / mile</span>
+        <div class="service-card">
+          <div class="service-icon">🛡️</div>
+          <h3>Abuse &amp; cost controls</h3>
+          <p>Cloudflare Turnstile, per-user and per-IP rate limits, automatic IP blocking, a budget guard on paid map APIs, and an admin killswitch.</p>
         </div>
-        <div class="price-item">
-          <span class="price-label">Time Fee</span>
-          <span class="price-value">$0.39 / minute</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Surge Pricing</span>
-          <span class="price-value success">$0 — None!</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Booking Fees</span>
-          <span class="price-value success">$0 — None!</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Cancellation Fees</span>
-          <span class="price-value success">$0 — None!</span>
-        </div>
-        <div class="price-item">
-          <span class="price-label">Hidden Fees</span>
-          <span class="price-value success">$0 — None!</span>
+        <div class="service-card">
+          <div class="service-icon">🧭</div>
+          <h3>Operations</h3>
+          <p>Driver sign-up with an e-signed contract, a driver dashboard for jobs and payouts, and an admin panel for disputes, refunds and platform revenue.</p>
         </div>
       </div>
     </div>
@@ -2332,62 +2314,29 @@
   <section id="drivers">
     <div class="container">
       <div class="driver-card">
-        <h3>Become a Driver</h3>
+        <h3>Driving for DormDash</h3>
         <p style="color: var(--text-secondary); font-size: 18px; margin-bottom: 0;">
-          Earn money between classes while helping your fellow Waves. Flexible hours, easy work, and fast pay.
+          Drivers were Pepperdine students earning between classes, with flexible hours and weekly Stripe payouts.
         </p>
 
         <ul class="driver-benefits">
-          <li>
-            <div>
-              <strong>Earn $18–$25/hour</strong><br>
-              <span style="color: var(--text-muted);">Make money on your schedule with flexible shifts</span>
-            </div>
-          </li>
-          <li>
-            <div>
-              <strong>Work Between Classes</strong><br>
-              <span style="color: var(--text-muted);">Choose your hours and fit deliveries around your schedule</span>
-            </div>
-          </li>
-          <li>
-            <div>
-              <strong>Join Our Community</strong><br>
-              <span style="color: var(--text-muted);">Be part of a trusted student-run network on campus</span>
-            </div>
-          </li>
+          <li><div><strong>$18–$25 / hour</strong><br><span style="color: var(--text-muted);">Most of each fare and 100% of tips went to the driver</span></div></li>
+          <li><div><strong>Work between classes</strong><br><span style="color: var(--text-muted);">Claim jobs from Discord when you're free, ignore them when you're not</span></div></li>
+          <li><div><strong>A real contract</strong><br><span style="color: var(--text-muted);">Independent-contractor agreement, signed in the browser before the first job</span></div></li>
         </ul>
 
         <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;" class="driver-cta-buttons">
-          <a href="/driver/become" class="btn btn-primary driver-cta-btn">Learn More About Driving</a>
+          <a href="/drivers.html" class="btn btn-primary driver-cta-btn">How driving worked</a>
+          <a href="/static/driver_contract.pdf" class="btn btn-primary driver-cta-btn" target="_blank" rel="noopener">Read the driver contract (PDF)</a>
         </div>
       </div>
     </div>
   </section>
 </main>
 
-<!-- TURNSTILE VERIFICATION MODAL -->
-<div id="turnstileModal" class="turnstile-modal">
-  <div class="turnstile-modal-content">
-    <div class="turnstile-modal-header">
-      <div class="turnstile-modal-icon">🛡️</div>
-      <h3 class="turnstile-modal-title">Quick Security Check</h3>
-      <p class="turnstile-modal-subtitle">Please verify you're human to search for locations</p>
-    </div>
-
-    <div class="turnstile-widget-container">
-      <div id="estimatorTurnstile"></div>
-    </div>
-
-    <div class="turnstile-modal-note">
-      This helps us prevent automated abuse and keeps our service reliable
-    </div>
-  </div>
-</div>
-
 <!-- STICKY CTA -->
 <div class="sticky-cta" id="stickyCta">
-  <a href="/suspended.html" class="btn btn-primary order-btn">🍔 Order Now — Fast & Easy</a>
+  <a href="/order.html" class="btn btn-primary order-btn">🍔 Try the order demo</a>
 </div>
 
 <!-- FOOTER -->
@@ -2399,751 +2348,214 @@
           <div class="logo-icon"></div>
           <span>DormDash</span>
         </div>
-        <p style="color: var(--text-muted); max-width: 300px;">
-          Student-powered delivery service bringing food, rides, and more to the Pepperdine community.
+        <p style="color: var(--text-muted); max-width: 320px;">
+          Student-powered food delivery and rides for the Pepperdine community, Oct 2025 – spring 2026. Now an archived, working demo.
         </p>
       </div>
 
       <div class="footer-links">
-        <h4>Services</h4>
-        <a href="/suspended.html">Food Delivery</a>
-        <a href="/suspended.html">Campus Rides</a>
-        <a href="/suspended.html">Moving Help</a>
+        <h4>Try it</h4>
+        <a href="/order.html">Food order demo</a>
+        <a href="#rides">Ride estimator</a>
+        <a href="#pricing">Pricing</a>
       </div>
 
       <div class="footer-links">
-        <h4>Company</h4>
-        <a href="/driver/become">Become a Driver</a>
-        <a href="/suspended.html">Pricing</a>
-        <a href="/suspended.html">Contact Support</a>
-        <a href="/suspended.html">Privacy & Terms</a>
+        <h4>Project</h4>
+        <a href="#about">How it worked</a>
+        <a href="/drivers.html">Driving for DormDash</a>
+        <a href="/support.html">FAQ</a>
+        <a href="/privacy.html">Privacy</a>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <div>© <span id="year"></span> DormDash. All rights reserved.</div>
+      <div>© <span id="year"></span> DormDash. Built by <a href="https://willstruloeff.com" style="color:inherit">Will Struloeff</a>.</div>
       <div>Not affiliated with Pepperdine University</div>
     </div>
   </div>
 </footer>
 
+<script src="/static/geo.js"></script>
 <script>
-// Estimator State - Declare at top to avoid temporal dead zone
-let currentEstimatorDirection = 'from';
-let estimatorSelectedLocation = null;
-let estimatorSearchResults = [];
-let lastSearchTime = 0;
-const SEARCH_RATE_LIMIT_MS = 2000; // 2 seconds between searches (increased)
-let estimatorTurnstileToken = null;
-let turnstileWidgetId = null;
-let searchAttempts = 0;
-const MAX_SEARCHES_BEFORE_VERIFICATION = 3; // Require verification after 3 searches
-
-// Header scroll effect + Gradient parallax
+// Header scroll effect + gradient parallax
 const header = document.getElementById('header');
 let ticking = false;
-
 window.addEventListener('scroll', () => {
-  if (!ticking) {
-    window.requestAnimationFrame(() => {
-      const scrollY = window.scrollY;
-
-      // Header scroll effect
-      if (scrollY > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-
-      // Gradient parallax effect - subtle movement
-      const gradientElement = document.querySelector('body::after') || document.body;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPercent = scrollY / maxScroll;
-
-      // Move gradient dots very slightly (max 2% in each direction)
-      const translateX = Math.sin(scrollPercent * Math.PI) * 2;
-      const translateY = scrollPercent * 3;
-
-      document.body.style.setProperty('--scroll-x', `${translateX}%`);
-      document.body.style.setProperty('--scroll-y', `${translateY}%`);
-
-      ticking = false;
-    });
-    ticking = true;
-  }
-});
-
-// Force scroll to top on page load to prevent animation spacing issues
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual';
-}
-
-// Immediate scroll to top
-window.scrollTo(0, 0);
-document.documentElement.scrollTop = 0;
-document.body.scrollTop = 0;
-
-// Force scroll on load event
-window.addEventListener('load', () => {
-  window.scrollTo(0, 0);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-});
-
-// Force scroll on DOM ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    window.scrollTo(0, 0);
+  if (ticking) return;
+  ticking = true;
+  window.requestAnimationFrame(() => {
+    const scrollY = window.scrollY;
+    header.classList.toggle('scrolled', scrollY > 50);
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const scrollPercent = scrollY / maxScroll;
+    document.body.style.setProperty('--scroll-x', `${Math.sin(scrollPercent * Math.PI) * 2}%`);
+    document.body.style.setProperty('--scroll-y', `${scrollPercent * 3}%`);
+    stickyCta.classList.toggle('visible', scrollY > 800);
+    ticking = false;
   });
-}
-
-// Sticky CTA visibility
-const stickyCta = document.getElementById('stickyCta');
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 800) {
-    stickyCta.classList.add('visible');
-  } else {
-    stickyCta.classList.remove('visible');
-  }
 });
+const stickyCta = document.getElementById('stickyCta');
 
-// Order buttons now redirect to /order page
-
-// Cost Calculator
-const RATES = {
-  base: 5.99,
-  service: 0.15,
-  perMile: 0.39,
-  farAway: 7.99,
-  farLimit: 10,
-  platformFee: 0.49
-};
-
+// Food cost calculator
+const RATES = DD.RATES.food;
 const milesInput = document.getElementById('miles');
 const orderTotalInput = document.getElementById('orderTotal');
-const calcBtn = document.getElementById('calcBtn');
 const resultsDiv = document.getElementById('results');
-
-function formatCurrency(amount) {
-  return `$${amount.toFixed(2)}`;
-}
-
-// Browser fingerprinting for security
-function generateBrowserFingerprint() {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  ctx.textBaseline = 'top';
-  ctx.font = '14px Arial';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#f60';
-  ctx.fillRect(125, 1, 62, 20);
-  ctx.fillStyle = '#069';
-  ctx.fillText('DormDash Security', 2, 15);
-  ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-  ctx.fillText('DormDash Security', 4, 17);
-
-  const canvasFingerprint = canvas.toDataURL();
-
-  let webglVendor = '';
-  let webglRenderer = '';
-  try {
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (gl) {
-      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-      if (debugInfo) {
-        webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-        webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-      }
-    }
-  } catch (e) {
-    console.log('WebGL not available');
-  }
-
-  return {
-    userAgent: navigator.userAgent,
-    language: navigator.language,
-    platform: navigator.platform,
-    screenWidth: screen.width,
-    screenHeight: screen.height,
-    colorDepth: screen.colorDepth,
-    timezone: new Date().getTimezoneOffset(),
-    cookieEnabled: navigator.cookieEnabled,
-    canvasFingerprint: canvasFingerprint,
-    webglVendor: webglVendor,
-    webglRenderer: webglRenderer,
-    hardwareConcurrency: navigator.hardwareConcurrency || 0,
-    deviceMemory: navigator.deviceMemory || 0,
-    plugins: Array.from(navigator.plugins || []).map(p => p.name).join(','),
-    touchSupport: 'ontouchstart' in window
-  };
-}
+const formatCurrency = DD.money;
 
 function calculateCost() {
   const miles = Math.max(0, parseFloat(milesInput.value) || 0);
   const subtotal = Math.max(0, parseFloat(orderTotalInput.value) || 0);
-
-  const baseFee = RATES.base;
   const serviceFee = subtotal * RATES.service;
   const distanceFee = miles * RATES.perMile;
   const farAwayFee = miles > RATES.farLimit ? RATES.farAway : 0;
-  const platformFee = RATES.platformFee;
-  const total = subtotal + baseFee + serviceFee + distanceFee + farAwayFee + platformFee;
+  const total = subtotal + RATES.base + serviceFee + distanceFee + farAwayFee + RATES.platform;
 
-  resultsDiv.innerHTML = '';
-
-  const addRow = (label, value, isTotal = false) => {
-    const row = document.createElement('div');
-    row.className = isTotal ? 'result-row total' : 'result-row';
-    row.innerHTML = `
-      <span>${label}</span>
-      <strong>${formatCurrency(value)}</strong>
-    `;
-    resultsDiv.appendChild(row);
-  };
-
-  addRow('Base Delivery Fee', baseFee);
-  if (serviceFee > 0) addRow('Service Fee (15%)', serviceFee);
-  if (distanceFee > 0) addRow(`Distance (${miles.toFixed(1)} mi × $0.39)`, distanceFee);
-  if (farAwayFee > 0) addRow('Far-Away Fee', farAwayFee);
-  addRow('Platform Fee', platformFee);
-  addRow('Order Subtotal', subtotal);
-  addRow('Total (before tax & tip)', total, true);
+  const rows = [['Order Subtotal', subtotal], ['Base Delivery Fee', RATES.base]];
+  if (serviceFee > 0) rows.push(['Service Fee (15%)', serviceFee]);
+  if (distanceFee > 0) rows.push([`Distance (${miles.toFixed(1)} mi × $0.39)`, distanceFee]);
+  if (farAwayFee > 0) rows.push(['Far-Away Fee', farAwayFee]);
+  rows.push(['Platform Fee', RATES.platform]);
+  resultsDiv.innerHTML = rows.map(([l, v]) => `<div class="result-row"><span>${l}</span><strong>${formatCurrency(v)}</strong></div>`).join('')
+    + `<div class="result-row total"><span>Total (before tax &amp; tip)</span><strong>${formatCurrency(total)}</strong></div>`;
 }
-
-calcBtn.addEventListener('click', calculateCost);
 milesInput.addEventListener('input', calculateCost);
 orderTotalInput.addEventListener('input', calculateCost);
-
-// Initial calculation
 calculateCost();
 
-// Pricing Toggle
+// Pricing toggle
 function showPricing(type) {
-  const foodPricing = document.getElementById('foodPricing');
-  const ridesharePricing = document.getElementById('ridesharePricing');
-  const foodBtn = document.getElementById('foodPricingBtn');
-  const rideshareBtn = document.getElementById('ridesharePricingBtn');
-
-  if (type === 'food') {
-    foodPricing.style.display = 'grid';
-    ridesharePricing.style.display = 'none';
-    foodBtn.classList.add('active');
-    rideshareBtn.classList.remove('active');
-  } else {
-    foodPricing.style.display = 'none';
-    ridesharePricing.style.display = 'grid';
-    foodBtn.classList.remove('active');
-    rideshareBtn.classList.add('active');
-  }
+  const food = type === 'food';
+  document.getElementById('foodPricing').style.display = food ? 'block' : 'none';
+  document.getElementById('ridesharePricing').style.display = food ? 'none' : 'grid';
+  document.getElementById('foodPricingBtn').classList.toggle('active', food);
+  document.getElementById('ridesharePricingBtn').classList.toggle('active', !food);
 }
 
-// Toggle Direction
+// Ride estimator
+let currentEstimatorDirection = 'from';
+let estimatorSelectedLocation = null;
+let estimatorSearchResults = [];
+let lastRoute = null;
+
+const $ = id => document.getElementById(id);
+
+function showEstimateError(msg) {
+  const e = $('estimateError');
+  e.textContent = msg;
+  e.style.display = msg ? 'block' : 'none';
+}
+
 function toggleEstimatorDirection(direction) {
   currentEstimatorDirection = direction;
-  const toSection = document.getElementById('toCampusSection');
-  const fromSection = document.getElementById('fromCampusSection');
-  const toBtn = document.getElementById('toCampusBtn');
-  const fromBtn = document.getElementById('fromCampusBtn');
-
-  if (direction === 'to') {
-    toSection.style.display = 'block';
-    fromSection.style.display = 'none';
-    toBtn.classList.add('active');
-    fromBtn.classList.remove('active');
-  } else {
-    toSection.style.display = 'none';
-    fromSection.style.display = 'block';
-    toBtn.classList.remove('active');
-    fromBtn.classList.add('active');
-  }
-
-  // Clear state in both sections
-  estimatorSelectedLocation = null;
-
-  // Clear both sections
-  [toSection, fromSection].forEach(section => {
-    const resultsDiv = section.querySelector('.estimator-search-results');
-    const selectedDisplay = section.querySelector('.estimator-selected-display');
-    const searchInput = section.querySelector('.estimator-search-input');
-
-    if (resultsDiv) resultsDiv.innerHTML = '';
-    if (selectedDisplay) selectedDisplay.classList.remove('active');
-    if (searchInput) searchInput.style.display = 'block';
-  });
-
-  document.getElementById('estimateError').style.display = 'none';
-  document.getElementById('estimateResults').style.display = 'none';
+  $('toCampusBtn').classList.toggle('active', direction === 'to');
+  $('fromCampusBtn').classList.toggle('active', direction === 'from');
+  $('estimatorLabel').textContent = direction === 'to' ? '📍 Where are you now?' : 'Where do you want to go?';
+  $('estimatorInput').placeholder = direction === 'to' ? 'Search for your pickup spot…' : 'Try LAX, Santa Monica Pier, Zuma Beach…';
+  $('useLocationBtn').style.display = direction === 'to' && navigator.geolocation ? 'flex' : 'none';
+  clearEstimatorLocation();
 }
 
-// Use My Location
-async function useEstimatorLocation() {
-  if (!navigator.geolocation) {
-    alert('Geolocation is not supported by your browser');
-    return;
-  }
-
-  const errorDiv = document.getElementById('estimateError');
-  errorDiv.style.display = 'none';
-
-  // Get the active section
-  const activeSection = currentEstimatorDirection === 'to' ?
-    document.getElementById('toCampusSection') :
-    document.getElementById('fromCampusSection');
-
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-
-      try {
-        // Generate browser fingerprint for security
-        const fingerprint = generateBrowserFingerprint();
-
-        const response = await fetch('/api/reverse-geocode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lat: lat,
-            lng: lng,
-            browser_fingerprint: fingerprint
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.address) {
-          estimatorSelectedLocation = {
-            name: 'Your Location',
-            address: data.address,
-            lat: lat,
-            lng: lng
-          };
-
-          // Get elements from active section
-          const selectedDisplay = activeSection.querySelector('.estimator-selected-display');
-          const searchInput = activeSection.querySelector('.estimator-search-input');
-          const selectedNameEl = activeSection.querySelector('.estimator-selected-name');
-          const selectedAddressEl = activeSection.querySelector('.estimator-selected-address');
-
-          // Show selected location, hide search
-          selectedNameEl.textContent = 'Your Location';
-          selectedAddressEl.textContent = data.address;
-          selectedDisplay.classList.add('active');
-          searchInput.style.display = 'none';
-
-          // Auto-calculate
-          await calculateEstimate();
-        } else {
-          errorDiv.textContent = 'Could not determine your address';
-          errorDiv.style.display = 'block';
-        }
-      } catch (error) {
-        console.error('Location error:', error);
-        errorDiv.textContent = 'Error getting your location';
-        errorDiv.style.display = 'block';
-      }
-    },
-    (error) => {
-      errorDiv.textContent = 'Unable to access your location. Please check permissions.';
-      errorDiv.style.display = 'block';
-    }
-  );
-}
-
-// Turnstile Callbacks
-function onEstimatorTurnstileSuccess(token) {
-  console.log('✅ Estimator Turnstile verified');
-  estimatorTurnstileToken = token;
-
-  // Hide Turnstile container
-  const container = document.getElementById('estimatorTurnstileContainer');
-  container.style.display = 'none';
-
-  // Automatically execute the search
-  performEstimatorSearch();
-}
-
-function showTurnstileModal() {
-  const modal = document.getElementById('turnstileModal');
-  modal.classList.add('active');
-
-  // Render Turnstile widget if not already rendered
-  if (turnstileWidgetId === null && typeof turnstile !== 'undefined') {
-    turnstileWidgetId = turnstile.render('#estimatorTurnstile', {
-      sitekey: '{{ turnstile_site_key }}',
-      callback: onEstimatorTurnstileSuccess,
-      theme: 'dark'
-    });
-  } else if (turnstileWidgetId !== null) {
-    // Reset existing widget
-    turnstile.reset(turnstileWidgetId);
-  }
-}
-
-// Search Location (with Turnstile verification)
-async function searchEstimatorLocation() {
-  // Rate limiting
-  const now = Date.now();
-  if (now - lastSearchTime < SEARCH_RATE_LIMIT_MS) {
-    const errorDiv = document.getElementById('estimateError');
-    errorDiv.textContent = 'Please wait a moment before searching again';
-    errorDiv.style.display = 'block';
-    setTimeout(() => {
-      errorDiv.style.display = 'none';
-    }, 2000);
-    return; // Ignore rapid requests
-  }
-
-  // Require Turnstile verification for all searches
-  if (!estimatorTurnstileToken) {
-    // Show Turnstile container
-    const container = document.getElementById('estimatorTurnstileContainer');
-    container.style.display = 'flex';
-
-    // Render Turnstile widget if not already rendered
-    if (turnstileWidgetId === null && typeof turnstile !== 'undefined') {
-      turnstileWidgetId = turnstile.render('#estimatorTurnstileWidget', {
-        sitekey: '{{ turnstile_site_key }}',
-        callback: onEstimatorTurnstileSuccess,
-        theme: 'dark'
-      });
-    } else if (turnstileWidgetId !== null) {
-      // Reset existing widget
-      turnstile.reset(turnstileWidgetId);
-    }
-    return;
-  }
-
-  // Proceed with search
-  await performEstimatorSearch();
-}
-
-// Actual search implementation
-async function performEstimatorSearch() {
-  lastSearchTime = Date.now();
-
-  const inputId = currentEstimatorDirection === 'to' ? 'estimatorPickupInput' : 'estimatorDropoffInput';
-  const query = document.getElementById(inputId).value.trim();
-
-  // Get the active section
-  const activeSection = currentEstimatorDirection === 'to' ?
-    document.getElementById('toCampusSection') :
-    document.getElementById('fromCampusSection');
-
-  const resultsDiv = activeSection.querySelector('.estimator-search-results');
-  const searchingDiv = activeSection.querySelector('.estimator-searching');
-  const errorDiv = document.getElementById('estimateError');
-
-  errorDiv.style.display = 'none';
-  resultsDiv.innerHTML = '';
-
-  if (!query) {
-    errorDiv.textContent = 'Please enter a location to search';
-    errorDiv.style.display = 'block';
-    return;
-  }
-
-  // Show searching animation with enhanced loading state
-  searchingDiv.classList.add('active');
-  resultsDiv.style.display = 'none';
-
+async function searchEstimatorLocation(q) {
+  const query = (q ?? $('estimatorInput').value).trim();
+  showEstimateError('');
+  $('estimatorResults').innerHTML = '';
+  if (!query) return showEstimateError('Type a place to search for.');
+  $('estimatorSearching').classList.add('active');
   try {
-    // Use Pepperdine coordinates for search center
-    const pepperdineCoords = { lat: 34.0407, lng: -118.7108 };
-
-    // Generate browser fingerprint for security
-    const fingerprint = generateBrowserFingerprint();
-
-    const requestBody = {
-      query: query,
-      lat: pepperdineCoords.lat,
-      lng: pepperdineCoords.lng,
-      service_type: 'rideshare',
-      browser_fingerprint: fingerprint
-    };
-
-    // Include Turnstile token if we have one
-    if (estimatorTurnstileToken) {
-      requestBody.cf_turnstile_response = estimatorTurnstileToken;
-    }
-
-    const response = await fetch('/api/restaurants/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+    estimatorSearchResults = (await DD.search(query)).slice(0, 5);
+    if (!estimatorSearchResults.length) return showEstimateError('No places found. Try a different search.');
+    $('estimatorResults').innerHTML = estimatorSearchResults.map((r, i) => `
+      <div class="estimator-result-item" data-index="${i}" tabindex="0" role="button">
+        <div class="estimator-result-name">${DD.esc(r.name)}</div>
+        <div class="estimator-result-address">${DD.esc(r.address)} · ${r.miles.toFixed(1)} mi from campus</div>
+      </div>`).join('');
+    $('estimatorResults').querySelectorAll('.estimator-result-item').forEach(el => {
+      const pick = () => selectEstimatorLocation(estimatorSearchResults[+el.dataset.index]);
+      el.onclick = pick;
+      el.onkeydown = e => { if (e.key === 'Enter') pick(); };
     });
-
-    const data = await response.json();
-
-    // Hide searching animation
-    searchingDiv.classList.remove('active');
-    resultsDiv.style.display = 'block';
-
-    // Check for errors
-    if (!response.ok || data.error) {
-      errorDiv.textContent = data.error || 'Search failed. Please try again.';
-      errorDiv.style.display = 'block';
-      return;
-    }
-
-    const results = Array.isArray(data) ? data : [];
-
-    if (!results || results.length === 0) {
-      errorDiv.textContent = 'No locations found. Try a different search.';
-      errorDiv.style.display = 'block';
-      return;
-    }
-
-    // Show top 5 results with time/distance info
-    estimatorSearchResults = results.slice(0, 5);
-
-    resultsDiv.innerHTML = estimatorSearchResults.map((result, idx) => `
-      <div class="estimator-result-item" data-index="${idx}">
-        <div class="estimator-result-name">${result.name}</div>
-        <div class="estimator-result-address">${result.address}</div>
-        ${result.duration_text || result.distance_text ? `
-          <div style="margin-top:6px;font-size:11px;color:#999;">
-            <span style="margin-right:12px;">🚗 Pickup in 2 mins</span>
-            ${result.duration_text ? `<span style="margin-right:12px;">⏱️ ${result.duration_text} drive</span>` : ''}
-            ${result.distance_text ? `<span>📍 ${result.distance_text}</span>` : ''}
-          </div>
-        ` : ''}
-      </div>
-    `).join('');
-
-    // Add click handlers
-    resultsDiv.querySelectorAll('.estimator-result-item').forEach((item, idx) => {
-      item.onclick = () => selectEstimatorLocation(estimatorSearchResults[idx]);
-    });
-
-  } catch (error) {
-    console.error('Search error:', error);
-    searchingDiv.classList.remove('active');
-    resultsDiv.style.display = 'block';
-    errorDiv.textContent = 'Search failed. Please try again.';
-    errorDiv.style.display = 'block';
+  } catch (err) {
+    showEstimateError(err.message || 'Search failed. Please try again.');
+  } finally {
+    $('estimatorSearching').classList.remove('active');
   }
 }
 
-// Select Location from Results
+document.querySelectorAll('#estimatorQuick button').forEach(b => {
+  b.onclick = () => { $('estimatorInput').value = b.dataset.q; searchEstimatorLocation(b.dataset.q); };
+});
+
+function useEstimatorLocation() {
+  showEstimateError('');
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    let address = 'Current location';
+    try { address = await DD.reverse(lat, lng); } catch (e) {}
+    selectEstimatorLocation({ name: 'Your location', address, lat, lng });
+  }, () => showEstimateError('Unable to access your location. Check permissions or search instead.'));
+}
+
 async function selectEstimatorLocation(location) {
   estimatorSelectedLocation = location;
-
-  // Get the active section
-  const activeSection = currentEstimatorDirection === 'to' ?
-    document.getElementById('toCampusSection') :
-    document.getElementById('fromCampusSection');
-
-  // Clear results
-  const resultsDiv = activeSection.querySelector('.estimator-search-results');
-  resultsDiv.innerHTML = '';
-
-  // Clear input
-  const inputId = currentEstimatorDirection === 'to' ? 'estimatorPickupInput' : 'estimatorDropoffInput';
-  document.getElementById(inputId).value = '';
-
-  // Get elements from active section
-  const selectedDisplay = activeSection.querySelector('.estimator-selected-display');
-  const searchInput = activeSection.querySelector('.estimator-search-input');
-  const selectedNameEl = activeSection.querySelector('.estimator-selected-name');
-  const selectedAddressEl = activeSection.querySelector('.estimator-selected-address');
-
-  // Build address with time/distance info
-  let addressHTML = location.address;
-  if (location.duration_text || location.distance_text) {
-    addressHTML += '<br><span style="font-size:11px;color:#999;margin-top:4px;display:block;">';
-    addressHTML += '🚗 Pickup in 2 mins';
-    if (location.duration_text) {
-      addressHTML += ` • ⏱️ ${location.duration_text} drive`;
-    }
-    if (location.distance_text) {
-      addressHTML += ` • 📍 ${location.distance_text}`;
-    }
-    addressHTML += '</span>';
-  }
-
-  // Show selected location, hide search
-  selectedNameEl.textContent = location.name;
-  selectedAddressEl.innerHTML = addressHTML;
-  selectedDisplay.classList.add('active');
-  searchInput.style.display = 'none';
-
-  // Auto-calculate
+  $('estimatorResults').innerHTML = '';
+  $('estimatorInput').value = '';
+  $('estimatorSelectedName').textContent = location.name;
+  $('estimatorSelectedAddress').textContent = location.address;
+  $('estimatorSelected').classList.add('active');
+  $('estimatorSearch').classList.add('hidden');
   await calculateEstimate();
 }
 
-// Clear Selected Location
 function clearEstimatorLocation() {
   estimatorSelectedLocation = null;
-
-  // Get the active section
-  const activeSection = currentEstimatorDirection === 'to' ?
-    document.getElementById('toCampusSection') :
-    document.getElementById('fromCampusSection');
-
-  // Get elements from active section
-  const selectedDisplay = activeSection.querySelector('.estimator-selected-display');
-  const searchInput = activeSection.querySelector('.estimator-search-input');
-
-  // Hide selected location, show search
-  selectedDisplay.classList.remove('active');
-  searchInput.style.display = 'block';
-
-  // Clear results
-  document.getElementById('estimateResults').style.display = 'none';
-  document.getElementById('estimateError').style.display = 'none';
+  $('estimatorSelected').classList.remove('active');
+  $('estimatorSearch').classList.remove('hidden');
+  $('estimateResults').style.display = 'none';
+  showEstimateError('');
 }
 
-// Calculate Estimate
 async function calculateEstimate() {
-  const errorDiv = document.getElementById('estimateError');
-  const resultsDiv = document.getElementById('estimateResults');
-
-  if (!estimatorSelectedLocation) {
-    errorDiv.textContent = 'Please select a location first';
-    errorDiv.style.display = 'block';
-    return;
-  }
-
-  errorDiv.style.display = 'none';
-
-  let pickupLat, pickupLng, dropoffLat, dropoffLng;
-
-  // Pepperdine coordinates
-  const pepperdineCoords = { lat: 34.0407, lng: -118.7108 };
-
-  if (currentEstimatorDirection === 'to') {
-    pickupLat = estimatorSelectedLocation.lat;
-    pickupLng = estimatorSelectedLocation.lng;
-    dropoffLat = pepperdineCoords.lat;
-    dropoffLng = pepperdineCoords.lng;
-  } else {
-    pickupLat = pepperdineCoords.lat;
-    pickupLng = pepperdineCoords.lng;
-    dropoffLat = estimatorSelectedLocation.lat;
-    dropoffLng = estimatorSelectedLocation.lng;
-  }
-
-  try {
-    // Generate browser fingerprint for security
-    const fingerprint = generateBrowserFingerprint();
-
-    const requestBody = {
-      origin_lat: pickupLat,
-      origin_lng: pickupLng,
-      dest_lat: dropoffLat,
-      dest_lng: dropoffLng,
-      use_traffic: true,  // Request real-time traffic data (uses Google API instead of free OSRM)
-      browser_fingerprint: fingerprint
-    };
-
-    // Include Turnstile token if we have one
-    if (estimatorTurnstileToken) {
-      requestBody.cf_turnstile_response = estimatorTurnstileToken;
-    }
-
-    const distanceResponse = await fetch('/api/directions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
-    const distanceData = await distanceResponse.json();
-
-    if (distanceData.error) {
-      errorDiv.textContent = 'Could not calculate route. Please try again.';
-      errorDiv.style.display = 'block';
-      return;
-    }
-
-    // Calculate fare
-    const distanceMiles = distanceData.distance_meters / 1609.344;
-    const durationMinutes = Math.round(distanceData.duration_in_traffic_seconds / 60);
-
-    const baseFare = 4.99;
-    const mileageCost = distanceMiles * 0.89;
-    const timeCost = durationMinutes * 0.39;
-    const totalFare = baseFare + mileageCost + timeCost;
-
-    // Display results
-    document.getElementById('estimateTotal').textContent = formatCurrency(totalFare);
-    document.getElementById('estimateDistance').textContent = `${distanceMiles.toFixed(1)} miles`;
-    document.getElementById('estimateDuration').textContent = `${durationMinutes} min`;
-    document.getElementById('estimateMileage').textContent = formatCurrency(mileageCost);
-    document.getElementById('estimateTime').textContent = formatCurrency(timeCost);
-
-    resultsDiv.style.display = 'block';
-  } catch (error) {
-    console.error('Calculation error:', error);
-    errorDiv.textContent = 'An error occurred. Please try again.';
-    errorDiv.style.display = 'block';
-  }
+  if (!estimatorSelectedLocation) return;
+  const campus = DD.CAMPUS, loc = estimatorSelectedLocation;
+  const [from, to] = currentEstimatorDirection === 'to' ? [loc, campus] : [campus, loc];
+  $('estimateTotal').textContent = '…';
+  $('estimateResults').style.display = 'block';
+  const r = await DD.route(from, to);
+  lastRoute = r;
+  const R = DD.RATES.ride;
+  const mileage = r.miles * R.perMile, time = r.minutes * R.perMinute;
+  $('estimateTotal').textContent = formatCurrency(R.base + mileage + time);
+  $('estimateDistance').textContent = `${r.miles.toFixed(1)} miles`;
+  $('estimateDuration').textContent = `${r.minutes} min`;
+  $('estimateMileage').textContent = formatCurrency(mileage);
+  $('estimateTime').textContent = formatCurrency(time);
+  $('estimateNote').textContent = r.estimated
+    ? 'Routing service unavailable, so this uses a straight-line estimate.'
+    : 'Live driving route, before tip.';
 }
 
-// Book Estimated Ride
 function bookEstimatedRide() {
-  if (!estimatorSelectedLocation) {
-    alert('Please calculate an estimate first');
-    return;
-  }
-
-  // Store data in sessionStorage to pass to rideshare page
-  const estimateData = {
-    direction: currentEstimatorDirection,
-    location: estimatorSelectedLocation
-  };
-
-  sessionStorage.setItem('rideshareEstimate', JSON.stringify(estimateData));
-  window.location.href = '/suspended.html';
+  if (!estimatorSelectedLocation) return;
+  const l = estimatorSelectedLocation;
+  const p = new URLSearchParams({ type: 'ride', dir: currentEstimatorDirection, name: l.name, addr: l.address, lat: l.lat.toFixed(6), lng: l.lng.toFixed(6) });
+  location.href = '/track.html?' + p.toString();
 }
 
-// Year
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// Smooth scroll
+// Smooth scroll for in-page links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href !== '#' && href.length > 1) {
-      e.preventDefault();
-      const target = document.querySelector(href);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
+  anchor.addEventListener('click', function (e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
 });
 
-// PWA: Smart redirect to active order tracking
-// Execute immediately, before DOMContentLoaded
-(function() {
-  // Check if running in PWA mode
-  const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
-                window.navigator.standalone === true;
-
-  if (isPWA) {
-    console.log('📱 Running in PWA mode');
-
-    // Service suspended for summer — clear any stale tracking URL
-    // and stay on the suspension notice instead of redirecting.
-    localStorage.removeItem('pwa-active-order-url');
-    console.log('⏸️ Service suspended — staying on notice page');
-  }
-})();
-
-// Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/static/service-worker.js')
-      .then(registration => {
-        console.log('ServiceWorker registered:', registration.scope);
-      })
-      .catch(error => {
-        console.log('ServiceWorker registration failed:', error);
-      });
-  });
+  window.addEventListener('load', () => navigator.serviceWorker.register('/static/service-worker.js').catch(() => {}));
 }
-
 </script>
 
 </body>

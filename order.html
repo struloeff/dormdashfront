@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0a0e1a" />
+<meta name="description" content="Build a DormDash food order: any restaurant, any dorm, the real fee schedule. A working demo of an archived student startup.">
+<title>DormDash — Order Demo</title>
+<link rel="icon" type="image/x-icon" href="/static/icon.ico">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+  :root{
+    --brand:#FD2D00;--bg:#0a0e1a;--surface:#131824;--surface-2:#1a2332;
+    --text:#fff;--text-2:#a0aec0;--muted:#6b7280;--border:rgba(255,255,255,.08);--ok:#10b981;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse 70% 40% at 50% -10%,rgba(253,45,0,.16),transparent),radial-gradient(ellipse 50% 50% at 90% 60%,rgba(139,92,246,.08),transparent)}
+  a{color:inherit}
+  .dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px}
+  .dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+  header{display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;padding:18px 20px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;text-decoration:none;letter-spacing:-.02em}
+  .logo i{width:38px;height:38px;background:url('/static/dormdash.png') center/contain no-repeat}
+  .back{color:var(--text-2);text-decoration:none;font-weight:600;font-size:14px}
+  .back:hover{color:#fff}
+  .wrap{max-width:1100px;margin:0 auto;padding:8px 20px 80px;display:grid;gap:24px}
+  @media(min-width:900px){.wrap{grid-template-columns:1fr 380px;align-items:start}.summary{position:sticky;top:20px}}
+  h1{font-size:clamp(30px,6vw,44px);font-weight:900;letter-spacing:-.04em;line-height:1.1}
+  .lede{color:var(--text-2);margin-top:8px;max-width:560px}
+  .card{background:linear-gradient(145deg,rgba(26,35,50,.8),rgba(19,24,36,.8));border:1px solid var(--border);border-radius:20px;padding:24px}
+  .step{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .step b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:rgba(253,45,0,.15);color:#ff7a5c;border:1px solid rgba(253,45,0,.35);flex:0 0 30px}
+  .step h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+  .stack{display:grid;gap:24px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:6px}
+  input,select,textarea{width:100%;padding:13px 14px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#fff;font:inherit;font-size:16px}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(253,45,0,.15)}
+  select option{background:#131824}
+  .search{display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:12px;border:none;font:700 15px Inter,system-ui,sans-serif;cursor:pointer;color:#fff;background:linear-gradient(135deg,#FD2D00,#ff4500);text-decoration:none;white-space:nowrap}
+  .btn:hover{box-shadow:0 6px 24px rgba(253,45,0,.45)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .btn-ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+  .btn-ghost:hover{box-shadow:none;background:rgba(255,255,255,.09)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chips button{padding:8px 14px;border-radius:100px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-2);font:600 13px Inter,system-ui,sans-serif;cursor:pointer}
+  .chips button:hover{color:#fff;border-color:rgba(253,45,0,.6)}
+  .results{margin-top:12px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .results:empty{display:none}
+  .result{padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+  .result:last-child{border-bottom:none}
+  .result:hover,.result:focus{background:rgba(255,255,255,.05);outline:none}
+  .result b{display:block;font-size:15px}
+  .result span{font-size:13px;color:var(--muted)}
+  .picked{display:none;padding:16px;border-radius:14px;background:rgba(253,45,0,.08);border:1px solid rgba(253,45,0,.3);justify-content:space-between;gap:12px;align-items:flex-start}
+  .picked.on{display:flex}
+  .picked b{display:block}
+  .picked span{font-size:13px;color:var(--text-2)}
+  .link-btn{background:none;border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:7px 12px;font:600 13px Inter,system-ui,sans-serif;cursor:pointer;flex-shrink:0}
+  .msg{display:none;margin-top:12px;padding:12px 14px;border-radius:10px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ff8a8a;font-size:14px}
+  .searching{display:none;margin-top:12px;color:var(--text-2);font-size:14px}
+  .item{display:grid;grid-template-columns:1fr 64px 92px 36px;gap:8px;margin-bottom:10px;align-items:center}
+  .item input{padding:11px 12px;font-size:15px}
+  .item input[type=number]{-moz-appearance:textfield}.item input::-webkit-inner-spin-button,.item input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  .item .x{height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-size:18px;cursor:pointer}
+  .item .x:hover{color:#ff8a8a;border-color:rgba(239,68,68,.4)}
+  .item-head{display:grid;grid-template-columns:1fr 64px 92px 36px;gap:8px;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+  @media(max-width:480px){.item,.item-head{grid-template-columns:1fr 52px 78px 34px;gap:6px}}
+  .hint{font-size:13px;color:var(--muted);margin-top:8px}
+  .two{display:grid;gap:12px}
+  @media(min-width:560px){.two{grid-template-columns:1fr 1fr}}
+  .tips{display:flex;gap:8px}
+  .tips button{flex:1;height:46px;border-radius:10px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font:600 14px Inter,system-ui,sans-serif;cursor:pointer}
+  .tips button.on{background:var(--brand);border-color:var(--brand)}
+  .summary h2{font-size:19px;font-weight:800;margin-bottom:14px}
+  .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;font-size:15px;color:var(--text-2)}
+  .row span:last-child{color:#fff;font-weight:600;white-space:nowrap}
+  .row.total{border-top:1px solid rgba(255,255,255,.12);margin-top:8px;padding-top:14px;font-size:20px;font-weight:800;color:#fff}
+  .row.total span:last-child{font-weight:900}
+  .summary .btn{width:100%;margin-top:18px;padding:16px}
+  .fine{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5}
+  .how{font-size:13px;color:var(--text-2);padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="dd-archive-bar">DormDash wound down in spring 2026. This is a working demo — no order is placed and nothing you type leaves your browser except place searches. <a href="/#about">About the project</a></div>
+
+<header>
+  <a class="logo" href="/"><i></i><span>DormDash</span></a>
+  <a class="back" href="/">← Back home</a>
+</header>
+
+<div class="wrap">
+  <div class="stack">
+    <div>
+      <h1>Order from anywhere.</h1>
+      <p class="lede">This is the real DormDash flow: pick any restaurant, list what you want, choose your dorm. Prices use the production fee schedule.</p>
+    </div>
+
+    <!-- 1. Restaurant -->
+    <section class="card" aria-labelledby="s1">
+      <div class="step"><b>1</b><h2 id="s1">Pick a restaurant</h2></div>
+      <div id="restSearch">
+        <form class="search" onsubmit="event.preventDefault(); findRestaurant();">
+          <input id="restInput" placeholder="Search any restaurant near Malibu…" autocomplete="off" aria-label="Restaurant search">
+          <button class="btn" type="submit">Search</button>
+        </form>
+        <div class="chips" id="restChips">
+          <button type="button" data-q="Chick-fil-A">🐔 Chick-fil-A</button>
+          <button type="button" data-q="In-N-Out Burger">🍔 In-N-Out</button>
+          <button type="button" data-q="Starbucks Malibu">☕ Starbucks</button>
+          <button type="button" data-q="Chipotle">🌯 Chipotle</button>
+          <button type="button" data-q="Taco Bell">🌮 Taco Bell</button>
+          <button type="button" data-q="Malibu Farm">🥗 Malibu Farm</button>
+        </div>
+        <div class="searching" id="restSearching">Searching OpenStreetMap…</div>
+        <div class="results" id="restResults"></div>
+      </div>
+      <div class="picked" id="restPicked">
+        <div><b id="restName"></b><span id="restAddr"></span></div>
+        <button class="link-btn" type="button" onclick="clearRestaurant()">Change</button>
+      </div>
+      <div class="msg" id="restMsg" role="alert"></div>
+    </section>
+
+    <!-- 2. Items -->
+    <section class="card" aria-labelledby="s2">
+      <div class="step"><b>2</b><h2 id="s2">What do you want?</h2></div>
+      <div class="item-head"><span>Item</span><span>Qty</span><span>Price</span><span></span></div>
+      <div id="items"></div>
+      <button class="btn btn-ghost" type="button" onclick="addItem()">+ Add another item</button>
+      <p class="hint">Rough prices are fine. On the live service the driver entered the exact prices from the receipt, and you paid that, not a padded menu price.</p>
+    </section>
+
+    <!-- 3. Delivery -->
+    <section class="card" aria-labelledby="s3">
+      <div class="step"><b>3</b><h2 id="s3">Where should it go?</h2></div>
+      <div class="two">
+        <div>
+          <label for="dorm">Dorm or building</label>
+          <select id="dorm"></select>
+        </div>
+        <div>
+          <label for="room">Room / meeting spot</label>
+          <input id="room" placeholder="e.g. Room 214, front door">
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <label for="notes">Notes for your driver</label>
+        <textarea id="notes" rows="2" placeholder="No pickles, extra sauce, text when outside…"></textarea>
+      </div>
+      <div style="margin-top:16px">
+        <label>Tip for your driver (100% goes to them)</label>
+        <div class="tips" id="tips">
+          <button type="button" data-t="0">None</button>
+          <button type="button" data-t="0.15">15%</button>
+          <button type="button" data-t="0.18" class="on">18%</button>
+          <button type="button" data-t="0.2">20%</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Summary -->
+  <aside class="card summary" aria-labelledby="sumTitle">
+    <h2 id="sumTitle">Your order</h2>
+    <div id="sumRows"></div>
+    <button class="btn" id="placeBtn" type="button" onclick="placeOrder()" disabled>Place demo order →</button>
+    <p class="fine" id="placeHint">Pick a restaurant and add at least one item.</p>
+    <div class="how">After you place it, you'll watch the order move through the real lifecycle: dispatched to a driver, receipt confirmed, paid, and delivered on a live map. Running at demo speed.</div>
+    <p class="fine">Sales tax is estimated at 9.75% (LA County). The live service looked up the exact rate for each restaurant's address from the CDTFA.</p>
+  </aside>
+</div>
+
+<script src="/static/geo.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const F = DD.RATES.food;
+let restaurant = null, routeInfo = null, tipRate = 0.18, nextId = 0;
+
+const DORMS = ['Seaside','Lovernich Apartments','Conner House','Phillips House','E. Pengilly House','Peppers House','Hayes House','White House','Fifield House','Pauley House','Banowsky House','DeBell House','Miller House','Darnell House','Eaton House','Knott House','J. Pengilly House','Crocker House','Shafer House','Krown Phi Alpha House','Eden House','Rockwell Towers Residence Hall'];
+const CAMPUS = ['Howard A. White Center (HAWC)','Cultural Arts Center (CAC)','Smothers Theatre','Rockwell Academic Center (RAC)','Music Building (MB)','Weisman Museum','Keck Science Center (KSC)','Appleby Center (AC)','Elkins Auditorium','Tyler Campus Center (TCC)','Payson Library (PAY)'];
+$('dorm').innerHTML = '<optgroup label="Dorms">' + DORMS.map(d => `<option>${d}</option>`).join('') + '</optgroup>'
+  + '<optgroup label="Campus buildings">' + CAMPUS.map(d => `<option>${d}</option>`).join('') + '</optgroup>';
+
+function showMsg(t) { $('restMsg').textContent = t; $('restMsg').style.display = t ? 'block' : 'none'; }
+
+async function findRestaurant(q) {
+  const query = (q ?? $('restInput').value).trim();
+  showMsg(''); $('restResults').innerHTML = '';
+  if (!query) return showMsg('Type a restaurant name to search.');
+  $('restSearching').style.display = 'block';
+  try {
+    const list = (await DD.search(query)).filter(r => r.miles < 45).slice(0, 5);
+    if (!list.length) return showMsg('Nothing found within delivery range. Try another name.');
+    $('restResults').innerHTML = list.map((r, i) => `<div class="result" tabindex="0" role="button" data-i="${i}"><b>${DD.esc(r.name)}</b><span>${DD.esc(r.address)} · ${r.miles.toFixed(1)} mi from campus</span></div>`).join('');
+    $('restResults').querySelectorAll('.result').forEach(el => {
+      const pick = () => pickRestaurant(list[+el.dataset.i]);
+      el.onclick = pick; el.onkeydown = e => { if (e.key === 'Enter') pick(); };
+    });
+  } catch (e) { showMsg(e.message || 'Search failed. Try again in a moment.'); }
+  finally { $('restSearching').style.display = 'none'; }
+}
+document.querySelectorAll('#restChips button').forEach(b => b.onclick = () => { $('restInput').value = b.dataset.q; findRestaurant(b.dataset.q); });
+
+async function pickRestaurant(r) {
+  restaurant = r; routeInfo = null;
+  $('restResults').innerHTML = '';
+  $('restName').textContent = r.name;
+  $('restAddr').textContent = r.address + ' · calculating route…';
+  $('restPicked').classList.add('on');
+  $('restSearch').style.display = 'none';
+  render();
+  routeInfo = await DD.route(r, DD.CAMPUS);
+  if (restaurant !== r) return;
+  $('restAddr').textContent = `${r.address} · ${routeInfo.miles.toFixed(1)} mi, ~${routeInfo.minutes} min drive to campus`;
+  render();
+}
+function clearRestaurant() {
+  restaurant = null; routeInfo = null;
+  $('restPicked').classList.remove('on'); $('restSearch').style.display = 'block';
+  render();
+}
+
+function addItem(name = '', qty = 1, price = '') {
+  const id = nextId++;
+  const row = document.createElement('div');
+  row.className = 'item'; row.dataset.id = id;
+  row.innerHTML = `<input placeholder="e.g. Spicy chicken sandwich" aria-label="Item name" value="${DD.esc(name)}">
+    <input type="number" min="1" step="1" value="${qty}" aria-label="Quantity" inputmode="numeric">
+    <input type="number" min="0" step="0.01" placeholder="$0.00" value="${price}" aria-label="Price each" inputmode="decimal">
+    <button class="x" type="button" aria-label="Remove item">×</button>`;
+  row.querySelectorAll('input').forEach(i => i.addEventListener('input', render));
+  row.querySelector('.x').onclick = () => { row.remove(); if (!$('items').children.length) addItem(); render(); };
+  $('items').appendChild(row);
+  render();
+}
+
+function readItems() {
+  return [...$('items').children].map(r => {
+    const [n, q, p] = r.querySelectorAll('input');
+    return { name: n.value.trim(), qty: Math.max(1, parseInt(q.value) || 1), price: Math.max(0, parseFloat(p.value) || 0) };
+  }).filter(i => i.name);
+}
+
+function totals() {
+  const items = readItems();
+  const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
+  const miles = routeInfo ? routeInfo.miles : 0;
+  const t = {
+    items, subtotal,
+    base: F.base,
+    service: subtotal * F.service,
+    distance: miles * F.perMile,
+    far: miles > F.farLimit ? F.farAway : 0,
+    platform: F.platform,
+    tax: subtotal * F.tax,
+    tip: subtotal * tipRate,
+    miles
+  };
+  t.total = t.subtotal + t.base + t.service + t.distance + t.far + t.platform + t.tax + t.tip;
+  return t;
+}
+
+function render() {
+  const t = totals(), m = DD.money;
+  const rows = [
+    ['Food subtotal', t.subtotal],
+    ['Base delivery fee', t.base],
+    ['Service fee (15%)', t.service],
+    [routeInfo ? `Distance (${t.miles.toFixed(1)} mi × $0.39)` : 'Distance fee', t.distance],
+  ];
+  if (t.far) rows.push(['Far-away fee (10+ mi)', t.far]);
+  rows.push(['Platform fee', t.platform], ['Sales tax (est.)', t.tax], [`Tip (${Math.round(tipRate * 100)}%)`, t.tip]);
+  $('sumRows').innerHTML = rows.map(([l, v]) => `<div class="row"><span>${l}</span><span>${m(v)}</span></div>`).join('')
+    + `<div class="row total"><span>Total</span><span>${m(t.total)}</span></div>`;
+  const ready = restaurant && routeInfo && t.items.length && t.subtotal > 0;
+  $('placeBtn').disabled = !ready;
+  $('placeHint').textContent = ready ? 'Demo only: no payment, no driver, nothing stored.'
+    : !restaurant ? 'Pick a restaurant and add at least one item.'
+    : !routeInfo ? 'Working out the route…'
+    : 'Add at least one item with a price.';
+}
+
+document.querySelectorAll('#tips button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tips button').forEach(x => x.classList.toggle('on', x === b));
+  tipRate = parseFloat(b.dataset.t); render();
+});
+
+function placeOrder() {
+  const t = totals();
+  if (!restaurant || !t.items.length) return;
+  const order = {
+    type: 'food',
+    restaurant: { name: restaurant.name, address: restaurant.address, lat: restaurant.lat, lng: restaurant.lng },
+    dorm: $('dorm').value, room: $('room').value.trim(),
+    items: t.items, subtotal: t.subtotal, tax: t.tax, tip: t.tip, total: t.total,
+    fees: t.base + t.service + t.distance + t.far + t.platform
+  };
+  try { sessionStorage.setItem('dd-demo-order', JSON.stringify(order)); } catch (e) {}
+  const p = new URLSearchParams({ type: 'food', name: restaurant.name, addr: restaurant.address, lat: restaurant.lat.toFixed(6), lng: restaurant.lng.toFixed(6), dorm: order.dorm, total: t.total.toFixed(2), n: t.items.reduce((s, i) => s + i.qty, 0) });
+  location.href = '/track.html?' + p.toString();
+}
+
+addItem();
+render();
+</script>
+</body>
+</html>

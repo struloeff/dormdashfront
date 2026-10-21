@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#FD2D00" />
+<meta name="description" content="Get support for DormDash">
+<title>Support - DormDash</title>
+<link rel="icon" type="image/x-icon" href="/static/icon.ico">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<style>
+.dd-archive-bar{background:#1a0f0c;border-bottom:1px solid rgba(253,45,0,.35);color:#f5c9bd;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center;padding:9px 16px}.dd-archive-bar a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  :root {
+    --brand-primary: #FD2D00;
+    --brand-secondary: #FD2D00;
+    --brand-dark: #e55d00;
+    --bg-dark: #0a0e1a;
+    --bg-darker: #050810;
+    --surface: #131824;
+    --surface-elevated: #1a2332;
+    --text-primary: #ffffff;
+    --text-secondary: #a0aec0;
+    --text-muted: #6b7280;
+    --border: rgba(255, 255, 255, 0.08);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --spacing: clamp(20px, 5vw, 40px);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 106, 0, 0.15), transparent),
+      radial-gradient(ellipse 60% 50% at 80% 50%, rgba(59, 130, 246, 0.08), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--spacing);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(10, 14, 26, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  header.scrolled {
+    background: rgba(10, 14, 26, 0.95);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px var(--spacing);
+    gap: 20px;
+    min-height: 80px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    color: var(--text-primary);
+  }
+
+  .logo-icon {
+    width: 48px;
+    height: 48px;
+    background: url('/static/dormdash.png') center/contain no-repeat;
+  }
+
+  .nav-links {
+    display: none;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+    position: relative;
+  }
+
+  .nav-links a:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-links a.active {
+    color: var(--brand-secondary);
+  }
+
+  @media (min-width: 768px) {
+    .nav-links {
+      display: flex;
+    }
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    color: white;
+    box-shadow: 0 4px 20px rgba(255, 106, 0, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255, 106, 0, 0.6);
+  }
+
+  .btn-secondary {
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Hero Section */
+  .hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    padding: 140px 0 80px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: clamp(40px, 8vw, 64px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #ffffff, #cbd5e1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-description {
+    font-size: 20px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin: 0 auto 40px;
+    max-width: 700px;
+  }
+
+  /* Main Content */
+  main {
+    padding: 0 0 100px;
+  }
+
+  section {
+    padding: 60px 0;
+  }
+
+  .section-header {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 60px;
+  }
+
+  h2 {
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  /* Contact Phone Numbers */
+  .phone-link {
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 800;
+    color: var(--brand-secondary);
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-block;
+    letter-spacing: -0.02em;
+  }
+
+  .phone-link:hover {
+    color: var(--brand-primary);
+    transform: scale(1.08);
+  }
+
+  /* FAQ Section */
+  .faq-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .faq-category {
+    margin-bottom: 48px;
+  }
+
+  .faq-category h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--brand-secondary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .faq-item:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .faq-question {
+    padding: 24px;
+    font-weight: 600;
+    font-size: 17px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    user-select: none;
+  }
+
+  .faq-question:hover {
+    color: var(--brand-secondary);
+  }
+
+  .faq-toggle {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 106, 0, 0.2);
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .faq-toggle::before {
+    content: '+';
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--brand-secondary);
+  }
+
+  .faq-item.active .faq-toggle {
+    background: var(--brand-primary);
+    transform: rotate(45deg);
+  }
+
+  .faq-item.active .faq-toggle::before {
+    color: white;
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+  }
+
+  .faq-item.active .faq-answer {
+    max-height: 500px;
+    padding: 0 24px 24px;
+  }
+
+  .faq-answer p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* Contact Form */
+  .contact-form-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+  }
+
+  .form-group label span {
+    color: var(--error);
+  }
+
+  .input,
+  .textarea,
+  .select {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+
+  .input:focus,
+  .textarea:focus,
+  .select:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.1);
+  }
+
+  .textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .select {
+    cursor: pointer;
+  }
+
+  /* Alert Box */
+  .alert {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+  }
+
+  .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--success);
+  }
+
+  .alert-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 60px var(--spacing) 40px;
+    margin-top: 100px;
+  }
+
+  .footer-content {
+    display: grid;
+    gap: 40px;
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  @media (min-width: 768px) {
+    .footer-content {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .footer-links h4 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    font-size: 15px;
+  }
+
+  .footer-links a:hover {
+    color: var(--text-primary);
+  }
+
+  .footer-bottom {
+    margin-top: 60px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    nav {
+      padding: 20px var(--spacing);
+      min-height: 72px;
+    }
+
+    .logo {
+      font-size: 20px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      font-size: 14px;
+    }
+
+    .hero {
+      min-height: auto;
+      padding: 100px 0 50px;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    .hero-description {
+      font-size: 17px;
+      margin-bottom: 30px;
+    }
+
+
+    h2 {
+      font-size: 32px;
+    }
+
+    .faq-category h3 {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .faq-question {
+      padding: 20px;
+      font-size: 16px;
+    }
+
+    .faq-item.active .faq-answer {
+      padding: 0 20px 20px;
+    }
+
+    .contact-form-section {
+      padding: 32px 24px;
+    }
+
+    .contact-form-section h2 {
+      font-size: 28px;
+    }
+
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    nav {
+      padding: 16px 20px;
+    }
+
+    .logo {
+      font-size: 18px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      font-size: 13px;
+    }
+
+    .hero {
+      padding: 90px 0 40px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .hero-description {
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    section {
+      padding: 40px 0;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+
+    .section-header {
+      margin-bottom: 40px;
+    }
+
+    .section-description {
+      font-size: 16px;
+    }
+
+
+    .faq-category {
+      margin-bottom: 36px;
+    }
+
+    .faq-category h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .faq-item {
+      margin-bottom: 12px;
+    }
+
+    .faq-question {
+      padding: 18px 16px;
+      font-size: 15px;
+    }
+
+    .faq-toggle {
+      width: 20px;
+      height: 20px;
+    }
+
+    .faq-toggle::before {
+      font-size: 18px;
+    }
+
+    .faq-item.active .faq-answer {
+      padding: 0 16px 18px;
+    }
+
+    .faq-answer p {
+      font-size: 14px;
+    }
+
+    .contact-form-section {
+      padding: 28px 20px;
+    }
+
+    .contact-form-section h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .contact-form-section > p {
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .input, .textarea, .select {
+      padding: 12px 14px;
+      font-size: 15px;
+    }
+
+    .alert {
+      padding: 14px 16px;
+      font-size: 13px;
+    }
+
+    footer {
+      padding: 40px 20px 30px;
+    }
+
+    .footer-content {
+      gap: 32px;
+    }
+
+    .footer-links h4 {
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      font-size: 14px;
+    }
+
+    .footer-bottom {
+      margin-top: 40px;
+      padding-top: 24px;
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    h1 {
+      font-size: 26px;
+    }
+
+    .hero-description {
+      font-size: 15px;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+
+    .faq-question {
+      padding: 16px 14px;
+      font-size: 14px;
+    }
+
+    .contact-form-section {
+      padding: 24px 16px;
+    }
+
+    .input, .textarea, .select {
+      padding: 11px 12px;
+      font-size: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="dd-archive-bar">DormDash wound down in spring 2026. This site is a working demo — nothing here places a real order. <a href="/#about">About the project</a></div>
+
+<header id="header">
+  <nav class="container">
+    <a href="/" class="logo">
+      <div class="logo-icon"></div>
+      <span>DormDash</span>
+    </a>
+    <div class="nav-links">
+      <a href="/#services">Services</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/order.html">Food Demo</a>
+      <a href="/support.html" class="active">Support</a>
+    </div>
+    <a href="/order.html" class="btn btn-primary">Try the Demo</a>
+  </nav>
+</header>
+
+<main>
+  <!-- SUPPORT CLOSED -->
+  <section style="padding: 60px 0 40px;">
+    <div class="container">
+      <div style="text-align: center; max-width: 760px; margin: 0 auto;">
+        <h2 style="font-size: clamp(36px, 9vw, 64px); font-weight: 900; line-height: 1.2; margin-bottom: 20px; color: var(--text-primary); letter-spacing: -0.03em;">
+          Support has closed
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 18px;">DormDash is no longer operating, so support has closed. The FAQ below documents how orders, payments, disputes and safety worked.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-header">
+        <h2>Frequently Asked Questions</h2>
+        <p style="color: var(--text-secondary);">How DormDash worked, in the questions customers asked most</p>
+      </div>
+
+      <div class="faq-container">
+        <!-- Orders & Delivery -->
+        <div class="faq-category">
+          <h3>🍕 Orders & Delivery</h3>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>How long did delivery typically take?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>Most deliveries took 30-45 minutes from order placement to the door, including restaurant prep time and delivery. Farther restaurants (10+ miles) could take 45-60 minutes. Orders could be tracked in real time on the platform.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>Could I track my order in real time?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>Yes. Once an order was accepted, the customer received a tracking link showing the driver's location and estimated arrival time, plus notifications when the order was picked up and when the driver was nearby.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>What happened if an order was wrong or missing items?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>Missing or incorrect items were handled by working with the restaurant and issuing a refund or credit. Photos of the problem helped resolve these cases faster.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>Did you deliver to all dorms on campus?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>Yes. DormDash delivered to every dorm, apartment, and building on Pepperdine's campus, and the student drivers knew the gates, shortcuts, and drop-off points.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>Could I schedule an order for later?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>No. Only immediate orders were supported; customers placed an order when they were ready to receive it within 30-60 minutes.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payments & Pricing -->
+        <div class="faq-category">
+          <h3>💳 Payments & Pricing</h3>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>What payment methods were accepted?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>DormDash accepted all major credit and debit cards (Visa, Mastercard, American Express, Discover), Apple Pay, Google Pay, and digital wallets. All payments were processed through Stripe.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>How much did customers tip?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>Tipping was optional. Most customers tipped 15-20% for standard service, and more for large orders or bad weather. 100% of the tip went directly to the driver.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>Were there any hidden fees?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>No. Pricing was transparent and every fee was shown upfront: base delivery fee ($5.99), service fee (15%), distance fee ($0.39/mile), far-away fee ($7.99 for 10+ miles), and a $0.49 platform fee. There were no surprise charges and no surge pricing.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>Could I get a refund if I cancelled?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>Cancelling before the restaurant accepted the order meant a full refund. Once the restaurant started preparing it, a cancellation could incur a fee to cover food costs.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account & Safety -->
+        <div class="faq-category">
+          <h3>🔒 Account & Safety</h3>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>Was payment information secure?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>Yes. Payments ran through Stripe, an industry-leading payment processor used by millions of businesses. Card information was encrypted and never stored on DormDash's servers.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>Who are the drivers?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>DormDash drivers were verified Pepperdine students. Student status was verified before onboarding, so deliveries came from fellow Waves who knew the campus and community.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>How was the delivery address set?</span>
+              <div class="faq-toggle"></div>
+            </div>
+            <div class="faq-answer">
+              <p>The delivery address was set during checkout, and customers were asked to include their dorm or building name and room number for accurate delivery.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <a href="/" class="logo">
+          <div class="logo-icon"></div>
+          <span>DormDash</span>
+        </a>
+        <p style="color: var(--text-muted); max-width: 300px;">
+          Student-powered delivery service that brought food, rides, and more to the Pepperdine community.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Services</h4>
+        <a href="/order.html">Food Delivery Demo</a>
+        <a href="/#rides">Campus Rides</a>
+        <a href="/#services">All Services</a>
+      </div>
+
+      <div class="footer-links">
+        <h4>Company</h4>
+        <a href="/drivers.html">Drivers</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="/support.html">Support</a>
+        <a href="/privacy.html">Privacy</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© <span id="year"></span> DormDash. All rights reserved.</div>
+      <div>Not affiliated with Pepperdine University</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Header scroll effect
+const header = document.getElementById('header');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 50) {
+    header.classList.add('scrolled');
+  } else {
+    header.classList.remove('scrolled');
+  }
+});
+
+// FAQ Toggle
+document.querySelectorAll('.faq-item').forEach(item => {
+  const question = item.querySelector('.faq-question');
+  question.addEventListener('click', () => {
+    const isActive = item.classList.contains('active');
+
+    // Close all other items
+    document.querySelectorAll('.faq-item').forEach(otherItem => {
+      otherItem.classList.remove('active');
+    });
+
+    // Toggle current item
+    if (!isActive) {
+      item.classList.add('active');
+    }
+  });
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href !== '#' && href.length > 1) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+});
+
+// Year
+document.getElementById('year').textContent = new Date().getFullYear();
+
+</script>
+
+</body>
+</html>
