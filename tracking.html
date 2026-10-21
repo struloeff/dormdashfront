@@ -183,7 +183,12 @@
       gap: 8px;
     }
     .muted::before {
-      content: '🍔';
+      content: '';
+      display: inline-block;
+      width: 1em; height: 1em;
+      background: currentColor;
+      -webkit-mask: url(/static/icons/sandwich.svg) center / contain no-repeat;
+      mask: url(/static/icons/sandwich.svg) center / contain no-repeat;
       font-size: 16px;
     }
     .actions { 
@@ -208,7 +213,12 @@
       box-shadow: 0 4px 16px rgba(253, 45, 0, 0.3);
     }
     .linkbtn::before {
-      content: '📍';
+      content: '';
+      display: inline-block;
+      width: 1em; height: 1em;
+      background: currentColor;
+      -webkit-mask: url(/static/icons/map-pin.svg) center / contain no-repeat;
+      mask: url(/static/icons/map-pin.svg) center / contain no-repeat;
       font-size: 16px;
     }
     .linkbtn:hover {
@@ -228,8 +238,12 @@
       font-size: 15px;
     }
     .empty::before {
-      content: '🔍';
-      display: block;
+      content: '';
+      width: 1em; height: 1em;
+      background: currentColor;
+      -webkit-mask: url(/static/icons/search.svg) center / contain no-repeat;
+      mask: url(/static/icons/search.svg) center / contain no-repeat;
+      display: block; margin-left: auto; margin-right: auto; opacity: .6;
       font-size: 48px;
       margin-bottom: 12px;
     }
@@ -245,7 +259,14 @@
       gap: 12px;
     }
     .error::before {
-      content: '⚠️';
+      content: '';
+      display: inline-block;
+      width: 1em; height: 1em;
+      background: currentColor;
+      -webkit-mask: url(/static/icons/triangle-alert.svg) center / contain no-repeat;
+      color: #f59e0b;
+      mask: url(/static/icons/triangle-alert.svg) center / contain no-repeat;
+      color: #f59e0b;
       font-size: 24px;
       flex-shrink: 0;
     }
@@ -277,9 +298,9 @@
     }
     .dd-archive-bar { margin: -32px -24px 32px; }
   </style>
+<link rel="stylesheet" href="/static/icons.css">
 </head>
 <body>
-<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
   <div class="card">
     <h1>Find Your Order</h1>
     <p class="hint">Search by <strong>Phone Number</strong>. In the demo this finds orders placed in this browser.</p>
@@ -351,7 +372,7 @@
             <div class="actions">
               ${o.order_token ?
                 `<a class="linkbtn" href="${o.service_type === 'rideshare' ? '/ride-tracking.html' : '/track.html'}?token=${encodeURIComponent(o.order_token)}">Track Order</a>` :
-                `<span style="color: #ef4444; font-size: 13px;">⚠️ Cannot track - order missing token (see <a href="/support.html" style="color:#fca5a5">support</a>)</span>`
+                `<span style="color: #ef4444; font-size: 13px;"><svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-triangle-alert"/></svg> Cannot track - order missing token (see <a href="/support.html" style="color:#fca5a5">support</a>)</span>`
               }
             </div>
           </div>

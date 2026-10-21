@@ -59,7 +59,7 @@
 .dd-live.is-done .dd-live-dot{background:#10b981;animation:none}
 @keyframes ddPulse{0%{box-shadow:0 0 0 0 rgba(253,45,0,.55)}100%{box-shadow:0 0 0 10px rgba(253,45,0,0)}}
 .dd-live-pin{border-radius:50%;border:3px solid #fff}
-.dd-live-car{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:#fff;box-shadow:0 0 0 5px rgba(253,45,0,.45),0 6px 16px rgba(0,0,0,.6)}
+.dd-live-car{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:18px;color:#0b0b0c;background:#fff;box-shadow:0 0 0 5px rgba(253,45,0,.45),0 6px 16px rgba(0,0,0,.6)}
 .dd-live.is-ride .dd-live-car{box-shadow:0 0 0 5px rgba(124,108,246,.5),0 6px 16px rgba(0,0,0,.6)}
 .dd-live .leaflet-control-zoom{display:block!important;margin:12px 12px 0 0!important}
 .dd-live .leaflet-top.leaflet-right{top:0!important;right:0!important}

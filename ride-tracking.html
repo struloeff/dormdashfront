@@ -638,13 +638,13 @@
         }
     </style>
     <link rel="stylesheet" href="/static/track.css">
+<link rel="stylesheet" href="/static/icons.css">
 </head>
 <body>
-<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
     <!-- PWA Install Banner -->
     <div id="pwaInstallBanner" class="pwa-install-banner">
         <button class="pwa-banner-close" id="pwaCloseBtn">&times;</button>
-        <div class="pwa-banner-icon">📱</div>
+        <div class="pwa-banner-icon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-smartphone"/></svg></div>
         <div class="pwa-banner-content">
             <div class="pwa-banner-title">Never lose your order</div>
             <div class="pwa-banner-text" id="pwaBannerText">Add to home screen</div>
@@ -681,7 +681,7 @@
         </div>
 
         <div id="errorState" class="error-state" style="display: none;">
-            <div style="font-size: 64px; margin-bottom: 16px;">❌</div>
+            <div style="font-size: 64px; margin-bottom: 16px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg></div>
             <h2 style="margin-bottom: 8px;">Ride Not Found</h2>
             <p id="errorMessage" style="color: #999;"></p>
             <a href="/ride.html" class="button" style="max-width: 300px; margin: 24px auto 0;">Request New Ride</a>
@@ -691,7 +691,7 @@
             <!-- Notification Banner -->
             <div id="notificationBanner" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="font-size: 20px;">📱</div>
+                    <div style="font-size: 20px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-smartphone"/></svg></div>
                     <div style="flex: 1;">
                         <div style="font-size: 13px; color: #d4d4d8; line-height: 1.4;">Get notified when your ride status updates, even with this tab closed</div>
                     </div>
@@ -705,13 +705,13 @@
             </div>
 
             <div class="status-card">
-                <div id="statusIcon" class="status-icon">🚗</div>
+                <div id="statusIcon" class="status-icon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg></div>
                 <div id="statusText" class="status-text">Ride Requested</div>
                 <div id="statusDescription" class="status-description">Waiting for a driver to accept your ride</div>
             </div>
 
             <div id="billSection" class="bill-section" style="display: none;">
-                <div class="bill-title">💳 Your Bill</div>
+                <div class="bill-title"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-credit-card"/></svg> Your Bill</div>
                 <div class="bill-items" id="billItems"></div>
                 <div class="bill-total">
                     <span>Total Due:</span>
@@ -724,7 +724,7 @@
             </div>
 
             <div id="feedbackSection" class="bill-section" style="display: none;">
-                <div class="bill-title">⭐ How was your ride?</div>
+                <div class="bill-title"><svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-star"/></svg> How was your ride?</div>
                 <div style="margin-bottom: 16px;">
                     <div style="font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 8px;">Rate your experience:</div>
                     <div id="starRating" style="display: flex; gap: 8px; font-size: 32px; cursor: pointer; margin-bottom: 16px;">
@@ -831,7 +831,7 @@
                 </div>
             </div>
 
-            <button onclick="loadOrder()" class="button-secondary button" style="margin-top: 24px;">🔄 Refresh Status</button>
+            <button onclick="loadOrder()" class="button-secondary button" style="margin-top: 24px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-refresh-cw"/></svg> Refresh Status</button>
             <a href="/ride.html" class="button-secondary button" style="margin-top: 12px;">Request Another Ride</a>
         </div>
     </div>
@@ -847,47 +847,47 @@
 
         const statusConfig = {
             'Pending': {
-                icon: '🚗',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg>',
                 text: 'Ride Requested',
                 description: 'Waiting for a driver to accept your ride.'
             },
             'Claimed': {
-                icon: '👤',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-user"/></svg>',
                 text: 'Driver Assigned',
                 description: 'A driver has accepted your ride request. They will contact your shortly.'
             },
             'Awaiting Payment': {
-                icon: '💰',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg>',
                 text: 'Awaiting Payment',
                 description: 'Please complete payment to continue.'
             },
             'Payment Successful': {
-                icon: '✅',
+                icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
                 text: 'Payment Complete',
                 description: 'Payment confirmed! Your driver will head to pickup soon.'
             },
             'Heading to Pickup': {
-                icon: '🚙',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car-front"/></svg>',
                 text: 'Driver En Route',
                 description: 'Your driver is heading to the pickup location.'
             },
             'In Progress': {
-                icon: '🚗',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg>',
                 text: 'Ride in Progress',
                 description: 'You\'re on your way to your destination.'
             },
             'Delivered': {
-                icon: '✅',
+                icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
                 text: 'Ride Completed',
                 description: 'You\'ve arrived at your destination. Thanks for riding!'
             },
             'Completed': {
-                icon: '✅',
+                icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
                 text: 'Ride Completed',
                 description: 'You\'ve arrived at your destination. Thanks for riding!'
             },
             'Cancelled': {
-                icon: '❌',
+                icon: '<svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg>',
                 text: 'Ride Cancelled',
                 description: 'This ride has been cancelled.'
             }
@@ -943,8 +943,8 @@
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             const driverStatus = driverClaimed
-                ? '<div style="color: #10b981; font-weight: 600; margin-top: 12px; line-height: 1.5;">✅ A driver has committed to picking you up at the scheduled time. The driver will send you your bill sometime before the pickup time — if you fail to pay it you will not receive your ride.</div>'
-                : '<div style="color: #f59e0b; font-weight: 700; margin-top: 12px;">⏳ Waiting for Driver to Commit</div>';
+                ? '<div style="color: #10b981; font-weight: 600; margin-top: 12px; line-height: 1.5;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> A driver has committed to picking you up at the scheduled time. The driver will send you your bill sometime before the pickup time — if you fail to pay it you will not receive your ride.</div>'
+                : '<div style="color: #f59e0b; font-weight: 700; margin-top: 12px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg> Waiting for Driver to Commit</div>';
 
             return `
                 <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">
@@ -1210,7 +1210,7 @@
 
             // Override status display for scheduled rides
             if (isScheduled) {
-                if (statusIcon) statusIcon.textContent = '📅';
+                if (statusIcon) statusIcon.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-calendar"/></svg>';
                 if (statusText) statusText.textContent = 'Scheduled Ride';
 
                 const driverClaimed = order.claimed_by || order.status !== 'Pending';
@@ -1220,7 +1220,7 @@
                 // Start countdown timer update
                 startCountdownTimer(scheduledFor, driverClaimed);
             } else {
-                if (statusIcon) statusIcon.textContent = config.icon;
+                if (statusIcon) statusIcon.innerHTML = config.icon;
                 if (statusText) statusText.textContent = config.text;
                 if (statusDescription) statusDescription.textContent = config.description;
             }
@@ -1272,7 +1272,7 @@
                 if (feedbackExists) {
                     // Already submitted feedback - show thank you message
                     feedbackSection.innerHTML = `
-                        <div class="bill-title" style="color: #10b981; text-align: center;">✅ Thank you for your feedback!</div>
+                        <div class="bill-title" style="color: #10b981; text-align: center;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Thank you for your feedback!</div>
                         <div style="text-align: center; color: #a1a1aa; font-size: 14px; margin-top: 8px;">
                             We appreciate you taking the time to share your experience.
                         </div>
@@ -1288,7 +1288,7 @@
                     const receiptButton = document.createElement('button');
                     receiptButton.id = 'receiptDownloadButton';
                     receiptButton.style.cssText = 'width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px;';
-                    receiptButton.textContent = '📄 Download Receipt';
+                    receiptButton.textContent = 'Download Receipt';
                     receiptButton.onclick = downloadReceipt;
                     feedbackSection.insertAdjacentElement('afterend', receiptButton);
                 }
@@ -1513,7 +1513,7 @@
 
                 if (paymentStatus) {
                     paymentStatus.style.display = 'block';
-                    paymentStatus.textContent = '❌ Payment failed. Please try again.';
+                    paymentStatus.textContent = 'Payment failed. Please try again.';
                     paymentStatus.style.background = 'rgba(239, 68, 68, 0.2)';
                     paymentStatus.style.color = '#ef4444';
                 }
@@ -1560,7 +1560,7 @@
                     feedbackStatus.style.display = 'block';
                     feedbackStatus.style.background = 'rgba(239, 68, 68, 0.2)';
                     feedbackStatus.style.color = '#ef4444';
-                    feedbackStatus.textContent = '❌ Please select a star rating';
+                    feedbackStatus.textContent = 'Please select a star rating';
                 }
                 return;
             }
@@ -1595,7 +1595,7 @@
                     const feedbackSection = document.getElementById('feedbackSection');
                     if (feedbackSection) {
                         feedbackSection.innerHTML = `
-                            <div class="bill-title" style="color: #10b981; text-align: center;">✅ Thank you for your feedback!</div>
+                            <div class="bill-title" style="color: #10b981; text-align: center;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Thank you for your feedback!</div>
                             <div style="text-align: center; color: #a1a1aa; font-size: 14px; margin-top: 8px;">
                                 We appreciate you taking the time to share your experience.
                             </div>
@@ -1617,7 +1617,7 @@
                     feedbackStatus.style.display = 'block';
                     feedbackStatus.style.background = 'rgba(239, 68, 68, 0.2)';
                     feedbackStatus.style.color = '#ef4444';
-                    feedbackStatus.textContent = `❌ ${error.message || 'Failed to submit. Please try again.'}`;
+                    feedbackStatus.textContent = `${error.message || 'Failed to submit. Please try again.'}`;
                 }
             }
         }
@@ -1998,31 +1998,31 @@
             // Trigger notifications for important status changes
             if (newStatus === 'Awaiting Payment') {
                 showNotification(
-                    '💳 Payment Ready - DormDash',
+                    'Payment Ready - DormDash',
                     'Your ride fare is ready! Complete payment to proceed.',
                     window.location.href
                 );
             } else if (newStatus === 'Payment Successful') {
                 showNotification(
-                    '✅ Payment Confirmed - DormDash',
+                    'Payment Confirmed - DormDash',
                     'Payment successful! Your driver will head to pickup soon.',
                     window.location.href
                 );
             } else if (newStatus === 'Heading to Pickup') {
                 showNotification(
-                    '🚙 Driver On The Way - DormDash',
+                    'Driver On The Way - DormDash',
                     'Your driver is heading to pick you up!',
                     window.location.href
                 );
             } else if (newStatus === 'In Progress') {
                 showNotification(
-                    '🚗 Ride Started - DormDash',
+                    'Ride Started - DormDash',
                     'You\'re on your way to your destination!',
                     window.location.href
                 );
             } else if (newStatus === 'Delivered' || newStatus === 'Completed') {
                 showNotification(
-                    '✨ Ride Completed - DormDash',
+                    'Ride Completed - DormDash',
                     'You\'ve arrived! Thanks for riding with DormDash!',
                     window.location.href
                 );

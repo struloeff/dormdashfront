@@ -243,9 +243,9 @@
   </style>
   <link rel="stylesheet" href="/static/flow.css">
   <script src="/static/flow.js" defer></script>
+<link rel="stylesheet" href="/static/icons.css">
 </head>
 <body>
-<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
 
   <style>
     @keyframes gridSlide {
@@ -310,14 +310,16 @@
           <button class="search-go" id="searchGoBtn" onclick="searchRestaurants()">Search</button>
         </div>
         <div id="searchResults"></div>
-        <div class="dd-quick" id="ddQuick">
-          <div class="dd-quick-label">Popular with students</div>
-          <button type="button" class="dd-src" data-q="In-N-Out Burger"><span class="dd-src-ic">🍔</span><b>In-N-Out Burger</b><i></i></button>
-          <button type="button" class="dd-src" data-q="Chick-fil-A"><span class="dd-src-ic">🐔</span><b>Chick-fil-A</b><i></i></button>
-          <button type="button" class="dd-src" data-q="McDonald's Malibu"><span class="dd-src-ic">🍟</span><b>McDonald's</b><i></i></button>
-          <button type="button" class="dd-src" data-q="Chipotle"><span class="dd-src-ic">🌯</span><b>Chipotle</b><i></i></button>
-          <button type="button" class="dd-src" data-q="Starbucks Malibu"><span class="dd-src-ic">☕</span><b>Starbucks</b><i></i></button>
-        </div>
+        <details class="dd-quick" id="ddQuick">
+          <summary><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-utensils"/></svg><span>Popular near campus</span><svg class="ic dd-chev" aria-hidden="true"><use href="/static/icons.svg#i-chevron-down"/></svg></summary>
+          <div class="dd-quick-list">
+            <button type="button" class="dd-src" data-q="In-N-Out Burger"><span class="dd-src-ic dd-logo is-wide"><img src="/static/logos/in-n-out.svg" alt="" width="36" height="36"></span><b>In-N-Out Burger</b><i></i></button>
+            <button type="button" class="dd-src" data-q="Chick-fil-A"><span class="dd-src-ic dd-logo"><img src="/static/logos/chick-fil-a.png" alt="" width="36" height="36"></span><b>Chick-fil-A</b><i></i></button>
+            <button type="button" class="dd-src" data-q="McDonald's Malibu"><span class="dd-src-ic dd-logo"><img src="/static/logos/mcdonalds.svg" alt="" width="36" height="36"></span><b>McDonald's</b><i></i></button>
+            <button type="button" class="dd-src" data-q="Chipotle"><span class="dd-src-ic dd-logo"><img src="/static/logos/chipotle.png" alt="" width="36" height="36"></span><b>Chipotle</b><i></i></button>
+            <button type="button" class="dd-src" data-q="Starbucks Malibu"><span class="dd-src-ic dd-logo"><img src="/static/logos/starbucks.png" alt="" width="36" height="36"></span><b>Starbucks</b><i></i></button>
+          </div>
+        </details>
         <button class="manual-btn" onclick="openManualModal()" style="display:none;" id="manualEntryBtn">Can't find it? Add manually</button>
       </div>
 

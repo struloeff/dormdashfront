@@ -101,7 +101,7 @@
       L.marker([c.lat, c.lng], { icon: pin(accent, 16, 'Drop-off'), interactive: false }).addTo(map);
     }
     car = L.marker([a.lat, a.lng], { zIndexOffset: 1000, interactive: false, icon: L.divIcon({ className: '', iconSize: [36, 36], iconAnchor: [18, 18],
-      html: `<div class="dd-live-car">${kind === 'rideshare' ? '🚗' : '🛵'}</div>` }) }).addTo(map);
+      html: `<div class="dd-live-car"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-${kind === 'rideshare' ? 'car' : 'bike'}"/></svg></div>` }) }).addTo(map);
     map.fitBounds(L.latLngBounds([...l0.coords, ...l1.coords]), { paddingTopLeft: [40, 64], paddingBottomRight: [64, 40], maxZoom: 14 });
     built = true; building = false;
     requestAnimationFrame(frame);

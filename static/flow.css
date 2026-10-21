@@ -119,27 +119,34 @@
 .bottom-sheet .form-input:focus,.bottom-sheet .styled-select:focus,.bottom-sheet .form-textarea:focus,.bottom-sheet .mi-input:focus{border-color:var(--fx-accent)!important;box-shadow:0 0 0 4px var(--fx-ring)!important}
 .bottom-sheet .cost-card{background:var(--fx-panel)!important;border:1px solid var(--fx-hair)!important;border-radius:16px!important}
 
-/* Step 1: popular picks, rows like a source list */
-.bottom-sheet .dd-quick{display:grid;gap:8px;margin-top:6px}
+/* Step 1: popular picks, folded into one small button */
+.bottom-sheet .dd-quick{margin-top:2px}
 .bottom-sheet #searchResults:not(:empty) + .dd-quick{display:none}
-.bottom-sheet .dd-quick-label{font-size:12px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--fx-t3);margin:4px 2px 2px}
+.bottom-sheet .dd-quick summary{
+  list-style:none;display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+  padding:9px 14px;border-radius:99px;background:var(--fx-panel);border:1px solid var(--fx-hair2);
+  color:var(--fx-t1);font-size:14px;font-weight:650;transition:background .15s ease,border-color .15s ease
+}
+.bottom-sheet .dd-quick summary::-webkit-details-marker{display:none}
+.bottom-sheet .dd-quick summary:hover{background:#1c1c1f;border-color:rgba(255,255,255,.22)}
+.bottom-sheet .dd-quick summary .ic{font-size:16px;color:var(--fx-accent)}
+.bottom-sheet .dd-quick summary .dd-chev{color:var(--fx-t3);transition:transform .2s ease}
+.bottom-sheet .dd-quick[open] summary .dd-chev{transform:rotate(180deg)}
+.bottom-sheet .dd-quick-list{display:grid;gap:6px;margin-top:10px;animation:fxIn .28s cubic-bezier(.2,.8,.2,1) both}
 .bottom-sheet .dd-src{
-  display:flex;align-items:center;gap:14px;width:100%;min-height:62px;padding:10px 16px 10px 10px;border-radius:16px;cursor:pointer;
+  display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:7px 14px 7px 8px;border-radius:14px;cursor:pointer;
   background:var(--fx-panel);border:1px solid var(--fx-hair);color:var(--fx-t1);font:inherit;text-align:left;
   transition:border-color .15s ease,background .15s ease,transform .12s ease
 }
 .bottom-sheet .dd-src:hover{border-color:var(--fx-soft);background:#1a1a1d}
 .bottom-sheet .dd-src:active{transform:scale(.985)}
-.bottom-sheet .dd-src-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;background:rgba(255,255,255,.06);flex:0 0 auto}
-.bottom-sheet .dd-src b{flex:1;font-size:16px;font-weight:650}
+.bottom-sheet .dd-src-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;color:var(--fx-accent);background:rgba(253,45,0,.1);flex:0 0 auto}
+.bottom-sheet .dd-src b{flex:1;font-size:15px;font-weight:650}
+.bottom-sheet .dd-src-ic.dd-logo{background:transparent;overflow:hidden;padding:0}
+.bottom-sheet .dd-src-ic.dd-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.bottom-sheet .dd-src-ic.dd-logo.is-wide{background:#fff;padding:5px 3px}
 .bottom-sheet .dd-src i{width:8px;height:8px;border-right:2px solid #6b6b73;border-top:2px solid #6b6b73;transform:rotate(45deg);margin-right:4px}
 .bottom-sheet .dd-src:hover i{border-color:#f5f5f7}
-@media (max-width:899px){
-  .bottom-sheet .dd-src{min-height:52px;padding:7px 14px 7px 8px;gap:12px}
-  .bottom-sheet .dd-src-ic{width:36px;height:36px;font-size:18px;border-radius:10px}
-  .bottom-sheet .dd-src b{font-size:15px}
-  .bottom-sheet .dd-quick{gap:6px}
-}
 /* Result numbers, matched to pins on the map */
 .bottom-sheet .dd-rnum{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;margin-right:9px;font-size:12px;font-weight:750;background:var(--fx-accent);color:#fff;vertical-align:1px}
 .dd-rpin{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:750 13px Inter,system-ui,sans-serif;color:#fff;background:#FD2D00;border:2.5px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.6);transition:transform .15s ease,box-shadow .15s ease;cursor:pointer}
@@ -172,4 +179,15 @@
 
 @media (prefers-reduced-motion:reduce){
   .bottom-sheet .step.active{animation:none!important}
+}
+
+/* Draggable sheet on phones */
+@media (max-width:899px){
+  .bottom-sheet .fx-drag{touch-action:none;cursor:grab}
+  .bottom-sheet .fx-drag:active{cursor:grabbing}
+  .bottom-sheet .sheet-handle{display:flex!important;justify-content:center;padding:10px 0 2px!important;margin:0 auto!important;width:100%!important;height:auto!important;background:none!important}
+  .bottom-sheet .sheet-handle::after{content:'';width:44px;height:5px;border-radius:99px;background:rgba(255,255,255,.28)}
+  .bottom-sheet .sheet-handle .sheet-handle-bar{display:none}
+  .bottom-sheet.is-folded{box-shadow:0 -10px 40px rgba(0,0,0,.6)!important}
+  .bottom-sheet.is-folded .sheet-handle::after{background:rgba(255,255,255,.5)}
 }

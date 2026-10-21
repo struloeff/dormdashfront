@@ -2078,6 +2078,7 @@
   .rc-rows span{color:#555}
   .rc-total{border-top:2px solid #1b1b1b;margin-top:10px;padding-top:8px;font-size:16px;font-weight:800}
 </style>
+<link rel="stylesheet" href="/static/icons.css">
 </head>
 <body>
 
@@ -2095,8 +2096,8 @@
       <a href="/drivers.html">Drivers</a>
     </div>
     <div class="nav-cta">
-      <a href="/order.html" class="btn btn-primary order-btn">🍕 Food</a>
-      <a href="/ride.html" class="btn btn-primary btn-ride order-btn">🚗 Rides</a>
+      <a href="/order.html" class="btn btn-primary order-btn"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-pizza"/></svg> Food</a>
+      <a href="/ride.html" class="btn btn-primary btn-ride order-btn"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> Rides</a>
     </div>
   </nav>
 </header>
@@ -2119,10 +2120,10 @@
           </div>
 
           <ul class="feature-list">
-            <li><span class="feature-icon">🎯</span> Delivered to 22 dorms</li>
-            <li><span class="feature-icon">🧾</span> Pay the real receipt, not a markup</li>
-            <li><span class="innout-logo">🍔</span> In-N-Out, Chick-fil-A & More</li>
-            <li><span class="feature-icon">🚗</span> Rides at $0.89 / mile</li>
+            <li><span class="feature-icon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-target"/></svg></span> Delivered to 22 dorms</li>
+            <li><span class="feature-icon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-receipt"/></svg></span> Pay the real receipt, not a markup</li>
+            <li><span class="innout-logo"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-sandwich"/></svg></span> In-N-Out, Chick-fil-A & More</li>
+            <li><span class="feature-icon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg></span> Rides at $0.89 / mile</li>
           </ul>
         </div>
       </div>
@@ -2148,8 +2149,8 @@
           </div>
 
           <div class="estimator-toggle">
-            <button id="toCampusBtn" class="direction-toggle-btn" onclick="toggleEstimatorDirection('to')">🏛️ To Campus</button>
-            <button id="fromCampusBtn" class="direction-toggle-btn active" onclick="toggleEstimatorDirection('from')">🏠 From Campus</button>
+            <button id="toCampusBtn" class="direction-toggle-btn" onclick="toggleEstimatorDirection('to')"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-landmark"/></svg> To Campus</button>
+            <button id="fromCampusBtn" class="direction-toggle-btn active" onclick="toggleEstimatorDirection('from')"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-house"/></svg> From Campus</button>
           </div>
 
           <div class="estimator-form">
@@ -2172,13 +2173,13 @@
                   <button type="submit" class="estimator-search-btn">Search</button>
                 </form>
                 <div class="estimator-quick" id="estimatorQuick">
-                  <button type="button" data-q="Los Angeles International Airport">✈️ LAX</button>
-                  <button type="button" data-q="Santa Monica Pier">🎡 Santa Monica Pier</button>
-                  <button type="button" data-q="Zuma Beach">🏖️ Zuma Beach</button>
-                  <button type="button" data-q="The Grove Los Angeles">🛍️ The Grove</button>
+                  <button type="button" data-q="Los Angeles International Airport"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-plane"/></svg> LAX</button>
+                  <button type="button" data-q="Santa Monica Pier"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-ferris-wheel"/></svg> Santa Monica Pier</button>
+                  <button type="button" data-q="Zuma Beach"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-tree-palm"/></svg> Zuma Beach</button>
+                  <button type="button" data-q="The Grove Los Angeles"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-shopping-bag"/></svg> The Grove</button>
                 </div>
                 <button class="estimator-location-pill" id="useLocationBtn" onclick="useEstimatorLocation()" style="display:none">
-                  📍 Use my location
+                  <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-map-pin"/></svg> Use my location
                 </button>
                 <div class="estimator-searching" id="estimatorSearching">
                   <div class="spinner"></div>
@@ -2205,7 +2206,7 @@
               <div class="estimator-breakdown-row"><span>Time</span><span id="estimateTime">$0.00</span></div>
             </div>
 
-            <button class="estimator-book-btn" onclick="bookEstimatedRide()">🚗 Book This Ride Now →</button>
+            <button class="estimator-book-btn" onclick="bookEstimatedRide()"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> Book This Ride Now →</button>
           </div>
 
           <div id="estimateError" class="estimator-error" role="alert"></div>
@@ -2228,8 +2229,8 @@
 
       <div style="display: flex; justify-content: center; margin-bottom: 32px;">
         <div style="display: inline-flex; background: rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 4px; gap: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
-          <button id="foodPricingBtn" class="pricing-toggle-btn active" onclick="showPricing('food')">🍕 Food</button>
-          <button id="ridesharePricingBtn" class="pricing-toggle-btn" onclick="showPricing('rideshare')">🚗 Rides</button>
+          <button id="foodPricingBtn" class="pricing-toggle-btn active" onclick="showPricing('food')"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-pizza"/></svg> Food</button>
+          <button id="ridesharePricingBtn" class="pricing-toggle-btn" onclick="showPricing('rideshare')"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> Rides</button>
         </div>
       </div>
 
@@ -2245,7 +2246,7 @@
         </div>
 
         <div class="card fee-calc">
-          <h3>🧮 What would my order cost?</h3>
+          <h3><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-calculator"/></svg> What would my order cost?</h3>
           <div class="calculator-form">
             <div class="form-row">
               <div class="form-group">
@@ -2350,7 +2351,7 @@
 
 <!-- STICKY CTA -->
 <div class="sticky-cta" id="stickyCta">
-  <a href="/order.html" class="btn btn-primary order-btn">🍔 Try the order demo</a>
+  <a href="/order.html" class="btn btn-primary order-btn"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-sandwich"/></svg> Try the order demo</a>
 </div>
 
 <!-- FOOTER -->
@@ -2466,7 +2467,7 @@ function toggleEstimatorDirection(direction) {
   currentEstimatorDirection = direction;
   $('toCampusBtn').classList.toggle('active', direction === 'to');
   $('fromCampusBtn').classList.toggle('active', direction === 'from');
-  $('estimatorLabel').textContent = direction === 'to' ? '📍 Where are you now?' : 'Where do you want to go?';
+  $('estimatorLabel').textContent = direction === 'to'? ' Where are you now?' : 'Where do you want to go?';
   $('estimatorInput').placeholder = direction === 'to' ? 'Search for your pickup spot…' : 'Try LAX, Santa Monica Pier, Zuma Beach…';
   $('useLocationBtn').style.display = direction === 'to' && navigator.geolocation ? 'flex' : 'none';
   clearEstimatorLocation();

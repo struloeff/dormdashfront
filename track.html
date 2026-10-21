@@ -694,13 +694,13 @@
         .dd-archive-bar { margin: -20px -20px 20px; }
     </style>
     <link rel="stylesheet" href="/static/track.css">
+<link rel="stylesheet" href="/static/icons.css">
 </head>
 <body>
-<div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
     <!-- PWA Install Banner -->
     <div id="pwaInstallBanner" class="pwa-install-banner">
         <button class="pwa-banner-close" id="pwaCloseBtn">&times;</button>
-        <div class="pwa-banner-icon">📱</div>
+        <div class="pwa-banner-icon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-smartphone"/></svg></div>
         <div class="pwa-banner-content">
             <div class="pwa-banner-title">Never lose your order</div>
             <div class="pwa-banner-text" id="pwaBannerText">Add to home screen</div>
@@ -728,7 +728,7 @@
             </div>
             <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; border-radius: 10px; padding: 12px; margin-top: 16px; text-align: center;">
                 <span style="color: #3b82f6; font-size: 14px; font-weight: 600;">
-                    📱 Keep this page open to receive live updates on your order
+                    <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-smartphone"/></svg> Keep this page open to receive live updates on your order
                 </span>
             </div>
         </div>
@@ -739,7 +739,7 @@
         </div>
 
         <div id="errorState" class="error" style="display: none;">
-            <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+            <div style="font-size: 48px; margin-bottom: 16px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg></div>
             <h2 style="margin-bottom: 8px;">Order Not Found</h2>
             <p id="errorMessage">We couldn't find your order. Please check your order ID.</p>
         </div>
@@ -750,7 +750,7 @@
                 <div class="order-number">#<span id="orderId"></span></div>
 
                 <div class="status-section">
-                    <div class="status-icon" id="statusIcon">⏳</div>
+                    <div class="status-icon" id="statusIcon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg></div>
                     <div class="status-text" id="statusText">Waiting for Driver</div>
                     <div class="status-description" id="statusDescription">
                         Your order is waiting to be claimed by a driver. We'll notify you once a driver accepts your order!
@@ -759,7 +759,7 @@
                 </div>
 
                 <div id="alertBox" class="alert-box">
-                    <div class="alert-icon">💬</div>
+                    <div class="alert-icon"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-message-circle"/></svg></div>
                     <div class="alert-content">
                         <div class="alert-title">Driver Will Contact You</div>
                         <div class="alert-text">Once a driver claims your order, they will contact you via <span id="contactMethodText">text</span> for any details or updates.</div>
@@ -767,14 +767,14 @@
                 </div>
 
                 <div id="driverInfo" class="driver-info" style="display: none;">
-                    <div class="driver-info-title" id="driverInfoTitle">✅ Driver Assigned</div>
+                    <div class="driver-info-title" id="driverInfoTitle"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Driver Assigned</div>
                     <div class="driver-info-text" id="driverInfoText">
                         Your order has been claimed by <strong id="driverName"></strong>. They will contact you shortly!
                     </div>
                 </div>
 
                 <div id="billSection" class="bill-section" style="display: none;">
-                    <div class="bill-title">💳 Your Bill</div>
+                    <div class="bill-title"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-credit-card"/></svg> Your Bill</div>
                     <div class="bill-items" id="billItems"></div>
                     <div class="bill-subtotal" id="billBreakdown"></div>
                     <div class="bill-total">
@@ -826,7 +826,7 @@
                     </div>
 
                     <div class="timeline-item">
-                        <div class="timeline-dot" id="dot-claimed">👤</div>
+                        <div class="timeline-dot" id="dot-claimed"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-user"/></svg></div>
                         <div class="timeline-content">
                             <div class="timeline-label">Driver Claimed</div>
                             <div class="timeline-time" id="time-claimed">Waiting...</div>
@@ -834,7 +834,7 @@
                     </div>
 
                     <div class="timeline-item">
-                        <div class="timeline-dot" id="dot-awaiting-payment">💳</div>
+                        <div class="timeline-dot" id="dot-awaiting-payment"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-credit-card"/></svg></div>
                         <div class="timeline-content">
                             <div class="timeline-label">Awaiting Payment</div>
                             <div class="timeline-time" id="time-awaiting-payment">Waiting...</div>
@@ -842,7 +842,7 @@
                     </div>
 
                     <div class="timeline-item">
-                        <div class="timeline-dot" id="dot-payment-successful">✅</div>
+                        <div class="timeline-dot" id="dot-payment-successful"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg></div>
                         <div class="timeline-content">
                             <div class="timeline-label">Payment Successful</div>
                             <div class="timeline-time" id="time-payment-successful">Waiting...</div>
@@ -850,7 +850,7 @@
                     </div>
 
                     <div class="timeline-item">
-                        <div class="timeline-dot" id="dot-heading-to-restaurant">🏪</div>
+                        <div class="timeline-dot" id="dot-heading-to-restaurant"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-store"/></svg></div>
                         <div class="timeline-content">
                             <div class="timeline-label">Heading to Restaurant</div>
                             <div class="timeline-time" id="time-heading-to-restaurant">Waiting...</div>
@@ -858,7 +858,7 @@
                     </div>
 
                     <div class="timeline-item">
-                        <div class="timeline-dot" id="dot-picked-up">📦</div>
+                        <div class="timeline-dot" id="dot-picked-up"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-package"/></svg></div>
                         <div class="timeline-content">
                             <div class="timeline-label">Picked Up from Restaurant</div>
                             <div class="timeline-time" id="time-picked-up">Waiting...</div>
@@ -866,7 +866,7 @@
                     </div>
 
                     <div class="timeline-item">
-                        <div class="timeline-dot" id="dot-in-progress">🚗</div>
+                        <div class="timeline-dot" id="dot-in-progress"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg></div>
                         <div class="timeline-content">
                             <div class="timeline-label">Out for Delivery</div>
                             <div class="timeline-time" id="time-in-progress">Waiting...</div>
@@ -874,7 +874,7 @@
                     </div>
 
                     <div class="timeline-item">
-                        <div class="timeline-dot" id="dot-delivered">✨</div>
+                        <div class="timeline-dot" id="dot-delivered"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-sparkles"/></svg></div>
                         <div class="timeline-content">
                             <div class="timeline-label">Delivered</div>
                             <div class="timeline-time" id="time-delivered">Waiting...</div>
@@ -884,7 +884,7 @@
 
                 <div class="button-group">
                     <a href="/order.html" class="btn btn-primary">Place Another Order</a>
-                    <button class="btn btn-secondary" onclick="refreshOrder()">🔄 Refresh Status</button>
+                    <button class="btn btn-secondary" onclick="refreshOrder()"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-refresh-cw"/></svg> Refresh Status</button>
                 </div>
             </div>
         </div>
@@ -950,61 +950,61 @@
 
         const statusConfig = {
             'Pending': {
-                icon: '⏳',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg>',
                 text: 'Waiting for Driver',
                 description: 'Your order is waiting to be claimed by a driver. Please check this page for updates. If your order is not picked up within 15 minutes, it will be automatically cancelled.',
                 class: 'status-pending'
             },
             'Claimed': {
-                icon: '👤',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-user"/></svg>',
                 text: 'Driver Assigned',
                 description: 'A driver has claimed your order and will contact you shortly. Please check this page for updates.',
                 class: 'status-claimed'
             },
             'Awaiting Payment': {
-                icon: '💳',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-credit-card"/></svg>',
                 text: 'Awaiting Payment',
                 description: 'Your bill is ready! Please review and complete payment below to proceed with your order.',
                 class: 'status-awaiting-payment'
             },
             'Payment Successful': {
-                icon: '✅',
+                icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
                 text: 'Payment Successful',
                 description: 'Payment confirmed! Your driver will now head to the restaurant to pick up your order.',
                 class: 'status-payment-successful'
             },
             'Heading to Restaurant': {
-                icon: '🏪',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-store"/></svg>',
                 text: 'Heading to Restaurant',
                 description: 'Your driver is on their way to the restaurant to pick up your food.',
                 class: 'status-heading-to-restaurant'
             },
             'Picked Up': {
-                icon: '📦',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-package"/></svg>',
                 text: 'Picked Up from Restaurant',
                 description: 'Your food has been picked up from the restaurant and your driver is ready to deliver it to you.',
                 class: 'status-picked-up'
             },
             'In Progress': {
-                icon: '🚗',
+                icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg>',
                 text: 'Out for Delivery',
                 description: 'Your order is on the way! Your driver is heading to your delivery location now.',
                 class: 'status-in-progress'
             },
             'Delivered': {
-                icon: '✨',
+                icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-sparkles"/></svg>',
                 text: 'Order Delivered',
                 description: 'Your order has been delivered! We hope you enjoy your meal. Thanks for using DormDash!',
                 class: 'status-delivered'
             },
             'Completed': {
-                icon: '✅',
+                icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
                 text: 'Order Completed',
                 description: 'Your order has been completed successfully! Thanks for using DormDash!',
                 class: 'status-completed'
             },
             'Cancelled': {
-                icon: '❌',
+                icon: '<svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg>',
                 text: 'Order Cancelled',
                 description: 'This order has been cancelled. If you have questions, please contact support.',
                 class: 'status-cancelled'
@@ -1196,7 +1196,7 @@
             }
 
             cancelledItem.innerHTML = `
-                <div class="timeline-dot" style="border-color: #ef4444; background: #ef4444;">❌</div>
+                <div class="timeline-dot" style="border-color: #ef4444; background: #ef4444;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg></div>
                 <div class="timeline-content">
                     <div class="timeline-label">Cancelled</div>
                     <div class="timeline-time">${cancelledTime}</div>
@@ -1501,13 +1501,13 @@
             // Send appropriate notification
             if (newStatus === 'Awaiting Payment') {
                 showNotification(
-                    '💳 Payment Ready - DormDash',
+                    'Payment Ready - DormDash',
                     'Your bill is ready! Complete payment to proceed with your order.',
                     window.location.href
                 );
             } else if (newStatus === 'Delivered') {
                 showNotification(
-                    '✨ Order Delivered - DormDash',
+                    'Order Delivered - DormDash',
                     'Your order has been delivered! Enjoy your meal!',
                     window.location.href
                 );
@@ -1573,7 +1573,7 @@
             const statusDescription = document.getElementById('statusDescription');
             const statusBadge = document.getElementById('statusBadge');
 
-            if (statusIcon) statusIcon.textContent = config.icon;
+            if (statusIcon) statusIcon.innerHTML = config.icon;
             if (statusText) statusText.textContent = config.text;
             if (statusDescription) statusDescription.textContent = config.description;
 
@@ -1591,7 +1591,7 @@
                     // If payment was confirmed, show refund contact info
                     if (order.payment_confirmed) {
                         message += `<br><br><div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); padding: 12px; border-radius: 8px; margin-top: 8px;">
-                            <strong style="color: #f59e0b;">💳 Payment Received</strong><br>
+                            <strong style="color: #f59e0b;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-credit-card"/></svg> Payment Received</strong><br>
                             <span style="color: #fcd34d; font-size: 14px;">Please contact support to request a refund.</span><br>
                             <a href="/support.html" style="display: inline-block; margin-top: 8px; padding: 8px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 13px;">Contact Support</a>
                         </div>`;
@@ -1622,7 +1622,7 @@
                 alertBox.style.display = 'none';
 
                 // Driver assigned message
-                if (driverInfoTitle) driverInfoTitle.textContent = '✅ Driver Assigned';
+                if (driverInfoTitle) driverInfoTitle.textContent = 'Driver Assigned';
                 if (driverInfoText) {
                     driverInfoText.innerHTML = `Your order has been claimed! Your driver will contact you shortly!`;
                 }
@@ -1709,7 +1709,7 @@
                 messageDiv.style.color = '#10b981';
                 messageDiv.style.padding = '20px';
                 messageDiv.innerHTML = `
-                    <div style="text-align: center; font-size: 18px; font-weight: 700; color: #10b981;">✅ Thank you for your feedback!</div>
+                    <div style="text-align: center; font-size: 18px; font-weight: 700; color: #10b981;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Thank you for your feedback!</div>
                     <div style="text-align: center; color: #a1a1aa; font-size: 14px; margin-top: 8px;">
                         We appreciate you taking the time to share your experience.
                     </div>
@@ -1805,7 +1805,7 @@
                         messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
                         messageDiv.style.color = '#ef4444';
                         messageDiv.innerHTML = `
-                            ⚠️ Dispute reported! Your payment will be refunded. Please contact support:<br>
+                            <svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-triangle-alert"/></svg> Dispute reported! Your payment will be refunded. Please contact support:<br>
                             <a href="/support.html" style="color: #ef4444; font-weight: 700;">DormDash support</a>
                         `;
 
@@ -1820,7 +1820,7 @@
                         // Show specific error if available
                         const errorMsg = data.error || 'Unknown error';
                         messageDiv.innerHTML = `
-                            ⚠️ Error: ${errorMsg}<br>
+                            <svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-triangle-alert"/></svg> Error: ${errorMsg}<br>
                             Please contact support:<br>
                             <a href="/support.html" style="color: #ef4444; font-weight: 700;">DormDash support</a>
                         `;
@@ -1831,7 +1831,7 @@
                     messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
                     messageDiv.style.color = '#ef4444';
                     messageDiv.innerHTML = `
-                        ⚠️ Network error: ${error.message}<br>
+                        <svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-triangle-alert"/></svg> Network error: ${error.message}<br>
                         Please contact support:<br>
                             <a href="/support.html" style="color: #ef4444; font-weight: 700;">DormDash support</a>
                     `;
@@ -1937,7 +1937,7 @@
                     messageDiv.style.color = '#10b981';
                     messageDiv.style.padding = '20px';
                     messageDiv.innerHTML = `
-                        <div style="text-align: center; font-size: 18px; font-weight: 700; color: #10b981;">✅ Thank you for your feedback!</div>
+                        <div style="text-align: center; font-size: 18px; font-weight: 700; color: #10b981;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Thank you for your feedback!</div>
                         <div style="text-align: center; color: #a1a1aa; font-size: 14px; margin-top: 8px;">
                             We appreciate you taking the time to share your experience.
                         </div>
@@ -1946,7 +1946,7 @@
                     // Show error message
                     messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
                     messageDiv.style.color = '#ef4444';
-                    messageDiv.innerHTML = `<div style="text-align: center; font-size: 14px;">❌ ${data.error || 'Failed to submit feedback. Please try again.'}</div>`;
+                    messageDiv.innerHTML = `<div style="text-align: center; font-size: 14px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg> ${data.error || 'Failed to submit feedback. Please try again.'}</div>`;
 
                     // Re-enable button on error (unless feedback already submitted)
                     if (submitBtn && !data.error?.includes('already submitted')) {
@@ -1958,7 +1958,7 @@
                 console.error('Error submitting feedback:', error);
                 messageDiv.style.background = 'rgba(239, 68, 68, 0.2)';
                 messageDiv.style.color = '#ef4444';
-                messageDiv.innerHTML = '<div style="text-align: center; font-size: 14px;">❌ Network error. Please try again.</div>';
+                messageDiv.innerHTML = '<div style="text-align: center; font-size: 14px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg> Network error. Please try again.</div>';
 
                 // Re-enable button on network error
                 if (submitBtn) {
@@ -1970,11 +1970,11 @@
 
         function refreshOrder() {
             const btn = event.target;
-            btn.textContent = '⏳ Refreshing...';
+            btn.textContent = 'Refreshing...';
             btn.disabled = true;
 
             loadOrder().then(() => {
-                btn.textContent = '🔄 Refresh Status';
+                btn.textContent = 'Refresh Status';
                 btn.disabled = false;
             });
         }
@@ -2165,7 +2165,7 @@
 
                 if (paymentStatus) {
                     paymentStatus.style.display = 'block';
-                    paymentStatus.textContent = '❌ Payment failed. Please try again.';
+                    paymentStatus.textContent = 'Payment failed. Please try again.';
                     paymentStatus.style.background = 'rgba(239, 68, 68, 0.2)';
                     paymentStatus.style.color = '#ef4444';
                 }
@@ -2439,34 +2439,34 @@
                             // Replace confirmation buttons with dispute status
                             confirmSection.innerHTML = `
                                 <div style="padding: 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; text-align: center;">
-                                    <div style="font-size: 20px; margin-bottom: 8px;">🚨</div>
+                                    <div style="font-size: 20px; margin-bottom: 8px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-siren"/></svg></div>
                                     <div style="font-size: 16px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">Dispute Reported</div>
                                     <div style="font-size: 14px; color: #fca5a5;">
                                         You reported this order as not delivered. Our admin team is reviewing your case and will contact you if needed.
                                     </div>
                                     ${currentOrder.reversal_status === 'succeeded' ? `
                                         <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
-                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Refund Processed</div>
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Refund Processed</div>
                                             <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Your payment has been refunded.</div>
                                         </div>
                                     ` : currentOrder.reversal_status === 'approved_no_reversal' ? `
                                         <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
-                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Dispute Resolved</div>
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Dispute Resolved</div>
                                             <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Admin verified the delivery was legitimate. No refund issued.</div>
                                         </div>
                                     ` : `
                                         <div style="margin-top: 12px; padding: 10px; background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 8px;">
-                                            <div style="font-size: 13px; color: #fbbf24;">⏳ Review in progress...</div>
+                                            <div style="font-size: 13px; color: #fbbf24;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg> Review in progress...</div>
                                         </div>
                                     `}
-                                    <a href="/support.html" style="display: block; width: 100%; margin-top: 16px; padding: 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-sizing: border-box; text-align: center;">📞 Contact Support with Questions</a>
+                                    <a href="/support.html" style="display: block; width: 100%; margin-top: 16px; padding: 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-sizing: border-box; text-align: center;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-phone"/></svg> Contact Support with Questions</a>
                                 </div>
                             `;
                         } else if (feedbackExists) {
                             // Show thank you message if feedback was submitted
                             confirmSection.innerHTML = `
                                 <div style="padding: 16px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; text-align: center;">
-                                    <div style="font-size: 16px; font-weight: 600; color: #10b981;">✅ Feedback submitted. Thank you!</div>
+                                    <div style="font-size: 16px; font-weight: 600; color: #10b981;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Feedback submitted. Thank you!</div>
                                 </div>
                             `;
                         }
@@ -2490,40 +2490,40 @@
                                           currentOrder.reversal_status === 'pending_admin_review';
 
                     deliveryPhotoSection.innerHTML = `
-                        <h3 style="font-size: 18px; font-weight: 600; color: #10b981; margin-bottom: 16px;">📸 Delivery Photo</h3>
+                        <h3 style="font-size: 18px; font-weight: 600; color: #10b981; margin-bottom: 16px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-camera"/></svg> Delivery Photo</h3>
                         <div id="photoLoadingIndicator" style="text-align: center; padding: 40px; color: #10b981; font-size: 14px;">
                             <div style="width: 40px; height: 40px; border: 3px solid rgba(16, 185, 129, 0.2); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
                             Loading delivery photo...
                         </div>
-                        <img id="deliveryPhotoImg" src="${currentOrder.delivery_photo_url}" alt="Delivery Photo" style="width: 100%; max-width: 400px; border-radius: 12px; border: 2px solid #10b981; margin-bottom: 16px; display: none; margin-left: auto; margin-right: auto;" onload="this.style.display='block'; document.getElementById('photoLoadingIndicator').style.display='none';" onerror="document.getElementById('photoLoadingIndicator').innerHTML='⚠️ Failed to load photo';" />
+                        <img id="deliveryPhotoImg" src="${currentOrder.delivery_photo_url}" alt="Delivery Photo" style="width: 100%; max-width: 400px; border-radius: 12px; border: 2px solid #10b981; margin-bottom: 16px; display: none; margin-left: auto; margin-right: auto;" onload="this.style.display='block'; document.getElementById('photoLoadingIndicator').style.display='none';" onerror="document.getElementById('photoLoadingIndicator').innerHTML='<svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-triangle-alert"/></svg> Failed to load photo';" />
                         <div id="deliveryConfirmSection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${disputeReported ? '#ef4444' : '#10b981'};">
                             ${disputeReported ? `
                                 <div style="padding: 16px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; text-align: center;">
-                                    <div style="font-size: 20px; margin-bottom: 8px;">🚨</div>
+                                    <div style="font-size: 20px; margin-bottom: 8px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-siren"/></svg></div>
                                     <div style="font-size: 16px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">Dispute Reported</div>
                                     <div style="font-size: 14px; color: #fca5a5;">
                                         You reported this order as not delivered. Our admin team is reviewing your case and will contact you if needed.
                                     </div>
                                     ${currentOrder.reversal_status === 'succeeded' ? `
                                         <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
-                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Refund Processed</div>
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Refund Processed</div>
                                             <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Your payment has been refunded.</div>
                                         </div>
                                     ` : currentOrder.reversal_status === 'approved_no_reversal' ? `
                                         <div style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px;">
-                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;">✅ Dispute Resolved</div>
+                                            <div style="font-size: 14px; color: #10b981; font-weight: 600;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Dispute Resolved</div>
                                             <div style="font-size: 13px; color: #6ee7b7; margin-top: 4px;">Admin verified the delivery was legitimate. No refund issued.</div>
                                         </div>
                                     ` : `
                                         <div style="margin-top: 12px; padding: 10px; background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 8px;">
-                                            <div style="font-size: 13px; color: #fbbf24;">⏳ Review in progress...</div>
+                                            <div style="font-size: 13px; color: #fbbf24;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg> Review in progress...</div>
                                         </div>
                                     `}
-                                    <a href="/support.html" style="display: block; width: 100%; margin-top: 16px; padding: 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-sizing: border-box; text-align: center;">📞 Contact Support with Questions</a>
+                                    <a href="/support.html" style="display: block; width: 100%; margin-top: 16px; padding: 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-sizing: border-box; text-align: center;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-phone"/></svg> Contact Support with Questions</a>
                                 </div>
                             ` : feedbackExists ? `
                                 <div style="padding: 16px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; text-align: center;">
-                                    <div style="font-size: 16px; font-weight: 600; color: #10b981;">✅ Feedback submitted. Thank you!</div>
+                                    <div style="font-size: 16px; font-weight: 600; color: #10b981;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Feedback submitted. Thank you!</div>
                                 </div>
                             ` : deliveryConfirmed ? `
                                 <div style="text-align: left;">
@@ -2561,7 +2561,7 @@
                 } else {
                     // No photo yet - show waiting message
                     deliveryPhotoSection.innerHTML = `
-                        <h3 style="font-size: 18px; font-weight: 600; color: #10b981; margin-bottom: 16px;">📸 Delivery Photo</h3>
+                        <h3 style="font-size: 18px; font-weight: 600; color: #10b981; margin-bottom: 16px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-camera"/></svg> Delivery Photo</h3>
                         <div id="photoLoadingIndicator" style="text-align: center; padding: 40px; color: #a1a1aa; font-size: 14px;">
                             <div style="width: 40px; height: 40px; border: 3px solid rgba(161, 161, 170, 0.2); border-top-color: #a1a1aa; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
                             Waiting for driver to upload delivery photo...
@@ -2576,7 +2576,7 @@
             const receiptButton = document.createElement('button');
             receiptButton.id = 'receiptDownloadButton';
             receiptButton.style.cssText = 'width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 16px;';
-            receiptButton.textContent = '📄 Download Receipt';
+            receiptButton.textContent = 'Download Receipt';
             receiptButton.onclick = downloadReceipt;
             driverInfo.insertAdjacentElement('beforebegin', receiptButton);
         }
@@ -2595,7 +2595,7 @@
                 if (billSection) {
                     const cancelMessage = document.createElement('div');
                     cancelMessage.style.cssText = 'background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; border-radius: 8px; padding: 12px; margin-bottom: 16px; color: #f59e0b; text-align: center; font-weight: 600;';
-                    cancelMessage.textContent = '⚠️ Payment was cancelled. Please try again when ready.';
+                    cancelMessage.textContent = 'Payment was cancelled. Please try again when ready.';
                     billSection.insertAdjacentElement('beforebegin', cancelMessage);
                 }
             }, 1000);
