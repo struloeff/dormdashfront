@@ -309,7 +309,10 @@
         route_summary: body.route_summary || null,
         driver_payout: round2((parseFloat(body.driver_payout) || 0) + tip),
         tip_amount: round2(tip),
-        service_type: 'food'
+        service_type: 'food',
+        // Restaurant -> campus, for the live map on the tracking page
+        pickup_lat: parseFloat(body.restaurant_lat) || null, pickup_lng: parseFloat(body.restaurant_lng) || null,
+        dropoff_lat: CAMPUS.lat, dropoff_lng: CAMPUS.lng
       });
       db.orders[o.id] = o;
       saveAll(db);
@@ -526,5 +529,12 @@
   window.addEventListener('resize', syncBarHeight);
   window.addEventListener('load', syncBarHeight);
 
-  window.DD_DEMO = { encodePolyline, loadAll, advanceAll };
+  // Read-only view for the live map: the order plus its private timing fields
+  function byToken(token) {
+    const db = advanceAll();
+    const o = Object.values(db.orders).find(x => x.order_token === token);
+    return o ? JSON.parse(JSON.stringify(o)) : null;
+  }
+
+  window.DD_DEMO = { encodePolyline, loadAll, advanceAll, byToken, POST_PAY, PRE_PAY };
 })();

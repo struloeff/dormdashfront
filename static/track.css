@@ -1,0 +1,20 @@
+/* Tracking pages: same buttons and surfaces as the order flow. */
+body{background:#0a0a0b!important;-webkit-font-smoothing:antialiased}
+.order-card,.order-content>.card,.status-card{border:1px solid rgba(255,255,255,.1)!important;border-radius:20px!important;background:#0e0e10!important}
+
+.payment-btn,#submitFeedbackBtn,.btn,.button,
+button[onclick^="confirmDelivery"]{
+  min-height:54px!important;border-radius:14px!important;font:650 16px/1 Inter,system-ui,sans-serif!important;
+  letter-spacing:-.005em!important;text-transform:none!important;display:flex!important;align-items:center;justify-content:center;gap:8px;
+  transition:transform .12s ease,filter .15s ease,opacity .2s!important;cursor:pointer
+}
+.payment-btn:hover,#submitFeedbackBtn:hover,.btn:hover,.button:hover,button[onclick^="confirmDelivery"]:hover{transform:none!important;filter:brightness(.94)}
+.payment-btn:active,#submitFeedbackBtn:active,.btn:active,.button:active,button[onclick^="confirmDelivery"]:active{transform:scale(.975)!important}
+.payment-btn:disabled{opacity:.4!important;transform:none!important}
+
+/* Pay is the brand moment */
+.payment-btn{background:#FD2D00!important;color:#fff!important;border:1px solid #FD2D00!important;box-shadow:0 10px 30px rgba(253,45,0,.32)!important}
+/* Everything else: white primary or quiet secondary */
+#submitFeedbackBtn,button[onclick="confirmDelivery(true)"]{background:#f5f5f7!important;color:#0b0b0c!important;border:1px solid #f5f5f7!important;box-shadow:0 10px 30px rgba(0,0,0,.35)!important}
+button[onclick="confirmDelivery(false)"],.btn-secondary,.button-secondary{background:#151517!important;color:#f5f5f7!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important}
+button[onclick="confirmDelivery(false)"]:hover,.btn-secondary:hover,.button-secondary:hover{background:#1c1c1f!important}

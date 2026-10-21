@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="/static/demo.css">
   <script src="/static/geo.js"></script>
   <script src="/static/demo-api.js"></script>
+  <script src="/static/map-ui.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -47,7 +48,6 @@
     /* ---- Full-screen Map ---- */
     #map{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;filter:brightness(.75) saturate(1.1)}
     .leaflet-top.leaflet-right{top:calc(var(--dd-bar-h,0px) + 58px)}
-    .leaflet-control-zoom{display:none!important}
 
     /* ---- Bottom Sheet ---- */
     .bottom-sheet{
@@ -411,6 +411,8 @@
       .bottom-sheet{max-width:480px;left:50%;transform:translateX(-50%)}
     }
   </style>
+  <link rel="stylesheet" href="/static/flow.css">
+  <script src="/static/flow.js" defer></script>
 </head>
 <body>
 <div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
@@ -457,7 +459,7 @@
   <div id="map"></div>
 
   <!-- Bottom Sheet -->
-  <div class="bottom-sheet" id="bottomSheet">
+  <div class="bottom-sheet is-ride" id="bottomSheet">
     <div class="sheet-handle"></div>
     <div class="route-preview-banner">Route found — scroll up to continue</div>
 
@@ -987,6 +989,8 @@
   =========================== */
   function initMap(){
     map = L.map('map', { zoomControl: false }).setView([userLocation.lat, userLocation.lng], 13);
+    window.ddMap = map;
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19
@@ -1009,7 +1013,7 @@
         userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         userLocationKnown = true;
         document.getElementById('locationText').textContent = 'Your Location';
-        map.setView([userLocation.lat, userLocation.lng], 14);
+        if (!window.ddLastBounds) DDMap.center(map, [userLocation.lat, userLocation.lng], 14, { animate: false });
 
         L.marker([userLocation.lat, userLocation.lng], {
           icon: L.divIcon({
@@ -1026,7 +1030,7 @@
         document.getElementById('locationText').textContent = 'Pepperdine Campus';
         userLocation = PEPPERDINE_LOCATION;
         userLocationKnown = false;
-        map.setView([userLocation.lat, userLocation.lng], 14);
+        DDMap.center(map, [userLocation.lat, userLocation.lng], 14, { animate: false });
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     );
@@ -1194,15 +1198,8 @@
 
       // Fullscreen for steps 3 & 4, map visible for steps 1 & 2
       const sheet = document.getElementById('bottomSheet');
-      const mapEl = document.getElementById('map');
-      if(n >= 3){
-        sheet.classList.add('fullscreen');
-        mapEl.style.display = 'none';
-      } else {
-        sheet.classList.remove('fullscreen');
-        mapEl.style.display = 'block';
-        setTimeout(() => map.invalidateSize(), 300);
-      }
+      sheet.classList.toggle('fullscreen', n >= 3);
+      DDMap.refit(map, () => window.ddLastBounds);
     }, 200);
   }
 
@@ -1423,7 +1420,6 @@
     if(window.previewRouteLine){ map.removeLayer(window.previewRouteLine); window.previewRouteLine = null; }
 
     const origin = userLocation || PEPPERDINE_LOCATION;
-    const sheetH = document.getElementById('bottomSheet').offsetHeight || 300;
 
     // Fetch route and draw it
     fetch(`${ROUTE_DRIVING}/${origin.lng},${origin.lat};${dest.lng},${dest.lat}?overview=full&geometries=polyline`)
@@ -1434,8 +1430,8 @@
           window.previewRouteLine = L.polyline(coords, {
             color:'#6366f1', weight:4, opacity:0.8
           }).addTo(map);
-          const bounds = window.previewRouteLine.getBounds();
-          map.fitBounds(bounds, { paddingBottomRight:[20, sheetH + 40], paddingTopLeft:[20, 60] });
+          window.ddLastBounds = window.previewRouteLine.getBounds();
+          DDMap.fit(map, window.ddLastBounds);
         }
       })
       .catch(err => console.log('Preview route error:', err));
@@ -1823,7 +1819,8 @@
         opacity: 0.9
       }).addTo(map);
 
-      map.fitBounds(window.routeLine.getBounds(), { padding: [80, 80] });
+      window.ddLastBounds = window.routeLine.getBounds();
+      DDMap.fit(map, window.ddLastBounds);
 
     } catch(err){
       console.error('Route calculation error:', err);

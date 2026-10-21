@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="/static/demo.css">
   <script src="/static/geo.js"></script>
   <script src="/static/demo-api.js"></script>
+  <script src="/static/map-ui.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -237,6 +238,8 @@
       .bottom-sheet{right:0;left:auto;margin:0;border-radius:24px 24px 0 0}
     }
   </style>
+  <link rel="stylesheet" href="/static/flow.css">
+  <script src="/static/flow.js" defer></script>
 </head>
 <body>
 <div class="dd-archive-bar">DormDash wound down in spring 2026. This is the original app running in demo mode — no real orders, payments or drivers. <a href="/">Home</a></div>
@@ -304,6 +307,14 @@
           <button class="search-go" id="searchGoBtn" onclick="searchRestaurants()">Search</button>
         </div>
         <div id="searchResults"></div>
+        <div class="dd-quick" id="ddQuick">
+          <div class="dd-quick-label">Popular with students</div>
+          <button type="button" class="dd-src" data-q="In-N-Out Burger"><span class="dd-src-ic">🍔</span><b>In-N-Out Burger</b><i></i></button>
+          <button type="button" class="dd-src" data-q="Chick-fil-A"><span class="dd-src-ic">🐔</span><b>Chick-fil-A</b><i></i></button>
+          <button type="button" class="dd-src" data-q="McDonald's Malibu"><span class="dd-src-ic">🍟</span><b>McDonald's</b><i></i></button>
+          <button type="button" class="dd-src" data-q="Chipotle"><span class="dd-src-ic">🌯</span><b>Chipotle</b><i></i></button>
+          <button type="button" class="dd-src" data-q="Starbucks Malibu"><span class="dd-src-ic">☕</span><b>Starbucks</b><i></i></button>
+        </div>
         <button class="manual-btn" onclick="openManualModal()" style="display:none;" id="manualEntryBtn">Can't find it? Add manually</button>
       </div>
 
@@ -672,6 +683,46 @@
     }
   }
 
+  function ddPin(color, size){
+    return L.divIcon({ className:'', iconSize:[size,size], iconAnchor:[size/2,size/2],
+      html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 0 0 4px ${color}44,0 4px 12px rgba(0,0,0,.6)"></div>` });
+  }
+  function ddDrawEnds(coords){
+    if (window.ddEnds) map.removeLayer(window.ddEnds);
+    const a = coords[0], b = coords[coords.length - 1];
+    window.ddEnds = L.layerGroup([
+      L.marker([a.lat, a.lng], { icon: ddPin('#10b981', 16), interactive:false }),
+      L.marker([b.lat, b.lng], { icon: ddPin('#FD2D00', 18), interactive:false })
+    ]).addTo(map);
+  }
+  function ddShowResultPins(list){
+    Object.values(markers).forEach(m => { try { map.removeLayer(m); } catch {} });
+    markers = {};
+    const pts = [[userLocation.lat, userLocation.lng]];
+    list.forEach(r => {
+      const m = L.marker([r.lat, r.lng], { icon: L.divIcon({ className:'', iconSize:[30,30], iconAnchor:[15,15],
+        html:`<div class="dd-rpin" id="ddPin${r.index}">${r.index + 1}</div>` }) }).addTo(map);
+      m.on('click', () => selectSearchResultByIndex(r.index));
+      markers['r' + r.index] = m;
+      pts.push([r.lat, r.lng]);
+    });
+    DDMap.fit(map, L.latLngBounds(pts), { maxZoom: 14 });
+  }
+  function ddHoverPin(i, on){
+    const el = document.getElementById('ddPin' + i);
+    if (el) el.classList.toggle('on', on);
+    if (on && markers['r' + i]) markers['r' + i].setZIndexOffset(1000); else if (markers['r' + i]) markers['r' + i].setZIndexOffset(0);
+  }
+  document.querySelectorAll('#ddQuick .dd-src').forEach(b => b.addEventListener('click', () => {
+    document.getElementById('searchBox').value = b.dataset.q;
+    searchRestaurants();
+  }));
+
+  function ddClearRoute(){
+    window.ddLastBounds = null;
+    if (window.ddEnds) { try { map.removeLayer(window.ddEnds); } catch {} window.ddEnds = null; }
+  }
+
   function drawRouteAndSummarizeSelected(){
     return new Promise((resolve) => {
       if (!selectedRestaurant || !userLocation) return resolve(null);
@@ -680,6 +731,7 @@
         try { map.removeControl(routingControl); } catch {}
         routingControl = null;
       }
+      ddClearRoute();
 
       const timeout = setTimeout(() => {
         console.error('Routing timeout - falling back to straight-line estimate');
@@ -719,13 +771,12 @@
       .on('routesfound', (e) => {
         clearTimeout(timeout);
         const r = e.routes?.[0];
-        if (r && currentStep <= 2) {
+        if (r) {
           // Remove white dot marker when route is displayed
           if (currentMarker) { try{ map.removeLayer(currentMarker); }catch{} currentMarker = null; }
-          // Fit route on map with padding so it's visible above the bottom sheet
-          const sheetH = document.getElementById('bottomSheet').offsetHeight || 300;
-          const bounds = L.latLngBounds(r.coordinates);
-          map.fitBounds(bounds, { paddingBottomRight: [20, sheetH + 40], paddingTopLeft: [20, 80], animate: true });
+          window.ddLastBounds = L.latLngBounds(r.coordinates);
+          ddDrawEnds(r.coordinates);
+          DDMap.fit(map, window.ddLastBounds);
         }
         resolve(r ? { meters: r.summary.totalDistance, seconds: r.summary.totalTime } : null);
       })
@@ -961,18 +1012,10 @@
       else if (s < n) dot.classList.add('completed');
     });
 
-    // Fullscreen mode for steps 3+ (no map)
+    // Taller sheet for steps 3+; the map stays visible behind it
     const sheet = document.getElementById('bottomSheet');
-    const mapBg = document.getElementById('map-bg');
-    if (n >= 3) {
-      sheet.classList.add('fullscreen');
-      mapBg.classList.add('hidden');
-    } else {
-      sheet.classList.remove('fullscreen');
-      mapBg.classList.remove('hidden');
-      // Recalc map size when returning to map view
-      setTimeout(() => { if (map) map.invalidateSize(); }, 50);
-    }
+    sheet.classList.toggle('fullscreen', n >= 3);
+    DDMap.refit(map, () => window.ddLastBounds);
 
     // Update restaurant name on step 3
     if (n === 3 && selectedRestaurant) {
@@ -988,7 +1031,7 @@
     }
 
     // Adjust map view when on map steps
-    if (n <= 2) adjustMapForSheet();
+    if (n <= 2 && !window.ddLastBounds) adjustMapForSheet();
   }
 
   function adjustMapForSheet(){
@@ -996,12 +1039,8 @@
     setTimeout(() => {
       map.invalidateSize();
       // If we have a restaurant selected, fit the view with bottom padding for the sheet
-      if (selectedRestaurant && currentMarker) {
-        const sheetHeight = document.getElementById('bottomSheet').offsetHeight || 300;
-        map.setView([selectedRestaurant.lat, selectedRestaurant.lng], 15, { animate: true });
-        // Pan up so marker is visible above the sheet
-        map.panBy([0, -sheetHeight / 3], { animate: true });
-      }
+      if (window.ddLastBounds) DDMap.fit(map, window.ddLastBounds);
+      else if (selectedRestaurant && currentMarker) DDMap.center(map, [selectedRestaurant.lat, selectedRestaurant.lng], 15);
     }, 100);
   }
 
@@ -1029,7 +1068,7 @@
       (pos) => {
         userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         document.getElementById('locationText').textContent = 'Your Location';
-        map.setView([userLocation.lat, userLocation.lng], 14);
+        if (!window.ddLastBounds) DDMap.center(map, [userLocation.lat, userLocation.lng], 14, { animate: false });
 
         userMarker = L.marker([userLocation.lat, userLocation.lng], {
           icon: L.divIcon({
@@ -1050,7 +1089,7 @@
 
         document.getElementById('locationText').textContent = errorMsg;
         userLocation = { lat: 34.0412, lng: -118.7107 };
-        map.setView([userLocation.lat, userLocation.lng], 14);
+        DDMap.center(map, [userLocation.lat, userLocation.lng], 14, { animate: false });
 
         if (selectedRestaurant) updateSelectedStats();
       },
@@ -1058,17 +1097,16 @@
     );
   }
 
-  map = L.map('map').setView([userLocation.lat, userLocation.lng], 15);
+  map = L.map('map', { zoomControl: false }).setView([userLocation.lat, userLocation.lng], 15);
+  window.ddMap = map;
+  L.control.zoom({ position: 'bottomleft' }).addTo(map);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom:19
   }).addTo(map);
   map.attributionControl.setPosition('topright');
   setTimeout(() => {
-    map.invalidateSize();
-    // Offset map center upward so content is visible above the bottom sheet
-    const sheetH = document.getElementById('bottomSheet')?.offsetHeight || 300;
-    map.panBy([0, sheetH / 3], { animate: false });
+    if (!window.ddLastBounds) DDMap.center(map, [userLocation.lat, userLocation.lng], 14, { animate: false });
   }, 200);
   getUserLocation();
 
@@ -1164,8 +1202,8 @@
         const attribution = r.attribution || r.html_attributions?.[0] || '';
         const attributionHtml = attribution ? `<div style="font-size:10px;color:#71717a;margin-top:4px;" translate="no">${attribution}</div>` : '';
         return `
-          <div class="result-card" onclick="selectSearchResultByIndex(${r.index})">
-            <div class="result-name">${r.name}</div>
+          <div class="result-card" onclick="selectSearchResultByIndex(${r.index})" onmouseenter="ddHoverPin(${r.index},true)" onmouseleave="ddHoverPin(${r.index},false)">
+            <div class="result-name"><span class="dd-rnum">${r.index + 1}</span>${r.name}</div>
             <div class="result-address">${r.address || 'Address unavailable'}</div>
             ${rating ? `<div style="font-size:12px;color:#fbbf24;margin-top:2px;">${rating}</div>` : ''}
             <div class="result-meta" id="result-meta-${r.index}">Calculating road route...</div>
@@ -1176,6 +1214,7 @@
 
       document.getElementById('manualEntryBtn').style.display = 'block';
 
+      ddShowResultPins(enriched);
       enrichResultsWithRouting(enriched);
     }catch(err){
       console.error('Search error:', err);
@@ -1320,6 +1359,7 @@
     document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('active'));
 
     if (routingControl){ try{ map.removeControl(routingControl); }catch{} routingControl = null; }
+    ddClearRoute();
     if (currentMarker){ try{ map.removeLayer(currentMarker); }catch{} currentMarker = null; }
     Object.values(markers).forEach(m => { try{ map.removeLayer(m);}catch{} });
     markers = {};
@@ -1789,6 +1829,8 @@
       restaurant_id: selectedRestaurant.place_id || selectedRestaurant.id,
       restaurant_name: selectedRestaurant.name,
       restaurant_address: selectedRestaurant.address || '',
+      restaurant_lat: selectedRestaurant.lat,
+      restaurant_lng: selectedRestaurant.lng,
       customer_name: customerName,
       delivery_address: deliveryAddress,
       order_details: orderDetails,
