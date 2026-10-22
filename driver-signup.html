@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FD2D00">
+    <meta name="description" content="Sign up as a driver for DormDash">
+    <title>Driver Sign Up - DormDash (Demo)</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/demo.css">
+    <script src="/static/geo.js"></script>
+    <script src="/static/demo-api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #e4e4e7;
+        }
+
+        .container {
+            background: #131824;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #fff;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .signup-info {
+            background: rgba(88, 101, 242, 0.1);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            color: #e4e4e7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .signup-info strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #0a0e1a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: #e4e4e7;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff6a00;
+            background: #050810;
+            box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.1);
+        }
+
+        input::placeholder {
+            color: #71717a;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #a1a1aa;
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff6a00, #ff8c3a);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 20px rgba(255, 106, 0, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 106, 0, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #a1a1aa;
+        }
+
+        .footer-links a {
+            color: #ff8c3a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-links a:hover {
+            color: #ff6a00;
+            text-decoration: underline;
+        }
+
+        /* Password Requirements Checklist */
+        .password-requirements {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
+        .password-requirements h4 {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            color: #a1a1aa;
+            transition: color 0.2s;
+        }
+
+        .requirement:last-child {
+            margin-bottom: 0;
+        }
+
+        .requirement-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .requirement.met {
+            color: #10b981;
+        }
+
+        .requirement.met .requirement-icon::before {
+            content: '✓';
+            color: #10b981;
+        }
+
+        .requirement.unmet .requirement-icon::before {
+            content: '✗';
+            color: #ef4444;
+        }
+
+        input.invalid-password {
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        input.valid-password {
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 640px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 28px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header p {
+                font-size: 13px;
+            }
+
+            .signup-info {
+                padding: 12px;
+                font-size: 13px;
+                margin-bottom: 20px;
+            }
+
+            label {
+                font-size: 13px;
+            }
+
+            input {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .hint {
+                font-size: 11px;
+            }
+
+            .btn {
+                padding: 14px;
+                font-size: 14px;
+            }
+
+            .error-message, .success-message {
+                font-size: 13px;
+                padding: 10px;
+            }
+
+            .footer-links {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 24px 16px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            input {
+                padding: 11px 14px;
+                font-size: 13px;
+            }
+
+            .btn {
+                padding: 13px;
+                font-size: 13px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/static/track.css">
+    <link rel="stylesheet" href="/static/driver.css">
+    <link rel="stylesheet" href="/static/icons.css">
+</head>
+<body class="dd-driver dd-auth">
+    <div class="container">
+        <div class="header">
+            <h1>Driver Sign Up</h1>
+            <p>Create your DormDash driver account</p>
+        </div>
+
+        <div class="signup-info">
+            <strong>Demo sign-up</strong>
+            Drivers used to be approved by an admin before they could sign up. In the demo any username works, and the account is kept only in this browser.
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="username">
+                    Username <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="your_username"
+                    required
+                    autocomplete="username"
+                >
+                <div class="hint">Pick any username, 2 to 32 characters. Example: johndoe</div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    Password <span class="required">*</span>
+                </label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Min. 12 characters"
+                    required
+                    autocomplete="new-password"
+                >
+                <div class="password-requirements" id="password-requirements">
+                    <h4>Password Requirements:</h4>
+                    <div class="requirement unmet" id="req-length">
+                        <span class="requirement-icon"></span>
+                        <span>At least 12 characters</span>
+                    </div>
+                    <div class="requirement unmet" id="req-uppercase">
+                        <span class="requirement-icon"></span>
+                        <span>One uppercase letter (A-Z)</span>
+                    </div>
+                    <div class="requirement unmet" id="req-lowercase">
+                        <span class="requirement-icon"></span>
+                        <span>One lowercase letter (a-z)</span>
+                    </div>
+                    <div class="requirement unmet" id="req-digit">
+                        <span class="requirement-icon"></span>
+                        <span>One number (0-9)</span>
+                    </div>
+                    <div class="requirement unmet" id="req-special">
+                        <span class="requirement-icon"></span>
+                        <span>One special character (!@#$%^&*...)</span>
+                    </div>
+                    <div class="requirement unmet" id="req-sequential">
+                        <span class="requirement-icon"></span>
+                        <span>No sequential characters (abc, 123)</span>
+                    </div>
+                    <div class="requirement unmet" id="req-common">
+                        <span class="requirement-icon"></span>
+                        <span>Not a common password</span>
+                    </div>
+                    <div class="requirement unmet" id="req-username">
+                        <span class="requirement-icon"></span>
+                        <span>Does not contain username</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">
+                    Confirm Password <span class="required">*</span>
+                </label>
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    placeholder="Re-enter password"
+                    required
+                    autocomplete="new-password"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="phone_number">
+                    Phone Number <span class="hint" style="display:inline">(optional in the demo)</span>
+                </label>
+                <input
+                    type="tel"
+                    id="phone_number"
+                    name="phone_number"
+                    placeholder="(555) 123-4567"
+                    autocomplete="tel"
+                >
+                <div class="hint">For emergency contact and order coordination</div>
+            </div>
+
+            <button type="submit" class="btn" id="submit-btn">Create Account</button>
+        </form>
+
+        <div class="footer-links">
+            Already have an account? <a href="/driver-login.html">Log in</a>
+        </div>
+        <a class="dd-home" href="/drivers.html">How driving for DormDash worked</a>
+    </div>
+
+    <script>
+        const form = document.getElementById('signup-form');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const passwordInput = document.getElementById('password');
+        const usernameInput = document.getElementById('username');
+
+        // Common weak passwords list
+        const commonPasswords = [
+            'password', '12345678', 'qwerty', 'admin', 'letmein', 'welcome',
+            'monkey', 'dragon', 'iloveyou', 'princess', 'abc123', 'password123',
+            'superman', 'qwertyuiop', '123456789', '1234567890'
+        ];
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        // Password validation function
+        function validatePassword(password, username = '') {
+            const requirements = {
+                length: password.length >= 12,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                digit: /[0-9]/.test(password),
+                special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password),
+                sequential: !hasSequentialChars(password),
+                common: !isCommonPassword(password),
+                username: username ? !password.toLowerCase().includes(username.toLowerCase()) : true
+            };
+
+            return requirements;
+        }
+
+        // Check for sequential characters
+        function hasSequentialChars(password) {
+            const sequences = '0123456789abcdefghijklmnopqrstuvwxyz';
+            const lowerPassword = password.toLowerCase();
+
+            for (let i = 0; i < lowerPassword.length - 2; i++) {
+                const substring = lowerPassword.substring(i, i + 3);
+                if (sequences.includes(substring)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Check if password is common
+        function isCommonPassword(password) {
+            const lowerPassword = password.toLowerCase();
+            return commonPasswords.some(weak =>
+                lowerPassword === weak || lowerPassword.includes(weak)
+            );
+        }
+
+        // Update password requirements UI
+        function updatePasswordRequirements() {
+            const password = passwordInput.value;
+            const username = usernameInput.value.trim();
+            const requirements = validatePassword(password, username);
+
+            // Update each requirement
+            updateRequirement('req-length', requirements.length);
+            updateRequirement('req-uppercase', requirements.uppercase);
+            updateRequirement('req-lowercase', requirements.lowercase);
+            updateRequirement('req-digit', requirements.digit);
+            updateRequirement('req-special', requirements.special);
+            updateRequirement('req-sequential', requirements.sequential);
+            updateRequirement('req-common', requirements.common);
+            updateRequirement('req-username', requirements.username);
+
+            // Update password input border color
+            const allMet = Object.values(requirements).every(req => req === true);
+            if (password.length > 0) {
+                if (allMet) {
+                    passwordInput.classList.remove('invalid-password');
+                    passwordInput.classList.add('valid-password');
+                } else {
+                    passwordInput.classList.remove('valid-password');
+                    passwordInput.classList.add('invalid-password');
+                }
+            } else {
+                passwordInput.classList.remove('valid-password', 'invalid-password');
+            }
+
+            // Enable/disable submit button based on all requirements
+            updateSubmitButton(requirements);
+        }
+
+        function updateRequirement(id, met) {
+            const element = document.getElementById(id);
+            if (met) {
+                element.classList.remove('unmet');
+                element.classList.add('met');
+            } else {
+                element.classList.remove('met');
+                element.classList.add('unmet');
+            }
+        }
+
+        function updateSubmitButton(requirements) {
+            const allMet = Object.values(requirements).every(req => req === true);
+            const password = passwordInput.value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+
+            // Only enforce password requirements if user has started typing
+            if (password.length > 0 && !allMet) {
+                submitBtn.disabled = true;
+            } else if (password && confirmPassword && password !== confirmPassword) {
+                submitBtn.disabled = true;
+            } else {
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Add event listeners for real-time validation
+        passwordInput.addEventListener('input', updatePasswordRequirements);
+        usernameInput.addEventListener('input', updatePasswordRequirements);
+        document.getElementById('confirm_password').addEventListener('input', updatePasswordRequirements);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+
+            const driverUsername = usernameInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const phoneNumber = document.getElementById('phone_number').value.trim();
+
+            // Validation
+            if (!driverUsername) {
+                showError('Username is required');
+                return;
+            }
+
+            // Validate password requirements
+            const requirements = validatePassword(password, driverUsername);
+            const allMet = Object.values(requirements).every(req => req === true);
+
+            if (!allMet) {
+                showError('Password does not meet all requirements. Please check the list above.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+
+            try {
+                const response = await fetch('/api/driver/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: driverUsername,
+                        password: password,
+                        phone_number: phoneNumber
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Account created successfully! Redirecting to dashboard...');
+                    setTimeout(() => {
+                        window.location.href = '/driver.html';
+                    }, 1500);
+                } else {
+                    showError(data.error || 'Failed to create account');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account';
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+            }
+        });
+
+    </script>
+</body>
+</html>

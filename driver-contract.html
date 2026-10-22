@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FD2D00">
+    <meta name="description" content="Sign your DormDash driver contract">
+    <title>Sign Driver Contract - DormDash (Demo)</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/demo.css">
+    <script src="/static/geo.js"></script>
+    <script src="/static/demo-api.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #1e1e2e;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FF4500 0%, #FF6347 100%);
+            padding: 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .content {
+            padding: 32px;
+        }
+
+        .step-card {
+            background: #252535;
+            border: 1px solid #3a3a4a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .step-card h2 {
+            color: #FF4500;
+            font-size: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-badge {
+            background: #FF4500;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            color: #a0a0b0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid #3a3a4a;
+            border-radius: 8px;
+            background: #1a1a2a;
+            color: #ffffff;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FF4500;
+            box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF4500 0%, #FF6347 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 69, 0, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #3a3a4a;
+            color: #e0e0e0;
+            border: 1px solid #4a4a5a;
+        }
+
+        .btn-secondary:hover {
+            background: #4a4a5a;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .pdf-viewer-container {
+            background: #252535;
+            border: 1px solid #3a3a4a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #3a3a4a;
+        }
+
+        #pdfCanvas {
+            border: 2px solid #3a3a4a;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            background: white;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .signature-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .signature-modal-content {
+            background: #1e1e2e;
+            border: 1px solid #3a3a4a;
+            padding: 32px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+        }
+
+        .signature-modal h2 {
+            color: #FF4500;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        #signatureCanvas {
+            border: 2px solid #FF4500;
+            border-radius: 8px;
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto 20px;
+            touch-action: none;
+            background: white;
+        }
+
+        .signature-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .page-nav {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .page-info {
+            padding: 6px 12px;
+            background: rgba(255, 69, 0, 0.1);
+            border: 1px solid #FF4500;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #FF4500;
+            font-size: 14px;
+        }
+
+        .success-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            color: white;
+        }
+
+        .success-card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 48px;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #3a3a4a;
+            border-top-color: #FF4500;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-text {
+            color: #a0a0b0;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/static/track.css">
+    <link rel="stylesheet" href="/static/driver.css">
+    <link rel="stylesheet" href="/static/icons.css">
+</head>
+<body class="dd-driver dd-contract">
+    <a class="dd-back" href="/driver.html"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-chevron-left"/></svg> Dashboard</a>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>Driver Contract Signing</h1>
+                <p>Complete your driver onboarding by signing the contract</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Step 1: Driver Info Input -->
+            <div id="driverInfoSection" class="step-card">
+                <h2><span class="step-badge">1</span> Enter Your Information</h2>
+                <p class="info-text" style="margin-bottom: 16px;">This information will be filled into your contract</p>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>CONTRACTOR NAME:</label>
+                        <input type="text" id="driverName" class="form-input" placeholder="e.g., John Smith">
+                    </div>
+
+                    <div class="form-group">
+                        <label>CONTRACTOR ADDRESS:</label>
+                        <input type="text" id="driverAddress" class="form-input" placeholder="e.g., 123 Main St, Malibu, CA 90263">
+                    </div>
+
+                    <div class="form-group">
+                        <label>CONTRACTOR LICENSE NUMBER:</label>
+                        <input type="text" id="driverLicense" class="form-input" placeholder="e.g., D1234567">
+                    </div>
+
+                    <div class="form-group">
+                        <label>DATE SIGNED:</label>
+                        <input type="date" id="contractDate" class="form-input">
+                    </div>
+                </div>
+
+                <br>
+                <button class="btn btn-primary" onclick="continueToContract()">
+                    Continue to Contract
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="loadingSection" class="loading hidden">
+                <div class="loading-spinner"></div>
+                <p>Loading and preparing contract...</p>
+            </div>
+
+            <!-- Step 2: Sign Contract -->
+            <div id="signSection" class="step-card hidden">
+                <h2><span class="step-badge">2</span> Draw Your Signature</h2>
+                <p class="info-text">Draw your signature below. It will be automatically placed at the bottom of the contract.</p>
+                <br>
+                <button class="btn btn-primary" id="createSignatureBtn">
+                    Draw Signature
+                </button>
+            </div>
+
+            <!-- Step 3: PDF Viewer -->
+            <div id="pdfViewerSection" class="hidden">
+                <div class="step-card">
+                    <h2><span class="step-badge">3</span> Review & Submit</h2>
+                    <p class="info-text">Review the contract with your information and signature, then submit when ready.</p>
+                </div>
+
+                <div class="pdf-viewer-container">
+                    <div class="toolbar">
+                        <div class="page-nav">
+                            <button class="btn btn-secondary" id="prevPageBtn" style="padding: 8px 12px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-chevron-left"/></svg></button>
+                            <span class="page-info">
+                                Page <span id="currentPage">1</span> / <span id="totalPages">1</span>
+                            </span>
+                            <button class="btn btn-secondary" id="nextPageBtn" style="padding: 8px 12px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-chevron-right"/></svg></button>
+                        </div>
+
+                        <button class="btn btn-primary" id="submitBtn" disabled>
+                            Submit Signed Contract
+                        </button>
+                    </div>
+
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div id="successSection" class="success-card hidden">
+                <h3>Contract Submitted Successfully!</h3>
+                <p>Signed contracts used to go to the admin team for review. In the demo your copy stays in this browser.</p>
+                <br>
+                <div class="dd-success-actions">
+                <a class="btn btn-secondary" id="signedDownload" href="#" download="DormDash-driver-contract-signed.pdf"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-download"/></svg> Download signed copy</a>
+                <button class="btn btn-primary" onclick="window.location.href='/driver.html'">
+                    Go to Dashboard
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signature Modal -->
+    <div id="signatureModal" class="signature-modal hidden">
+        <div class="signature-modal-content">
+            <h2>Draw Your Signature</h2>
+            <p class="info-text" style="margin-bottom: 16px;">Use your mouse or finger to draw your signature</p>
+            <canvas id="signatureCanvas" width="500" height="200"></canvas>
+            <div class="signature-actions">
+                <button class="btn btn-secondary" id="clearSignatureBtn">Clear</button>
+                <button class="btn btn-secondary" id="cancelSignatureBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveSignatureBtn">Save Signature</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let pdfDoc = null;
+        let pdfBytes = null;
+        let pdfArrayBuffer = null;
+        let currentPage = 1;
+        let pageRendering = false;
+        let signatureImage = null;
+        let driverInfo = {};
+
+        const pdfCanvas = document.getElementById('pdfCanvas');
+        const ctx = pdfCanvas.getContext('2d');
+        const signatureModal = document.getElementById('signatureModal');
+        const signatureCanvas = document.getElementById('signatureCanvas');
+        const signCtx = signatureCanvas.getContext('2d');
+
+        // Signing needs a driver session (demo: kept in this browser)
+        fetch('/api/driver/profile').then(r => {
+            if (r.status === 401) window.location.href = '/driver-login.html?next=' + encodeURIComponent('/driver-contract.html');
+        });
+
+        // Set default date to today
+        document.getElementById('contractDate').valueAsDate = new Date();
+
+        async function continueToContract() {
+            // Collect driver info
+            driverInfo.name = document.getElementById('driverName').value.trim();
+            driverInfo.address = document.getElementById('driverAddress').value.trim();
+            driverInfo.license = document.getElementById('driverLicense').value.trim();
+            driverInfo.date = document.getElementById('contractDate').value;
+
+            // Validate
+            if (!driverInfo.name || !driverInfo.address || !driverInfo.license || !driverInfo.date) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            document.getElementById('driverInfoSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+
+            await loadContract();
+        }
+
+        async function loadContract() {
+            try {
+                const response = await fetch('/static/driver-contract.pdf');
+                if (!response.ok) throw new Error('Could not load contract PDF');
+
+                pdfArrayBuffer = await response.arrayBuffer();
+                pdfBytes = new Uint8Array(pdfArrayBuffer);
+
+                const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
+                pdfDoc = await loadingTask.promise;
+
+                document.getElementById('totalPages').textContent = pdfDoc.numPages;
+                currentPage = 1;
+
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('signSection').classList.remove('hidden');
+
+            } catch (error) {
+                alert('Error loading contract: ' + error.message);
+                console.error(error);
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('driverInfoSection').classList.remove('hidden');
+            }
+        }
+
+        async function renderPage(pageNum) {
+            if (pageRendering) return;
+            pageRendering = true;
+
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.5 });
+
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+
+            await page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            }).promise;
+
+            // If this is page 5, overlay the driver info and signature
+            if (pageNum === 5) {
+                // Format date for preview
+                const dateObj = new Date(driverInfo.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Draw text overlay on canvas
+                ctx.font = 'bold 16px "Times New Roman", serif'; // Bigger font
+                ctx.fillStyle = '#000000';
+
+                const leftMargin = 108; // 2px more to the right (72 * 1.5)
+                const lineHeight = 30; // 20 * 1.5 (scale)
+                let yPosition = pdfCanvas.height - 225; // 10px down (150 * 1.5)
+
+                ctx.fillText(`CONTRACTOR NAME: ${driverInfo.name}`, leftMargin, yPosition);
+                yPosition += lineHeight;
+
+                ctx.fillText(`CONTRACTOR ADDRESS: ${driverInfo.address}`, leftMargin, yPosition);
+                yPosition += lineHeight;
+
+                ctx.fillText(`CONTRACTOR LICENSE NUMBER: ${driverInfo.license}`, leftMargin, yPosition);
+                yPosition += lineHeight;
+
+                ctx.fillText(`DATE SIGNED: ${formattedDate}`, leftMargin, yPosition);
+            }
+
+            // If this is page 6, overlay the signature (much bigger)
+            if (pageNum === 6 && signatureImage) {
+                const sigWidth = 600; // Much bigger
+                const sigHeight = 300; // Much bigger
+                const sigX = (pdfCanvas.width - sigWidth) / 2; // Center horizontally
+                const sigY = 150; // 100px lower from top
+
+                ctx.drawImage(signatureImage, sigX, sigY, sigWidth, sigHeight);
+            }
+
+            pageRendering = false;
+            document.getElementById('currentPage').textContent = pageNum;
+        }
+
+        // Page navigation
+        document.getElementById('prevPageBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            if (currentPage < pdfDoc.numPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+
+        // Signature drawing
+        let isDrawing = false;
+        let hasDrawn = false;
+
+        document.getElementById('createSignatureBtn').addEventListener('click', () => {
+            signatureModal.classList.remove('hidden');
+            hasDrawn = false;
+        });
+
+        signatureCanvas.addEventListener('mousedown', startDrawing);
+        signatureCanvas.addEventListener('mousemove', draw);
+        signatureCanvas.addEventListener('mouseup', stopDrawing);
+        signatureCanvas.addEventListener('mouseout', stopDrawing);
+
+        signatureCanvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = signatureCanvas.getBoundingClientRect();
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            signatureCanvas.dispatchEvent(mouseEvent);
+        });
+
+        signatureCanvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            signatureCanvas.dispatchEvent(mouseEvent);
+        });
+
+        signatureCanvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            stopDrawing();
+        });
+
+        function startDrawing(e) {
+            isDrawing = true;
+            hasDrawn = true;
+            const rect = signatureCanvas.getBoundingClientRect();
+            const sx = signatureCanvas.width / rect.width, sy = signatureCanvas.height / rect.height;
+            signCtx.beginPath();
+            signCtx.moveTo((e.clientX - rect.left) * sx, (e.clientY - rect.top) * sy);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = signatureCanvas.getBoundingClientRect();
+            const sx = signatureCanvas.width / rect.width, sy = signatureCanvas.height / rect.height;
+            signCtx.lineTo((e.clientX - rect.left) * sx, (e.clientY - rect.top) * sy);
+            signCtx.strokeStyle = '#000';
+            signCtx.lineWidth = 2;
+            signCtx.lineCap = 'round';
+            signCtx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        document.getElementById('clearSignatureBtn').addEventListener('click', () => {
+            signCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+            hasDrawn = false;
+        });
+
+        document.getElementById('cancelSignatureBtn').addEventListener('click', () => {
+            signatureModal.classList.add('hidden');
+            signCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        });
+
+        document.getElementById('saveSignatureBtn').addEventListener('click', async () => {
+            if (!hasDrawn) {
+                alert('Please draw your signature first!');
+                return;
+            }
+
+            signatureImage = new Image();
+            signatureImage.src = signatureCanvas.toDataURL();
+
+            await new Promise(resolve => {
+                signatureImage.onload = resolve;
+            });
+
+            signatureModal.classList.add('hidden');
+
+            document.getElementById('signSection').classList.add('hidden');
+            document.getElementById('pdfViewerSection').classList.remove('hidden');
+
+            // Show page 6 (where signature will be placed)
+            currentPage = Math.min(6, pdfDoc.numPages);
+            await renderPage(currentPage);
+
+            document.getElementById('submitBtn').disabled = false;
+        });
+
+        // Submit contract
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            if (!signatureImage) {
+                alert('Please create a signature first!');
+                return;
+            }
+
+            if (!confirm(`Submit signed contract as "${driverInfo.name}"?`)) {
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                // Fetch a fresh copy of the PDF for pdf-lib
+                const pdfResponse = await fetch('/static/driver-contract.pdf');
+                const freshArrayBuffer = await pdfResponse.arrayBuffer();
+                const pdfLibDoc = await PDFLib.PDFDocument.load(freshArrayBuffer);
+                const pages = pdfLibDoc.getPages();
+
+                console.log(`PDF has ${pages.length} pages`);
+
+                // Check if we have at least 5 pages
+                if (pages.length < 5) {
+                    throw new Error(`PDF only has ${pages.length} pages, need at least 5 pages`);
+                }
+
+                const page5 = pages[4]; // Page 5 (0-indexed)
+
+                // Embed Times New Roman Bold font
+                const font = await pdfLibDoc.embedFont(PDFLib.StandardFonts.TimesRomanBold);
+
+                // Format date
+                const dateObj = new Date(driverInfo.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Get page 5 dimensions
+                const { width, height } = page5.getSize();
+                console.log(`Page 5 size: ${width} x ${height}`);
+
+                // Write text fields on page 5 - BOTTOM LEFT
+                const leftMargin = 72; // 2px more to the right
+                const lineHeight = 20;
+
+                // Start slightly lower on the page (from bottom)
+                let yPosition = 150; // 10px down
+
+                // Add labels and values with bigger font
+                page5.drawText(`CONTRACTOR NAME: ${driverInfo.name}`, {
+                    x: leftMargin,
+                    y: yPosition,
+                    size: 14,
+                    font: font,
+                    color: PDFLib.rgb(0, 0, 0)
+                });
+                yPosition -= lineHeight;
+
+                page5.drawText(`CONTRACTOR ADDRESS: ${driverInfo.address}`, {
+                    x: leftMargin,
+                    y: yPosition,
+                    size: 14,
+                    font: font,
+                    color: PDFLib.rgb(0, 0, 0)
+                });
+                yPosition -= lineHeight;
+
+                page5.drawText(`CONTRACTOR LICENSE NUMBER: ${driverInfo.license}`, {
+                    x: leftMargin,
+                    y: yPosition,
+                    size: 14,
+                    font: font,
+                    color: PDFLib.rgb(0, 0, 0)
+                });
+                yPosition -= lineHeight;
+
+                page5.drawText(`DATE SIGNED: ${formattedDate}`, {
+                    x: leftMargin,
+                    y: yPosition,
+                    size: 14,
+                    font: font,
+                    color: PDFLib.rgb(0, 0, 0)
+                });
+
+                console.log('Text added to page 5');
+
+                // Check if we have at least 6 pages
+                if (pages.length < 6) {
+                    throw new Error(`PDF only has ${pages.length} pages, need at least 6 pages for signature`);
+                }
+
+                const page6 = pages[5]; // Page 6 (0-indexed)
+
+                // Add signature to page 6 - much bigger and centered, 100px lower
+                const pngImage = await pdfLibDoc.embedPng(signatureImage.src);
+
+                const { width: p6Width, height: p6Height } = page6.getSize();
+                const sigWidth = 400; // Much bigger
+                const sigHeight = 200; // Much bigger
+                const sigX = (p6Width - sigWidth) / 2; // Center horizontally
+                const sigY = p6Height - sigHeight - 150; // 100px lower from top
+
+                page6.drawImage(pngImage, {
+                    x: sigX,
+                    y: sigY,
+                    width: sigWidth,
+                    height: sigHeight,
+                });
+
+                console.log('Signature added to page 6');
+
+                const signedPdfBytes = await pdfLibDoc.save();
+                let binary = '';
+                for (let i = 0; i < signedPdfBytes.length; i += 0x8000) {
+                    binary += String.fromCharCode.apply(null, signedPdfBytes.subarray(i, i + 0x8000));
+                }
+                const base64Pdf = btoa(binary);
+                // Demo: offer the signed copy for download (kept in this browser only)
+                document.getElementById('signedDownload').href = URL.createObjectURL(new Blob([signedPdfBytes], { type: 'application/pdf' }));
+
+                const response = await fetch('/api/driver/submit-contract', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: driverInfo.name,
+                        pdf: base64Pdf
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to submit contract');
+                }
+
+                document.getElementById('pdfViewerSection').classList.add('hidden');
+                document.getElementById('successSection').classList.remove('hidden');
+
+            } catch (error) {
+                alert('Error submitting contract: ' + error.message);
+                console.error(error);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Signed Contract';
+            }
+        });
+
+    </script>
+</body>
+</html>

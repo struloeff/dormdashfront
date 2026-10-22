@@ -29,8 +29,30 @@
   }
   const ease = f => f < .5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
 
+  // A driver running the order by hand (the driver demo): follow their status
+  // changes, easing along each leg from the moment they reported it.
+  const LEG_MS = 25000;
+  function manualPhase(o, now) {
+    const since = f => Math.min(.92, Math.max(0, (now - (Date.parse(o[f]) || now)) / LEG_MS));
+    const waitLabel = o.status === 'Pending' ? 'Finding a driver' : o.status === 'Claimed' ? 'Driver assigned'
+      : o.status === 'Payment Successful' ? 'Driver getting ready' : 'Waiting for payment';
+    if (o.status === 'Cancelled') return { at: 'start', label: 'Order cancelled' };
+    if (kind === 'food') {
+      if (o.status === 'Heading to Restaurant') return { leg: 0, f: since('heading_to_restaurant_at'), label: 'Heading to the restaurant' };
+      if (o.status === 'Picked Up') return { at: 'mid', label: 'Picking up your order' };
+      if (o.status === 'In Progress') return { leg: 1, f: since('in_progress_at'), label: 'On the way to you' };
+      if (o.status === 'Delivered') return { at: 'end', label: 'Delivered', done: true };
+      return { at: 'start', label: waitLabel };
+    }
+    if (o.status === 'Heading to Pickup') return { leg: 0, f: since('heading_to_pickup_at'), label: 'Driver on the way' };
+    if (o.status === 'In Progress') return { leg: 1, f: since('in_progress_at'), label: 'On your trip' };
+    if (o.status === 'Completed') return { at: 'end', label: 'Arrived', done: true };
+    return { at: 'start', label: waitLabel };
+  }
+
   // Where the driver is, from the order's own timestamps
   function phase(o, now) {
+    if (o.driver_controlled) return manualPhase(o, now);
     const post = DD_DEMO.POST_PAY[kind];
     const off = name => (post.find(p => p[0] === name) || [0, 0])[1];
     let base = o._paid_ms;

@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FD2D00">
+    <meta name="description" content="View your DormDash order details">
+    <title>Order Details - DormDash Driver (Demo)</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/demo.css">
+    <script src="/static/geo.js"></script>
+    <script src="/static/demo-api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            color: #e4e4e7;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #0a0a0a;
+            border: 1px solid #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .order-id {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .status-pending {
+            background: #fbbf24;
+            color: #000000;
+        }
+
+        .status-claimed {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        .status-picked-up, .status-in-progress {
+            background: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .status-delivered, .status-completed {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .status-cancelled {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .status-awaiting-payment {
+            background: #f59e0b;
+            color: #ffffff;
+        }
+
+        .status-payment-successful {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .info-section {
+            background: #0a0a0a;
+            border: 1px solid #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .info-item {
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+
+        .info-value a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+
+        .order-details-text {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-update-section {
+            background: #0a0a0a;
+            border: 1px solid #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .status-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .status-btn {
+            padding: 14px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .status-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            border-color: #ffffff;
+        }
+
+        .status-btn.active {
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #ffffff;
+            border-color: #FD2D00;
+            box-shadow: 0 4px 20px rgba(253, 45, 0, 0.4);
+        }
+
+        .claimed-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a1a1aa;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 10px;
+            padding: 20px;
+            color: #ef4444;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #ffffff;
+            border-radius: 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-4px);
+        }
+
+        .timestamp {
+            font-size: 13px;
+            color: #71717a;
+            margin-top: 8px;
+        }
+
+        .history-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 12px;
+        }
+
+        .history-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .history-icon.status-pending {
+            background: rgba(251, 191, 36, 0.2);
+        }
+
+        .history-icon.status-claimed {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .history-icon.status-picked-up,
+        .history-icon.status-in-progress {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .history-icon.status-delivered {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .history-icon.status-awaiting-payment {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-status {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .history-time {
+            font-size: 13px;
+            color: #a1a1aa;
+        }
+
+        .menu-edit-section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 16px;
+        }
+
+        .menu-item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .menu-item-input {
+            padding: 10px 12px;
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #e4e4e7;
+            font-family: inherit;
+        }
+
+        .menu-item-input:focus {
+            outline: none;
+            border-color: #ffffff;
+            background: #111;
+        }
+
+        .menu-item-input::placeholder {
+            color: #71717a;
+        }
+
+        .remove-item-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            color: #ef4444;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 10px 16px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .remove-item-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
+        }
+
+        .add-item-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .add-item-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .confirm-btn, .edit-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 12px;
+            border: none;
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(253, 45, 0, 0.3);
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(253, 45, 0, 0.5);
+        }
+
+        .edit-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .edit-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 4px 20px rgba(253, 45, 0, 0.3);
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(253, 45, 0, 0.5);
+        }
+
+        .cancel-edit-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 12px;
+        }
+
+        .cancel-edit-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .menu-item-row {
+                grid-template-columns: 1fr;
+            }
+
+            .remove-item-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .order-id {
+                font-size: 24px;
+            }
+
+            .info-section, .status-update-section, .header {
+                padding: 16px;
+            }
+
+            .status-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/static/track.css">
+    <link rel="stylesheet" href="/static/driver.css">
+    <link rel="stylesheet" href="/static/icons.css">
+</head>
+<body class="dd-driver dd-job">
+    <div class="container">
+        <a class="dd-back" href="/driver.html"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-chevron-left"/></svg> Dashboard</a>
+        <div id="loadingState" class="loading">
+            <div style="font-size: 40px; margin-bottom: 16px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg></div>
+            <p>Loading order details...</p>
+        </div>
+
+        <div id="errorState" class="error" style="display: none;">
+            <div style="font-size: 40px; margin-bottom: 16px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg></div>
+            <p id="errorMessage">Order not found</p>
+        </div>
+
+        <div id="orderContent" style="display: none;">
+            <div class="header">
+                <div class="order-id">Order #<span id="orderId"></span></div>
+                <div id="statusBadge" class="status-badge"></div>
+                <div class="timestamp">
+                    Created: <span id="createdAt"></span>
+                </div>
+                <div class="timestamp">
+                    Last Updated: <span id="updatedAt"></span>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-store"/></svg> Restaurant Information</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Restaurant Name</div>
+                        <div class="info-value" id="restaurantName"></div>
+                    </div>
+                    <div class="info-item" id="restaurantAddressSection" style="display: none;">
+                        <div class="info-label"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-map-pin"/></svg> Pickup Location</div>
+                        <div class="info-value" id="restaurantAddress"></div>
+                        <div style="margin-top: 8px;">
+                            <a href="#" id="mapsLink" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 14px;">
+                                <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-map"/></svg> Open in Maps
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-user"/></svg> Customer Information</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Customer Name</div>
+                        <div class="info-value" id="customerName"></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Delivery Preference</div>
+                        <div class="info-value" id="deliveryPreference"></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value">
+                            <a href="#" id="phoneLink"></a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Delivery Location</div>
+                        <div class="info-value" id="deliveryAddress"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section" id="routeSection" style="display: none;">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-calculator"/></svg> Estimated Delivery & Fees</h2>
+                <div id="routeInfo" style="margin-bottom: 16px; color: #ffffff; font-size: 15px; line-height: 1.8;"></div>
+                <div id="feeBreakdown" style="color: #e4e4e7; font-size: 14px; line-height: 1.8;"></div>
+            </div>
+
+            <div class="info-section" id="menuItemsSection" style="display: none;">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-utensils"/></svg> Menu Items</h2>
+
+                <!-- View Mode -->
+                <div id="menuViewMode">
+                    <div id="menuItemsList" style="margin-top: 12px;"></div>
+                    <div id="foodCostBreakdown" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.2); color: #e4e4e7; font-size: 14px; line-height: 1.8;"></div>
+
+                    <!-- Price Verification Warning -->
+                    <div id="priceWarning" style="margin-top: 20px; padding: 16px; background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; border-radius: 12px;">
+                        <div style="color: #ef4444; font-size: 16px; font-weight: 700; margin-bottom: 8px; text-align: center;">
+                            <svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-triangle-alert"/></svg> IMPORTANT - VERIFY PRICES BEFORE CONFIRMING <svg class="ic ic-warn" aria-hidden="true"><use href="/static/icons.svg#i-triangle-alert"/></svg>
+                        </div>
+                        <div style="color: #fca5a5; font-size: 14px; line-height: 1.6; text-align: center;">
+                            <strong>You MUST verify all menu item prices are correct!</strong><br>
+                            • Check the restaurant menu<br>
+                            • MAKE SURE RESTAURANT IS OPEN!<br>
+                            • Confirm prices match<br>
+                            • Ensure food subtotal is accurate<br>
+                            • Once confirmed, the bill will be sent to the customer
+                        </div>
+                    </div>
+
+                    <div id="menuActionButtons" style="margin-top: 16px;">
+                        <button class="confirm-btn" onclick="confirmMenuItems()"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Confirm Items & Prices</button>
+                        <button class="edit-btn" onclick="enterEditMode()"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-pencil"/></svg> Edit Items</button>
+                    </div>
+
+                    <!-- Awaiting Payment Status (shown after confirmation) -->
+                    <div id="awaitingPaymentStatus" style="display: none; margin-top: 16px; padding: 20px; background: rgba(234, 179, 8, 0.15); border: 2px solid #eab308; border-radius: 12px; text-align: center;">
+                        <div style="color: #eab308; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                            <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg> AWAITING PAYMENT
+                        </div>
+                        <div style="color: #fde047; font-size: 14px;">
+                            Bill has been sent to customer. Waiting for payment confirmation.
+                        </div>
+                    </div>
+                    <!-- Payment Receipt (shown after payment confirmed) -->
+                    <div id="paymentReceipt" style="display: none; margin-top: 16px; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; border-radius: 12px; padding: 20px;">
+                        <div style="color: #10b981; font-size: 18px; font-weight: 700; margin-bottom: 12px; text-align: center;">
+                            <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> PAYMENT CONFIRMED
+                        </div>
+                        <div style="color: #6ee7b7; font-size: 14px; text-align: center; margin-bottom: 16px;">
+                            Customer has paid
+                        </div>
+                        <div id="receiptDetails" style="background: rgba(0, 0, 0, 0.3); padding: 16px; border-radius: 8px; color: #e4e4e7; font-size: 14px; line-height: 1.8;"></div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode -->
+                <div id="menuEditMode" style="display: none;">
+                    <div class="menu-edit-section">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #a1a1aa; font-weight: 600;">
+                            <div>ITEM NAME</div>
+                            <div>QUANTITY</div>
+                            <div>PRICE ($)</div>
+                            <div></div>
+                        </div>
+                        <div id="menuItemsEdit"></div>
+                        <button class="add-item-btn" onclick="addNewMenuItem()"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-plus"/></svg> Add Item</button>
+                    </div>
+                    <div id="editFoodCostBreakdown" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.2); color: #e4e4e7; font-size: 14px; line-height: 1.8;"></div>
+                    <div style="margin-top: 16px;">
+                        <button class="save-btn" onclick="saveMenuItems()"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-save"/></svg> Save Changes</button>
+                        <button class="cancel-edit-btn" onclick="cancelEditMode()"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg> Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section" id="payoutSection" style="display: none;">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-banknote"/></svg> Payout Split</h2>
+                <div id="payoutInfo" style="color: #e4e4e7; font-size: 14px; line-height: 1.8;"></div>
+            </div>
+
+            <div class="info-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-file-text"/></svg> Order Details</h2>
+                <div class="order-details-text" id="orderDetails"></div>
+            </div>
+
+            <div id="claimedSection" class="info-section" style="display: none;">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> Driver Information</h2>
+                <div class="claimed-info">
+                    <div style="font-size: 16px;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Claimed by: <span id="claimedBy"></span></div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2 onclick="toggleStatusHistory()" style="cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center;">
+                    <span><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-clipboard-list"/></svg> Status Update History</span>
+                    <span id="historyToggleIcon" style="font-size: 20px; transition: transform 0.3s;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-chevron-down"/></svg></span>
+                </h2>
+                <div id="statusHistory" style="margin-top: 16px; display: none;">
+                    <div style="color: #a1a1aa; text-align: center; padding: 20px;">Loading history...</div>
+                </div>
+            </div>
+
+            <div class="info-section" id="deliveryPhotoSection" style="display: none;">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-camera"/></svg> Delivery Photo</h2>
+                <div style="margin-top: 16px;">
+                    <img id="deliveryPhotoImg" src="" alt="Delivery Photo" style="width: 100%; max-width: 500px; border-radius: 12px; border: 2px solid #10b981;" />
+                    <div style="margin-top: 8px; color: #10b981; font-size: 14px; font-weight: 600;">
+                        ✓ Photo uploaded by driver
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-update-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-refresh-cw"/></svg> Update Order Status</h2>
+
+                <!-- Show "Go to Dashboard" button if order is completed/delivered -->
+                <div id="dashboardButton" style="display: none; margin-bottom: 20px;">
+                    <a href="/driver.html" style="display: inline-block; padding: 16px 32px; background: #10b981; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 16px; text-align: center; transition: all 0.3s ease;">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-house"/></svg> Go to Dashboard
+                    </a>
+                </div>
+
+                <div class="status-buttons">
+                    <button class="status-btn" onclick="updateStatus('Pending')">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg> Pending
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('Claimed')">
+                        <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Claimed
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('Awaiting Payment')">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg> Awaiting Payment
+                    </button>
+                    <button class="status-btn" onclick="alert('BLOCKED: Payment Successful is set automatically when the customer pays.')" style="opacity: 0.5; cursor: not-allowed;">
+                        <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Payment Successful (Auto)
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('Heading to Restaurant')">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-store"/></svg> Heading to Restaurant
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('Picked Up')">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-package"/></svg> Picked Up
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('In Progress')">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> In Progress
+                    </button>
+                    <button class="status-btn" onclick="handleDeliveredClick()">
+                        <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-sparkles"/></svg> Delivered
+                    </button>
+                    <button class="status-btn" onclick="handleCancelClick()">
+                        <svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg> Cancelled
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';  // demo: /api/* is answered by static/demo-api.js
+        const orderId = new URLSearchParams(window.location.search).get('id');
+        let currentOrder = null;
+
+        const live = liveChannel(API_URL, {});
+
+        live.on('connect', () => console.log('Connected to live updates'));
+        live.on('order_update', (data) => {
+            if (data.id == orderId) {
+                console.log('Order updated:', data);
+                loadOrder();
+            }
+        });
+
+        function getStatusClass(status) {
+            const statusLower = status.toLowerCase().replace(/\s+/g, '-');
+            return `status-${statusLower}`;
+        }
+
+        function formatDate(dateString) {
+            // Timestamps are stored in LA time - no conversion needed
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZoneName: 'short'
+            });
+        }
+
+        function buildStatusHistory(order) {
+            const history = [];
+            
+            // Order placed
+            if (order.created_at) {
+                history.push({
+                    status: 'Order Placed',
+                    time: order.created_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-file-text"/></svg>',
+                    class: 'status-pending'
+                });
+            }
+            
+            // Claimed
+            if (order.claimed_at) {
+                history.push({
+                    status: 'Driver Claimed',
+                    time: order.claimed_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-user"/></svg>',
+                    class: 'status-claimed',
+                    detail: order.claimed_by ? `by ${order.claimed_by}` : ''
+                });
+            }
+
+            // Awaiting Payment
+            if (order.awaiting_payment_at) {
+                history.push({
+                    status: 'Awaiting Payment',
+                    time: order.awaiting_payment_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg>',
+                    class: 'status-awaiting-payment'
+                });
+            }
+
+            // Payment Confirmed
+            if (order.payment_confirmed_at) {
+                history.push({
+                    status: 'Payment Confirmed',
+                    time: order.payment_confirmed_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-credit-card"/></svg>',
+                    class: 'status-picked-up'
+                });
+            }
+
+            // Heading to Restaurant
+            if (order.heading_to_restaurant_at) {
+                history.push({
+                    status: 'Heading to Restaurant',
+                    time: order.heading_to_restaurant_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-store"/></svg>',
+                    class: 'status-picked-up'
+                });
+            }
+
+            // Picked Up (Food retrieved from restaurant)
+            if (order.picked_up_at) {
+                history.push({
+                    status: 'Picked Up from Restaurant',
+                    time: order.picked_up_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-package"/></svg>',
+                    class: 'status-picked-up'
+                });
+            }
+            
+            // In Progress
+            if (order.in_progress_at) {
+                history.push({
+                    status: 'Out for Delivery',
+                    time: order.in_progress_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg>',
+                    class: 'status-in-progress'
+                });
+            }
+            
+            // Delivered
+            if (order.delivered_at) {
+                history.push({
+                    status: 'Delivered',
+                    time: order.delivered_at,
+                    icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-sparkles"/></svg>',
+                    class: 'status-delivered'
+                });
+            }
+            
+            const historyContainer = document.getElementById('statusHistory');
+            
+            if (history.length === 0) {
+                historyContainer.innerHTML = '<div style="color: #a1a1aa; text-align: center; padding: 20px;">No status updates yet</div>';
+                return;
+            }
+            
+            // Reverse to show most recent first
+            history.reverse();
+            
+            historyContainer.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div class="history-icon ${item.class}">
+                        ${item.icon}
+                    </div>
+                    <div class="history-content">
+                        <div class="history-status">${item.status}${item.detail ? ' ' + item.detail : ''}</div>
+                        <div class="history-time">${formatDate(item.time)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadOrder() {
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}`);
+
+                if (response.status === 401) {
+                    // Auth required - redirect to login with full path
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-order.html?id=' + orderId)}`;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Order not found');
+                }
+
+                currentOrder = await response.json();
+                displayOrder(currentOrder);
+
+            } catch (error) {
+                console.error('Error loading order:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+            }
+        }
+
+        function displayOrder(order) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('orderContent').style.display = 'block';
+
+            // Header
+            document.getElementById('orderId').textContent = order.id;
+            
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = order.status;
+            statusBadge.className = 'status-badge ' + getStatusClass(order.status);
+
+            document.getElementById('createdAt').textContent = formatDate(order.created_at);
+            document.getElementById('updatedAt').textContent = formatDate(order.updated_at || order.created_at);
+
+            // Restaurant
+            document.getElementById('restaurantName').textContent = order.restaurant_name;
+            
+            // Restaurant address if available
+            if (order.restaurant_address) {
+                document.getElementById('restaurantAddressSection').style.display = 'block';
+                document.getElementById('restaurantAddress').textContent = order.restaurant_address;
+
+                // Map link
+                const addressEncoded = encodeURIComponent(order.restaurant_address);
+                const mapsLink = `https://www.openstreetmap.org/search?query=${addressEncoded}`;
+                document.getElementById('mapsLink').href = mapsLink;
+            }
+
+            // Customer
+            document.getElementById('customerName').textContent = order.customer_name;
+
+            const phoneLink = document.getElementById('phoneLink');
+            phoneLink.removeAttribute('href');
+            phoneLink.textContent = order.phone_number || 'Not shared in the demo';
+
+            // Delivery Preference
+            const deliveryPref = order.contact_method || 'drop off';
+            const deliveryEmoji = deliveryPref === 'hand off' ? '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-handshake"/></svg>' : '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-package"/></svg>';
+            const deliveryLabel = deliveryPref === 'hand off' ? 'Hand Off' : 'Drop Off';
+            const photoNote = ' <span style="color: #fbbf24; font-size: 13px;">(delivery photo required)</span>';
+            document.getElementById('deliveryPreference').innerHTML = `${deliveryEmoji} ${deliveryLabel}${photoNote}`;
+
+            document.getElementById('deliveryAddress').textContent = order.delivery_address;
+
+            // Parse JSON fields
+            let menuItems = null;
+            let costBreakdown = null;
+            let routeSummary = null;
+
+            try {
+                if (typeof order.menu_items === 'string') {
+                    menuItems = JSON.parse(order.menu_items);
+                } else if (Array.isArray(order.menu_items)) {
+                    menuItems = order.menu_items;
+                }
+            } catch (e) {
+                console.warn('Could not parse menu_items:', e);
+            }
+
+            try {
+                if (typeof order.cost_breakdown === 'string') {
+                    costBreakdown = JSON.parse(order.cost_breakdown);
+                } else if (typeof order.cost_breakdown === 'object') {
+                    costBreakdown = order.cost_breakdown;
+                }
+            } catch (e) {
+                console.warn('Could not parse cost_breakdown:', e);
+            }
+
+            try {
+                if (typeof order.route_summary === 'string') {
+                    routeSummary = JSON.parse(order.route_summary);
+                } else if (typeof order.route_summary === 'object') {
+                    routeSummary = order.route_summary;
+                }
+            } catch (e) {
+                console.warn('Could not parse route_summary:', e);
+            }
+
+            // Display route summary
+            if (routeSummary || costBreakdown) {
+                document.getElementById('routeSection').style.display = 'block';
+
+                let routeHtml = '';
+                if (routeSummary) {
+                    const miles = routeSummary.miles || 0;
+                    const etaText = routeSummary.eta_text || '';
+                    const estDeliveryText = routeSummary.est_delivery_text || '';
+
+                    routeHtml = `
+                        <div><strong>Road distance:</strong> ${miles.toFixed(1)} mi</div>
+                        ${etaText ? `<div><strong>Drive time:</strong> ${etaText}</div>` : ''}
+                        ${estDeliveryText ? `<div><strong>Estimated delivery:</strong> ${estDeliveryText}</div>` : ''}
+                    `;
+                }
+                document.getElementById('routeInfo').innerHTML = routeHtml;
+
+                // Display fee breakdown
+                if (costBreakdown) {
+                    const deliveryFee = parseFloat(costBreakdown.delivery_fee || 0);
+                    const perMileRate = parseFloat(costBreakdown.per_mile_rate || 0);
+                    const mileageCost = parseFloat(costBreakdown.mileage_cost || 0);
+                    const farAwayFee = parseFloat(costBreakdown.far_away_fee || 0);
+                    const innoutFee = parseFloat(costBreakdown.innout_fee || 0);
+                    const feesExclFood = parseFloat(costBreakdown.fees_subtotal || 0);
+                    const miles = parseFloat(costBreakdown.miles || 0);
+
+                    let feeHtml = `
+                        <div><strong>Delivery fee:</strong> $${deliveryFee.toFixed(2)}</div>
+                        <div><strong>Mileage:</strong> $${mileageCost.toFixed(2)} (${miles.toFixed(1)} mi × $${perMileRate.toFixed(2)})</div>
+                    `;
+
+                    if (farAwayFee > 0) {
+                        feeHtml += `<div><strong>Far-Away fee:</strong> $${farAwayFee.toFixed(2)} <span style="color: #a1a1aa;">(applies over 10 road miles)</span></div>`;
+                    }
+
+                    if (innoutFee > 0) {
+                        feeHtml += `<div><strong>In-N-Out fee:</strong> $${innoutFee.toFixed(2)} <span style="color: #a1a1aa;">(special restaurant fee)</span></div>`;
+                    }
+
+                    feeHtml += `<div style="margin-top: 8px;"><strong>Estimated fees (excluding food):</strong> $${feesExclFood.toFixed(2)}</div>`;
+
+                    document.getElementById('feeBreakdown').innerHTML = feeHtml;
+                }
+            }
+
+            // Display menu items
+            if (menuItems && Array.isArray(menuItems) && menuItems.length > 0) {
+                document.getElementById('menuItemsSection').style.display = 'block';
+
+                let menuHtml = '<div style="background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">';
+                menuItems.forEach((item, index) => {
+                    const qty = item.quantity || 1;
+                    const name = item.name || 'Item';
+                    const price = item.price ? parseFloat(item.price) : null;
+
+                    if (price !== null) {
+                        menuHtml += `<div style="margin-bottom: 6px;">${name} (×${qty}): <strong>$${price.toFixed(2)}</strong></div>`;
+                    } else {
+                        menuHtml += `<div style="margin-bottom: 6px;">${name} (×${qty})</div>`;
+                    }
+                });
+                menuHtml += '</div>';
+                document.getElementById('menuItemsList').innerHTML = menuHtml;
+
+                // Check if payment is confirmed or awaiting payment
+                const paymentConfirmed = order.payment_confirmed || false;
+                const isAwaitingPayment = order.status === 'Awaiting Payment';
+                const actionButtons = document.getElementById('menuActionButtons');
+                const paymentReceipt = document.getElementById('paymentReceipt');
+                const foodCostBreakdown = document.getElementById('foodCostBreakdown');
+                const priceWarning = document.getElementById('priceWarning');
+                const awaitingPaymentStatus = document.getElementById('awaitingPaymentStatus');
+
+                if (paymentConfirmed) {
+                    // Hide action buttons, cost warning, and awaiting status
+                    if (actionButtons) actionButtons.style.display = 'none';
+                    if (foodCostBreakdown) foodCostBreakdown.style.display = 'none';
+                    if (priceWarning) priceWarning.style.display = 'none';
+                    if (awaitingPaymentStatus) awaitingPaymentStatus.style.display = 'none';
+                    if (paymentReceipt) paymentReceipt.style.display = 'block';
+
+                    // Build receipt
+                    if (costBreakdown) {
+                        const foodSubtotal = parseFloat(costBreakdown.food_subtotal || 0);
+                        const salesTax = parseFloat(costBreakdown.sales_tax || 0);
+                        const serviceCharge = parseFloat(costBreakdown.service_charge || 0);
+                        const deliveryFee = parseFloat(costBreakdown.delivery_fee || 0);
+                        const mileageCost = parseFloat(costBreakdown.mileage_cost || 0);
+                        const farAwayFee = parseFloat(costBreakdown.far_away_fee || 0);
+                        const innoutFee = parseFloat(costBreakdown.innout_fee || 0);
+                        const estTotal = parseFloat(costBreakdown.est_total || 0);
+                        const tipAmount = parseFloat(order.tip_amount || 0);
+                        const taxRate = parseFloat(costBreakdown.sales_tax_rate || 0.095);
+                        const taxPercentage = (taxRate * 100).toFixed(2);
+
+                        let receiptHtml = `
+                            <div style="margin-bottom: 8px;"><strong>Food Subtotal:</strong> $${foodSubtotal.toFixed(2)}</div>
+                            <div style="margin-bottom: 8px;"><strong>Sales Tax (${taxPercentage}%):</strong> $${salesTax.toFixed(2)}</div>
+                            <div style="margin-bottom: 8px;"><strong>Delivery Fee:</strong> $${deliveryFee.toFixed(2)}</div>
+                            <div style="margin-bottom: 8px;"><strong>Mileage:</strong> $${mileageCost.toFixed(2)}</div>
+                        `;
+
+                        if (farAwayFee > 0) {
+                            receiptHtml += `<div style="margin-bottom: 8px;"><strong>Far-Away Fee:</strong> $${farAwayFee.toFixed(2)}</div>`;
+                        }
+
+                        if (innoutFee > 0) {
+                            receiptHtml += `<div style="margin-bottom: 8px;"><strong>In-N-Out Fee:</strong> $${innoutFee.toFixed(2)}</div>`;
+                        }
+
+                        receiptHtml += `
+                            <div style="margin-bottom: 8px;"><strong>Service Charge (15%):</strong> $${serviceCharge.toFixed(2)}</div>
+                        `;
+
+                        if (tipAmount > 0) {
+                            receiptHtml += `<div style="margin-bottom: 8px; color: #10b981;"><strong>Tip for Driver:</strong> +$${tipAmount.toFixed(2)}</div>`;
+                        }
+
+                        const grandTotal = estTotal + tipAmount;
+
+                        receiptHtml += `
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #10b981; font-size: 16px; color: #10b981;">
+                                <strong>Total Paid: $${grandTotal.toFixed(2)}</strong>
+                            </div>
+                        `;
+
+                        document.getElementById('receiptDetails').innerHTML = receiptHtml;
+                    }
+                } else if (isAwaitingPayment) {
+                    // Bill sent, awaiting customer payment
+                    if (actionButtons) actionButtons.style.display = 'none';
+                    if (foodCostBreakdown) foodCostBreakdown.style.display = 'none';
+                    if (priceWarning) priceWarning.style.display = 'none';
+                    if (paymentReceipt) paymentReceipt.style.display = 'none';
+                    if (awaitingPaymentStatus) awaitingPaymentStatus.style.display = 'block';
+                } else {
+                    // Show normal action buttons and warning
+                    if (actionButtons) actionButtons.style.display = 'block';
+                    if (priceWarning) priceWarning.style.display = 'block';
+                    if (paymentReceipt) paymentReceipt.style.display = 'none';
+                    if (awaitingPaymentStatus) awaitingPaymentStatus.style.display = 'none';
+                }
+
+                // Display food cost breakdown
+                if (costBreakdown) {
+                    const foodSubtotal = parseFloat(costBreakdown.food_subtotal || 0);
+                    const salesTax = parseFloat(costBreakdown.sales_tax || 0);
+                    const serviceCharge = parseFloat(costBreakdown.service_charge || 0);
+                    const estTotal = parseFloat(costBreakdown.est_total || 0);
+                    const tipAmount = parseFloat(order.tip_amount || 0);
+                    const taxRate = parseFloat(costBreakdown.sales_tax_rate || 0.095);
+                    const taxPercentage = (taxRate * 100).toFixed(2);
+
+                    if (foodSubtotal > 0) {
+                        let foodCostHtml = `
+                            <div><strong>Food subtotal:</strong> $${foodSubtotal.toFixed(2)}</div>
+                            <div><strong>Sales tax (${taxPercentage}%):</strong> $${salesTax.toFixed(2)}</div>
+                            <div><strong>Food + tax:</strong> $${(foodSubtotal + salesTax).toFixed(2)}</div>
+                            <div><strong>Service charge (15% of food):</strong> $${serviceCharge.toFixed(2)}</div>
+                        `;
+
+                        const platformFeeFlat = parseFloat(costBreakdown.platform_fee_flat || 0);
+                        if (platformFeeFlat > 0) {
+                            foodCostHtml += `<div><strong>Platform Fee:</strong> $${platformFeeFlat.toFixed(2)}</div>`;
+                        }
+
+                        if (tipAmount > 0) {
+                            foodCostHtml += `<div style="color: #10b981;"><strong>Tip for Driver:</strong> +$${tipAmount.toFixed(2)}</div>`;
+                        }
+
+                        const grandTotal = estTotal + tipAmount;
+
+                        foodCostHtml += `
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid rgba(255, 255, 255, 0.3); font-size: 16px; color: #10b981;">
+                                <strong>Estimated Grand Total: $${grandTotal.toFixed(2)}</strong>
+                            </div>
+                            <div style="font-size: 13px; color: #a1a1aa; margin-top: 6px;">*YOU MUST CONFIRM FOOD COST IS CORRECT</div>
+                        `;
+                        document.getElementById('foodCostBreakdown').innerHTML = foodCostHtml;
+                    }
+                }
+            }
+
+            // Display payout split
+            if (costBreakdown) {
+                const feesPool = parseFloat(costBreakdown.fees_pool || 0);
+                const platformCut = parseFloat(costBreakdown.platform_cut || 0);
+                const driverPayout = parseFloat(order.driver_payout || costBreakdown.driver_payout || 0);
+                const tipAmount = parseFloat(order.tip_amount || 0);
+                const deliveryFee = parseFloat(costBreakdown.delivery_fee || 0);
+                const mileageCost = parseFloat(costBreakdown.mileage_cost || 0);
+                const farAwayFee = parseFloat(costBreakdown.far_away_fee || 0);
+                const innoutFee = parseFloat(costBreakdown.innout_fee || 0);
+                const serviceCharge = parseFloat(costBreakdown.service_charge || 0);
+
+                if (feesPool > 0 || driverPayout > 0) {
+                    document.getElementById('payoutSection').style.display = 'block';
+
+                    // Calculate fee breakdown
+                    const deliveryFees = deliveryFee + mileageCost + farAwayFee + innoutFee;
+                    const feesPoolCalculated = deliveryFees + serviceCharge;
+
+                    // Driver gets 82.68% of fee pool
+                    const driverShareFromFees = feesPoolCalculated * 0.8268;
+
+                    // Calculate total earnings including tip
+                    // Use driverShareFromFees (not DB driverPayout which may already include tip)
+                    const totalEarnings = driverShareFromFees + tipAmount;
+
+                    // Calculate hourly rate including tip
+                    let hourlyRateHtml = '';
+                    if (totalEarnings > 0 && routeSummary) {
+                        const totalSeconds = routeSummary.seconds || 0;
+                        if (totalSeconds > 0) {
+                            const roundTripHours = (totalSeconds * 2) / 3600;
+                            const hourlyRate = totalEarnings / roundTripHours;
+                            hourlyRateHtml = ` (~$${hourlyRate.toFixed(2)}/hr)`;
+                        }
+                    }
+
+                    let payoutHtml = `
+                        <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #ffffff;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg> Your Earnings Breakdown</div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                            <div style="margin-bottom: 8px;"><strong>Total Fees Collected:</strong> $${feesPoolCalculated.toFixed(2)}</div>
+                            <div style="padding-left: 16px; color: #a1a1aa; font-size: 12px; margin-bottom: 2px;">
+                                • Delivery: $${deliveryFee.toFixed(2)}
+                            </div>
+                            <div style="padding-left: 16px; color: #a1a1aa; font-size: 12px; margin-bottom: 2px;">
+                                • Mileage: $${mileageCost.toFixed(2)}
+                            </div>
+                            ${farAwayFee > 0 ? `<div style="padding-left: 16px; color: #a1a1aa; font-size: 12px; margin-bottom: 2px;">• Far-Away: $${farAwayFee.toFixed(2)}</div>` : ''}
+                            ${innoutFee > 0 ? `<div style="padding-left: 16px; color: #a1a1aa; font-size: 12px; margin-bottom: 2px;">• In-N-Out: $${innoutFee.toFixed(2)}</div>` : ''}
+                            <div style="padding-left: 16px; color: #a1a1aa; font-size: 12px; margin-bottom: 8px;">
+                                • Service Charge: $${serviceCharge.toFixed(2)}
+                            </div>
+
+                            <div style="padding-left: 16px; color: #a1a1aa; font-size: 13px; margin-bottom: 4px;">
+                                Platform keeps 17.32%: -$${platformCut.toFixed(2)}
+                            </div>
+                            <div style="margin-bottom: 6px; color: #10b981;">
+                                <strong>Your Share (82.68%):</strong> $${driverShareFromFees.toFixed(2)}
+                            </div>
+                        </div>
+                    `;
+
+                    if (tipAmount > 0) {
+                        payoutHtml += `
+                        <div style="margin-bottom: 12px; color: #10b981;">
+                            <strong>+ Customer Tip (100% yours):</strong> +$${tipAmount.toFixed(2)}
+                        </div>
+                        `;
+                    }
+
+                    payoutHtml += `
+                        <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border: 2px solid #10b981; border-radius: 12px;">
+                            <div style="font-size: 20px; font-weight: 700; color: #10b981;">
+                                Total Earnings: $${totalEarnings.toFixed(2)}
+                            </div>
+                            ${hourlyRateHtml ? `<div style="font-size: 14px; color: #6ee7b7; margin-top: 4px;">${hourlyRateHtml}</div>` : ''}
+                            <div style="font-size: 12px; color: #a1a1aa; margin-top: 8px;">
+                                ✓ You receive all food/tax money (not shown above)<br>
+                                ✓ You get 82.68% of all fees shown above<br>
+                                ✓ You keep 100% of tips<br>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('payoutInfo').innerHTML = payoutHtml;
+                }
+            }
+
+            // Order details
+            const orderDetailsText = order.order_details && order.order_details.trim() !== ''
+                ? order.order_details
+                : 'No additional details provided.';
+            document.getElementById('orderDetails').textContent = orderDetailsText;
+
+            // Claimed info
+            if (order.claimed_by) {
+                document.getElementById('claimedSection').style.display = 'block';
+                document.getElementById('claimedBy').textContent = order.claimed_by;
+            }
+
+            // Display delivery photo if available
+            if (order.delivery_photo_url) {
+                document.getElementById('deliveryPhotoSection').style.display = 'block';
+                document.getElementById('deliveryPhotoImg').src = order.delivery_photo_url;
+            } else {
+                document.getElementById('deliveryPhotoSection').style.display = 'none';
+            }
+
+            // Build status history
+            buildStatusHistory(order);
+
+            // Highlight current status button
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const currentStatusBtn = Array.from(document.querySelectorAll('.status-btn'))
+                .find(btn => btn.textContent.includes(order.status));
+            if (currentStatusBtn) {
+                currentStatusBtn.classList.add('active');
+            }
+
+            // Show "Go to Dashboard" button if order is delivered or completed
+            const dashboardButton = document.getElementById('dashboardButton');
+            if (order.status === 'Delivered' || order.status === 'Completed') {
+                dashboardButton.style.display = 'block';
+            } else {
+                dashboardButton.style.display = 'none';
+            }
+
+        }
+
+        async function handleCancelClick() {
+            // Check if payment has been confirmed
+            if (currentOrder && currentOrder.payment_confirmed) {
+                const confirmCancel = confirm(
+                    'WARNING: PAYMENT HAS BEEN CONFIRMED\n\n' +
+                    'This order has been paid by the customer. If you cancel this order after payment:\n\n' +
+                    '• Your payout will be placed on HOLD for admin review\n' +
+                    '• You may be held RESPONSIBLE for the cost of this order\n' +
+                    '• Admin will review the cancellation before releasing funds\n\n' +
+                    'Are you ABSOLUTELY SURE you want to cancel this paid order?'
+                );
+
+                if (!confirmCancel) {
+                    return;
+                }
+            }
+
+            const reason = prompt('Please provide a reason for cancelling this order:\n\n(This will be shown to the customer)');
+
+            if (!reason || reason.trim() === '') {
+                alert('Cancellation reason is required');
+                return;
+            }
+
+            if (!confirm(`Cancel this order with reason:\n"${reason}"\n\nThis action will notify the customer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: 'Cancelled',
+                        cancellation_reason: reason
+                    })
+                });
+
+                if (response.ok) {
+                    const updatedOrder = await response.json();
+                    displayOrder(updatedOrder);
+                    alert('Order cancelled successfully');
+                } else if (response.status === 401) {
+                    // Auth required - redirect to login with full path
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-order.html?id=' + orderId)}`;
+                    return;
+                } else {
+                    const error = await response.json();
+                    alert('Failed to cancel order: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error cancelling order:', error);
+                alert('Error cancelling order');
+            }
+        }
+
+        // Track photo upload attempts
+        let photoUploadAttempts = 0;
+
+        // Image compression utility
+        async function compressImage(file, maxSizeMB = 1, maxWidthOrHeight = 1920) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Calculate new dimensions while maintaining aspect ratio
+                        if (width > height) {
+                            if (width > maxWidthOrHeight) {
+                                height = Math.round((height * maxWidthOrHeight) / width);
+                                width = maxWidthOrHeight;
+                            }
+                        } else {
+                            if (height > maxWidthOrHeight) {
+                                width = Math.round((width * maxWidthOrHeight) / height);
+                                height = maxWidthOrHeight;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Start with high quality and reduce if needed (minimum 50% to keep photos clear)
+                        let quality = 0.85;
+                        let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                        // If still too large, reduce quality further but maintain minimum 50% quality
+                        while (compressedDataUrl.length > maxSizeMB * 1024 * 1024 * 1.37 && quality > 0.5) {
+                            quality -= 0.05;
+                            compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        }
+
+                        const finalSizeMB = (compressedDataUrl.length / (1024 * 1024)).toFixed(2);
+                        console.log(`Image compressed: ${(file.size / (1024 * 1024)).toFixed(2)}MB → ${finalSizeMB}MB (quality: ${(quality * 100).toFixed(0)}%)`);
+
+                        resolve({
+                            dataUrl: compressedDataUrl,
+                            sizeMB: parseFloat(finalSizeMB),
+                            quality: Math.round(quality * 100)
+                        });
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handleDeliveredClick() {
+            // Require delivery photo for ALL orders (both hand-off and drop-off)
+            const deliveryPref = currentOrder.contact_method || 'drop off';
+            const orderType = deliveryPref === 'hand off' ? 'HAND-OFF' : 'DROP-OFF';
+
+            // Require a photo for all deliveries
+            const takePhoto = confirm(`This is a ${orderType} order. You must take a delivery photo.\n\nClick OK to take a photo now.`);
+
+            if (!takePhoto) {
+                return;
+            }
+
+            // Create file input to capture photo
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment'; // Use rear camera on mobile
+
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) {
+                    alert('No photo selected. Status not updated.');
+                    return;
+                }
+
+                // Increment attempt counter
+                photoUploadAttempts++;
+
+                // Show loading message
+                const loadingMsg = document.createElement('div');
+                loadingMsg.id = 'uploadingIndicator';
+                loadingMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); color: #fff; padding: 30px 50px; border-radius: 16px; font-size: 18px; font-weight: 600; z-index: 9999; text-align: center; border: 2px solid #3b82f6;';
+                loadingMsg.innerHTML = '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-camera"/></svg> Compressing photo...<br><span style="font-size: 14px; color: #a1a1aa; margin-top: 8px; display: block;">Please wait</span>';
+                document.body.appendChild(loadingMsg);
+
+                try {
+                    // Compress the image (smaller in the demo: the photo is kept in this browser's storage)
+                    const compressed = await compressImage(file, 0.35, 1280);
+
+                    loadingMsg.innerHTML = `<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-cloud-upload"/></svg> Saving photo...<br><span style="font-size: 14px; color: #a1a1aa; margin-top: 8px; display: block;">${compressed.sizeMB}MB @ ${compressed.quality}% quality</span>`;
+
+                    // Upload photo with extended timeout
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 300000); // 300 second (5 minute) timeout for slow connections
+
+                    const uploadResponse = await fetch(`${API_URL}/api/orders/${orderId}/upload-delivery-photo`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ photo: compressed.dataUrl }),
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (uploadResponse.status === 401) {
+                        document.body.removeChild(loadingMsg);
+                        window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-order.html?id=' + orderId)}`;
+                        return;
+                    }
+
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Upload failed with status ${uploadResponse.status}`);
+                    }
+
+                    loadingMsg.innerHTML = '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Photo uploaded!<br><span style="font-size: 14px; color: #10b981; margin-top: 8px; display: block;">Updating status...</span>';
+
+                    // Reset attempt counter on success
+                    photoUploadAttempts = 0;
+
+                    // Now update status to Delivered (skip confirmation since user already confirmed)
+                    await updateStatus('Delivered', true);
+
+                    // Remove loading message
+                    setTimeout(() => {
+                        if (document.getElementById('uploadingIndicator')) {
+                            document.body.removeChild(loadingMsg);
+                        }
+                    }, 1000);
+
+                } catch (error) {
+                    // Remove loading message
+                    if (document.getElementById('uploadingIndicator')) {
+                        document.body.removeChild(loadingMsg);
+                    }
+
+                    console.error('Error uploading photo:', error);
+
+                    // Build error message based on error type
+                    let errorMsg = `Failed to upload photo (Attempt ${photoUploadAttempts}/3).\n\n`;
+                    if (error.name === 'AbortError') {
+                        errorMsg += 'Upload timed out. Please check your internet connection and try again.';
+                    } else {
+                        errorMsg += error.message + '\n\nPlease try again.';
+                    }
+
+                    // After 2 failed attempts, offer option to deliver without photo
+                    if (photoUploadAttempts >= 2) {
+                        errorMsg += '\n\nMultiple upload failures detected.\n\nWould you like to:\n• Try Again - Take another photo\n• Override - Deliver without photo (use only if photo upload is impossible)';
+
+                        const userChoice = confirm(errorMsg + '\n\nClick OK to TRY AGAIN\nClick Cancel to OVERRIDE and deliver without photo');
+
+                        if (!userChoice) {
+                            // User chose to override - deliver without photo
+                            const confirmOverride = confirm(
+                                'CONFIRM OVERRIDE\n\n' +
+                                'You are about to mark this order as DELIVERED WITHOUT A PHOTO.\n\n' +
+                                `This will be logged as "Photo upload failed after ${photoUploadAttempts} attempts - driver override".\n\n` +
+                                'Only use this if:\n' +
+                                '• You have genuinely attempted multiple uploads\n' +
+                                '• Internet connection issues prevent upload\n' +
+                                '• The delivery has actually been completed\n\n' +
+                                'Admin may review this delivery. Continue?'
+                            );
+
+                            if (confirmOverride) {
+                                photoUploadAttempts = 0; // Reset counter
+
+                                // Mark as delivered without photo (the override is logged on the order)
+                                try {
+                                    const overrideResponse = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            status: 'Delivered',
+                                            photo_override: true,
+                                            photo_override_reason: `Photo upload failed after multiple attempts - driver override`
+                                        })
+                                    });
+
+                                    if (overrideResponse.ok) {
+                                        const updatedOrder = await overrideResponse.json();
+                                        displayOrder(updatedOrder);
+                                        alert('Order marked as delivered (without photo).\n\nThis has been logged for admin review.');
+                                    } else {
+                                        alert('Failed to update order status. Please try again or contact support.');
+                                    }
+                                } catch (overrideError) {
+                                    console.error('Override error:', overrideError);
+                                    alert('Failed to update order status. Please try again or contact support.');
+                                }
+                            } else {
+                                // User cancelled override, trigger file input again to retry
+                                setTimeout(() => input.click(), 500);
+                            }
+                        } else {
+                            // User wants to try again, trigger file input again
+                            setTimeout(() => input.click(), 500);
+                        }
+                    } else {
+                        // Less than 2 attempts, just show error
+                        alert(errorMsg);
+                    }
+                }
+            };
+
+            input.click();
+        }
+
+        async function updateStatus(newStatus, skipConfirmation = false) {
+            if (!skipConfirmation && !confirm(`Update order status to "${newStatus}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    const updatedOrder = await response.json();
+                    displayOrder(updatedOrder);
+
+                    // Show success feedback
+                    const btn = Array.from(document.querySelectorAll('.status-btn'))
+                        .find(b => b.textContent.includes(newStatus));
+                    if (btn) {
+                        if (!btn.dataset.label) btn.dataset.label = btn.innerHTML;
+                        const originalText = btn.dataset.label;
+                        clearTimeout(btn._flash);
+                        btn.textContent = '✓ Updated!';
+                        btn.style.background = '#10b981';
+                        btn.style.color = '#ffffff';
+                        btn._flash = setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = '';
+                            btn.style.color = '';
+                        }, 2000);
+                    }
+                } else if (response.status === 401) {
+                    // Auth required - redirect to login with full path
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-order.html?id=' + orderId)}`;
+                    return;
+                } else if (response.status === 403) {
+                    // Payment required error
+                    const errorData = await response.json();
+                    alert('PAYMENT REQUIRED\n\n' + errorData.error + '\n\nThe customer must complete payment before this order can progress.');
+                } else {
+                    // Log error silently - don't show alert to user
+                    console.error('Failed to update status:', await response.text());
+                }
+            } catch (error) {
+                // Log error silently - don't show alert to user
+                console.error('Error updating status:', error);
+            }
+        }
+
+        // Menu editing functionality
+        let editingMenuItems = [];
+        let menuItemIdCounter = 0;
+
+        async function confirmMenuItems() {
+            // Get food subtotal to show in confirmation
+            let foodSubtotal = 0;
+            try {
+                const costBreakdown = typeof currentOrder.cost_breakdown === 'string'
+                    ? JSON.parse(currentOrder.cost_breakdown)
+                    : currentOrder.cost_breakdown;
+                foodSubtotal = parseFloat(costBreakdown?.food_subtotal || 0);
+            } catch (e) {
+                console.warn('Could not parse cost breakdown:', e);
+            }
+
+            // Check if food cost is $0
+            if (foodSubtotal <= 0) {
+                alert('ERROR: Cannot send bill with $0 food cost!\n\nPlease add menu item prices first.');
+                return;
+            }
+
+            // Strong confirmation dialog with price verification
+            const confirmMessage = `VERIFY PRICES ARE CORRECT \n\n` +
+                `Food Subtotal: $${foodSubtotal.toFixed(2)}\n\n` +
+                `Have you:\n` +
+                `✓ Verified all prices against the restaurant menu?\n` +
+                `✓ Confirmed prices match what the restaurant charges?\n` +
+                `✓ Double-checked the food subtotal is accurate?\n\n` +
+                `This will SEND THE BILL to the customer for payment.\n\n` +
+                `Are the prices CORRECT?`;
+
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/confirm-menu`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    // Hide the warning and action buttons
+                    document.getElementById('priceWarning').style.display = 'none';
+                    document.getElementById('menuActionButtons').style.display = 'none';
+                    document.getElementById('foodCostBreakdown').style.display = 'none';
+
+                    // Show awaiting payment status
+                    document.getElementById('awaitingPaymentStatus').style.display = 'block';
+
+                    // Update status to Awaiting Payment automatically
+                    await updateStatus('Awaiting Payment');
+                    await loadOrder();
+                } else if (response.status === 401) {
+                    // Auth required - redirect to login with full path
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-order.html?id=' + orderId)}`;
+                    return;
+                } else {
+                    const errorData = await response.json();
+                    alert('Failed to confirm menu items:\n' + (errorData.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error confirming menu items:', error);
+                alert('Error confirming menu items: ' + error.message);
+            }
+        }
+
+        function enterEditMode() {
+            // Store current menu items from the order
+            let menuItems = null;
+            try {
+                if (typeof currentOrder.menu_items === 'string') {
+                    menuItems = JSON.parse(currentOrder.menu_items);
+                } else if (Array.isArray(currentOrder.menu_items)) {
+                    menuItems = currentOrder.menu_items;
+                }
+            } catch (e) {
+                console.warn('Could not parse menu_items:', e);
+            }
+
+            if (menuItems && Array.isArray(menuItems)) {
+                editingMenuItems = menuItems.map((item, index) => ({
+                    id: menuItemIdCounter++,
+                    name: item.name || '',
+                    quantity: item.quantity || 1,
+                    price: item.price || ''
+                }));
+            } else {
+                editingMenuItems = [{
+                    id: menuItemIdCounter++,
+                    name: '',
+                    quantity: 1,
+                    price: ''
+                }];
+            }
+
+            // Show edit mode, hide view mode
+            document.getElementById('menuViewMode').style.display = 'none';
+            document.getElementById('menuEditMode').style.display = 'block';
+
+            renderEditMenuItems();
+        }
+
+        function cancelEditMode() {
+            editingMenuItems = [];
+            document.getElementById('menuViewMode').style.display = 'block';
+            document.getElementById('menuEditMode').style.display = 'none';
+        }
+
+        function renderEditMenuItems() {
+            const container = document.getElementById('menuItemsEdit');
+
+            container.innerHTML = editingMenuItems.map(item => `
+                <div class="menu-item-row" id="edit-item-${item.id}">
+                    <input
+                        type="text"
+                        class="menu-item-input"
+                        placeholder="Item name"
+                        value="${item.name || ''}"
+                        onchange="updateEditMenuItem(${item.id}, 'name', this.value)"
+                    />
+                    <input
+                        type="number"
+                        class="menu-item-input"
+                        placeholder="Qty"
+                        min="1"
+                        value="${item.quantity || 1}"
+                        onchange="updateEditMenuItem(${item.id}, 'quantity', this.value)"
+                    />
+                    <input
+                        type="number"
+                        class="menu-item-input"
+                        placeholder="Price"
+                        step="0.01"
+                        min="0"
+                        value="${item.price || ''}"
+                        onchange="updateEditMenuItem(${item.id}, 'price', this.value)"
+                    />
+                    <button class="remove-item-btn" onclick="removeEditMenuItem(${item.id})" ${editingMenuItems.length === 1 ? 'disabled' : ''}>×</button>
+                </div>
+            `).join('');
+
+            updateEditCostBreakdown();
+        }
+
+        function updateEditMenuItem(id, field, value) {
+            const item = editingMenuItems.find(i => i.id === id);
+            if (item) {
+                item[field] = value;
+                updateEditCostBreakdown();
+            }
+        }
+
+        function removeEditMenuItem(id) {
+            if (editingMenuItems.length <= 1) return;
+            editingMenuItems = editingMenuItems.filter(item => item.id !== id);
+            renderEditMenuItems();
+        }
+
+        function addNewMenuItem() {
+            editingMenuItems.push({
+                id: menuItemIdCounter++,
+                name: '',
+                quantity: 1,
+                price: ''
+            });
+            renderEditMenuItems();
+        }
+
+        function updateEditCostBreakdown() {
+            const foodSubtotal = editingMenuItems.reduce((sum, item) => {
+                const price = parseFloat(item.price) || 0;
+                const qty = parseInt(item.quantity) || 1;
+                return sum + (price * qty);
+            }, 0);
+
+            // Get route info and tax rate from current order's cost_breakdown
+            let miles = 0;
+            let costBreakdown = null;
+            let SALES_TAX_RATE = 0.095; // Default fallback
+
+            try {
+                if (typeof currentOrder.cost_breakdown === 'string') {
+                    costBreakdown = JSON.parse(currentOrder.cost_breakdown);
+                } else if (typeof currentOrder.cost_breakdown === 'object') {
+                    costBreakdown = currentOrder.cost_breakdown;
+                }
+                miles = costBreakdown?.miles || 0;
+                // Use the stored sales tax rate from the original order (based on restaurant location)
+                SALES_TAX_RATE = parseFloat(costBreakdown?.sales_tax_rate) || 0.095;
+            } catch (e) {
+                console.warn('Could not parse cost_breakdown for edit mode:', e);
+            }
+
+            const SERVICE_CHARGE_RATE = 0.15;
+            const DELIVERY_FEE = 5.99;
+            const PER_MILE = 0.39;
+            const FAR_AWAY_FEE = 7.99;
+            const FAR_AWAY_THRESHOLD = 10;
+
+            const salesTax = foodSubtotal * SALES_TAX_RATE;
+            const serviceCharge = foodSubtotal * SERVICE_CHARGE_RATE;
+            const taxPercentage = (SALES_TAX_RATE * 100).toFixed(2);
+
+            // Calculate delivery fees
+            const mileageCost = miles * PER_MILE;
+            const farAwayFee = miles > FAR_AWAY_THRESHOLD ? FAR_AWAY_FEE : 0;
+            const feesPool = DELIVERY_FEE + mileageCost + farAwayFee + serviceCharge;
+
+            // Grand total
+            const grandTotal = feesPool + foodSubtotal + salesTax;
+
+            if (foodSubtotal > 0) {
+                const breakdown = document.getElementById('editFoodCostBreakdown');
+                breakdown.innerHTML = `
+                    <div><strong>Food subtotal:</strong> $${foodSubtotal.toFixed(2)}</div>
+                    <div><strong>Sales tax (${taxPercentage}%):</strong> $${salesTax.toFixed(2)}</div>
+                    <div><strong>Food + tax:</strong> $${(foodSubtotal + salesTax).toFixed(2)}</div>
+                    <div><strong>Service charge (15% of food):</strong> $${serviceCharge.toFixed(2)}</div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.15); color: #a1a1aa; font-size: 13px;">
+                        <div>Delivery fee: $${DELIVERY_FEE.toFixed(2)}</div>
+                        <div>Mileage: $${mileageCost.toFixed(2)} (${miles.toFixed(1)} mi)</div>
+                        ${farAwayFee > 0 ? `<div>Far-Away fee: $${farAwayFee.toFixed(2)}</div>` : ''}
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid rgba(255, 255, 255, 0.3); font-size: 16px; color: #10b981;">
+                        <strong>Estimated Grand Total: $${grandTotal.toFixed(2)}</strong>
+                    </div>
+                `;
+            } else {
+                document.getElementById('editFoodCostBreakdown').innerHTML = '';
+            }
+        }
+
+        async function saveMenuItems() {
+            if (!confirm('Save changes to menu items?')) {
+                return;
+            }
+
+            // Filter out empty items
+            const itemsToSave = editingMenuItems.filter(item => item.name && item.name.trim() !== '');
+
+            if (itemsToSave.length === 0) {
+                alert('Please add at least one item with a name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/menu-items`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ menu_items: itemsToSave })
+                });
+
+                if (response.ok) {
+                    // Reload the order to get fresh data
+                    await loadOrder();
+                    cancelEditMode();
+                } else if (response.status === 401) {
+                    // Auth required - redirect to login with full path
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-order.html?id=' + orderId)}`;
+                    return;
+                } else {
+                    alert('Failed to update menu items');
+                }
+            } catch (error) {
+                console.error('Error saving menu items:', error);
+                alert('Error saving menu items');
+            }
+        }
+
+        // Toggle Status History dropdown
+        function toggleStatusHistory() {
+            const historyDiv = document.getElementById('statusHistory');
+            const icon = document.getElementById('historyToggleIcon');
+
+            if (historyDiv.style.display === 'none') {
+                historyDiv.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                historyDiv.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Load order on page load
+        loadOrder();
+
+    </script>
+</body>
+</html>

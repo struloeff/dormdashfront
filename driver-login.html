@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FD2D00">
+    <meta name="description" content="Driver login for DormDash">
+    <title>Driver Login - DormDash (Demo)</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/demo.css">
+    <script src="/static/geo.js"></script>
+    <script src="/static/demo-api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #e4e4e7;
+        }
+
+        .container {
+            background: #0a0a0a;
+            border: 1px solid #fff;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #fff;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #000;
+            border: 1px solid #fff;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: #e4e4e7;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #fff;
+            background: #111;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        input::placeholder {
+            color: #71717a;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #a1a1aa;
+        }
+
+        .footer-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .divider span {
+            background: #0a0a0a;
+            padding: 0 10px;
+            position: relative;
+            color: #a1a1aa;
+            font-size: 12px;
+        }
+    </style>
+    <link rel="stylesheet" href="/static/track.css">
+    <link rel="stylesheet" href="/static/driver.css">
+    <link rel="stylesheet" href="/static/icons.css">
+</head>
+<body class="dd-driver dd-auth">
+    <div class="container">
+        <div class="header">
+            <h1>Driver Login</h1>
+            <p>The DormDash driver app, running in demo mode</p>
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+        <div class="error-message" id="auth-required-message" style="display: none;">
+            <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-lock"/></svg> Please log in to continue
+        </div>
+
+        <button type="button" class="btn dd-btn" id="demo-login-btn"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> Sign in as the demo driver</button>
+        <p class="dd-demo-creds">Or log in below with <code>demo.driver</code> and <code>DormDash#Demo2026</code>.<br>Nothing you type leaves this browser.</p>
+
+        <div class="divider">
+            <span>OR</span>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="your_username"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="btn" id="submit-btn">Log In</button>
+        </form>
+
+        <div class="divider">
+            <span>OR</span>
+        </div>
+
+        <div class="footer-links">
+            Don't have an account? <a href="/driver-signup.html">Sign up</a>
+        </div>
+        <a class="dd-home" href="/drivers.html">How driving for DormDash worked</a>
+    </div>
+
+    <script>
+        const form = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const submitBtn = document.getElementById('submit-btn');
+        const authRequiredMessage = document.getElementById('auth-required-message');
+
+        // Check if user was redirected here due to auth requirement
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('next')) {
+            authRequiredMessage.style.display = 'block';
+        }
+
+        // Demo: the demo driver's details are filled in, or one tap signs in
+        const usernameField = document.getElementById('username');
+        const passwordField = document.getElementById('password');
+        usernameField.value = DD_DEMO.DEMO_USER;
+        passwordField.value = DD_DEMO.DEMO_PASSWORD;
+        document.getElementById('demo-login-btn').addEventListener('click', () => {
+            usernameField.value = DD_DEMO.DEMO_USER;
+            passwordField.value = DD_DEMO.DEMO_PASSWORD;
+            form.requestSubmit();
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+
+            const driverUsername = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!driverUsername || !password) {
+                showError('Please enter both username and password');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch('/api/driver/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        username: driverUsername,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Check if there's a "next" parameter to redirect back to
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const nextUrl = urlParams.get('next');
+
+                    if (nextUrl && nextUrl.startsWith('/') && !nextUrl.startsWith('//')) {
+                        // Redirect immediately to the requested page
+                        window.location.href = nextUrl;
+                    } else {
+                        // Show success message and redirect to dashboard
+                        showSuccess('Login successful! Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = '/driver.html';
+                        }, 1000);
+                    }
+                } else {
+                    showError(data.error || 'Login failed');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Log In';
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log In';
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+/* Driver app pages (demo): the same dark surfaces, hairlines and buttons as
+   the order and tracking pages. Loaded after each page's own styles. */
+.dd-driver{
+  --dd-bg:#0a0a0b;--dd-surface:#0e0e10;--dd-raised:#151517;--dd-line:rgba(255,255,255,.1);--dd-line-2:rgba(255,255,255,.14);
+  --dd-text:#f5f5f7;--dd-muted:#a1a1aa;--dd-brand:#FD2D00;
+  background:var(--dd-bg)!important;color:#e4e4e7;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased
+}
+.dd-driver *{min-width:0}
+.dd-driver a{color:inherit}
+.dd-driver .ic{vertical-align:-.15em}
+
+/* Shared buttons */
+.dd-btn,.dd-driver .btn-primary,.dd-driver .confirm-btn,.dd-driver .save-btn,.dd-driver .payout-btn,.dd-driver .dd-claim-btn{
+  min-height:54px!important;border-radius:14px!important;background:var(--dd-brand)!important;color:#fff!important;
+  border:1px solid var(--dd-brand)!important;box-shadow:0 10px 30px rgba(253,45,0,.28)!important;
+  font:650 16px/1.15 Inter,system-ui,sans-serif!important;letter-spacing:-.005em!important;text-transform:none!important;
+  display:inline-flex!important;align-items:center;justify-content:center;gap:8px;padding:0 22px!important;cursor:pointer;
+  text-decoration:none!important;transition:transform .12s ease,filter .15s ease,opacity .2s!important
+}
+.dd-btn-light{background:#f5f5f7!important;color:#0b0b0c!important;border-color:#f5f5f7!important;box-shadow:0 10px 30px rgba(0,0,0,.35)!important}
+.dd-btn-quiet,.dd-driver .btn-secondary,.dd-driver .edit-btn,.dd-driver .cancel-edit-btn,.dd-driver .dd-open-btn,.dd-driver .refresh-btn{
+  min-height:54px!important;border-radius:14px!important;background:var(--dd-raised)!important;color:var(--dd-text)!important;
+  border:1px solid var(--dd-line-2)!important;box-shadow:none!important;font:650 16px/1.15 Inter,system-ui,sans-serif!important;
+  text-transform:none!important;letter-spacing:0!important;display:inline-flex!important;align-items:center;justify-content:center;gap:8px;
+  padding:0 20px!important;cursor:pointer;text-decoration:none!important;transition:transform .12s ease,background .15s ease!important
+}
+.dd-driver button:hover,.dd-driver .dd-btn:hover{transform:none!important;filter:brightness(.95)}
+.dd-driver button:active{transform:scale(.975)!important}
+.dd-driver button:disabled{opacity:.45!important;cursor:not-allowed;transform:none!important}
+.dd-driver input,.dd-driver select,.dd-driver textarea{font-size:16px!important}
+
+/* Demo notice inside the driver app */
+.dd-demo-note{display:flex;gap:10px;align-items:flex-start;background:var(--dd-surface);border:1px solid var(--dd-line);border-radius:16px;
+  padding:14px 16px;margin-bottom:20px;color:var(--dd-muted);font-size:14px;line-height:1.55}
+.dd-demo-note .ic{flex:0 0 auto;margin-top:2px;color:#60a5fa;font-size:16px}
+.dd-demo-note b{color:var(--dd-text);font-weight:650}
+.dd-demo-note a,.dd-demo-note button.dd-link{color:var(--dd-text);font-weight:600;text-decoration:underline;text-underline-offset:2px;background:none;border:0;padding:0;font:inherit;cursor:pointer}
+
+/* ---------------- Login / sign up ---------------- */
+.dd-auth{padding:24px 16px!important}
+.dd-auth .container{background:var(--dd-surface)!important;border:1px solid var(--dd-line)!important;border-radius:22px!important;
+  padding:32px 24px!important;max-width:420px!important;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.dd-auth .header h1{font-size:28px!important;letter-spacing:-.02em}
+.dd-auth label{color:var(--dd-text)!important}
+.dd-auth input{background:var(--dd-bg)!important;border:1px solid var(--dd-line-2)!important;border-radius:12px!important;min-height:52px;color:var(--dd-text)!important}
+.dd-auth input:focus{border-color:rgba(255,255,255,.42)!important;box-shadow:0 0 0 3px rgba(255,255,255,.07)!important;background:#101012!important}
+.dd-auth .btn{width:100%;background:#f5f5f7!important;color:#0b0b0c!important;border:1px solid #f5f5f7!important;box-shadow:0 10px 30px rgba(0,0,0,.35)!important}
+.dd-auth .btn.dd-btn{background:var(--dd-brand)!important;color:#fff!important;border-color:var(--dd-brand)!important;box-shadow:0 10px 30px rgba(253,45,0,.28)!important}
+.dd-auth .divider span{background:var(--dd-surface)!important}
+.dd-auth .divider::before{background:var(--dd-line)!important}
+.dd-auth .footer-links a{color:var(--dd-text)!important}
+.dd-auth .dd-demo-creds{margin:12px 0 0;text-align:center;color:var(--dd-muted);font-size:13px;line-height:1.5}
+.dd-auth .dd-demo-creds code{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dd-text);background:var(--dd-raised);border:1px solid var(--dd-line);border-radius:6px;padding:1px 6px}
+.dd-auth .dd-home{display:block;text-align:center;margin-top:16px;color:var(--dd-muted)!important;font-size:14px;text-decoration:none}
+.dd-auth .signup-info{background:rgba(96,165,250,.08)!important;border:1px solid rgba(96,165,250,.25)!important;border-radius:14px!important;color:#c7d2fe!important}
+.dd-auth .password-requirements{background:var(--dd-bg)!important;border:1px solid var(--dd-line)!important;border-radius:12px!important}
+@media (max-width:420px){.dd-auth .container{padding:28px 18px!important}}
+
+/* ---------------- Dashboard ---------------- */
+.dd-dash .header{background:rgba(10,10,11,.92)!important;border-bottom:1px solid var(--dd-line)!important;box-shadow:none!important;
+  padding:16px 30px!important;position:sticky!important;top:0;z-index:50;backdrop-filter:blur(10px)}
+.dd-dash .header-content{gap:12px;flex-wrap:wrap}
+.dd-dash .header h1{font-size:22px!important;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.dd-dash .header h1 a{text-decoration:none;color:var(--dd-brand)}
+.dd-dash .logout-btn{min-height:40px;border-radius:12px!important;border:1px solid var(--dd-line-2)!important;background:var(--dd-raised)!important}
+.dd-dash .stat-card,.dd-dash .section,.dd-dash .payout-card{background:var(--dd-surface)!important;border:1px solid var(--dd-line)!important;border-radius:20px!important}
+.dd-dash .stat-label,.dd-dash .payout-card-title{display:flex;align-items:center;gap:6px}
+.dd-dash .section-header{flex-wrap:wrap;gap:10px}
+.dd-dash .section-header p{flex-basis:100%;margin-top:0!important}
+.dd-dash .filter-btn{border-radius:99px!important;min-height:38px;border:1px solid var(--dd-line-2)!important;background:var(--dd-raised)!important;color:var(--dd-muted)!important}
+.dd-dash .filter-btn.active{background:#f5f5f7!important;color:#0b0b0c!important;border-color:#f5f5f7!important}
+.dd-dash .order-card{background:#121214!important;border:1px solid var(--dd-line)!important;border-radius:18px!important}
+.dd-dash .order-card:hover{border-color:var(--dd-line-2)!important;background:#141416!important}
+.dd-dash .order-status{border-radius:99px!important;font-weight:600!important;white-space:nowrap}
+.dd-dash .order-detail{overflow-wrap:anywhere}
+.dd-dash .payout-item{background:#121214!important;border-color:var(--dd-line)!important;border-radius:14px!important}
+.dd-dash .payout-banner{background:var(--dd-surface)!important;border:1px solid var(--dd-line)!important;border-radius:20px!important;gap:16px;flex-wrap:wrap}
+.dd-dash .payout-banner.success{border-color:rgba(16,185,129,.35)!important;background:rgba(16,185,129,.06)!important}
+.dd-dash #contract-banner{border-color:rgba(239,68,68,.4)!important;background:rgba(239,68,68,.07)!important}
+.dd-dash #contract-banner .payout-btn{background:#ef4444!important;border-color:#ef4444!important;box-shadow:0 10px 30px rgba(239,68,68,.25)!important}
+.dd-dash .payout-title{display:flex;align-items:center;gap:8px}
+.dd-dash .payout-schedule-banner,.dd-dash #payout-schedule-banner{border-radius:20px!important;border:1px solid var(--dd-line)!important;background:var(--dd-surface)!important}
+.dd-order-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.dd-order-actions>*{flex:1 1 160px}
+.dd-tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:650;color:#fdba74;background:rgba(253,45,0,.12);
+  border:1px solid rgba(253,45,0,.35);border-radius:99px;padding:3px 10px;margin-bottom:10px}
+.dd-tag.is-ride{color:#c4b5fd;background:rgba(124,108,246,.12);border-color:rgba(124,108,246,.35)}
+@media (max-width:640px){
+  .dd-dash .header{padding:12px 16px!important}
+  .dd-dash .header h1{font-size:19px!important}
+  .dd-dash .container{padding:18px 16px 40px!important}
+  .dd-dash .stats-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .dd-dash .stat-card{padding:16px!important}
+  .dd-dash .stat-label{font-size:12px!important;line-height:1.35}
+  .dd-dash .stat-value{font-size:22px!important}
+  .dd-dash .payout-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .dd-dash .payout-card{padding:16px!important}
+  .dd-dash .payout-card-title{font-size:11px!important;letter-spacing:.3px!important}
+  .dd-dash .payout-amount{font-size:22px!important}
+  .dd-dash .payout-detail{font-size:12px!important}
+  .dd-dash .section{padding:18px 16px!important}
+  .dd-dash .section-title{font-size:18px!important}
+  .dd-dash .order-card{padding:16px!important}
+  .dd-dash .order-details{grid-template-columns:1fr!important}
+  .dd-dash .payout-banner{padding:18px!important}
+  .dd-dash .payout-banner .payout-btn{width:100%}
+  .dd-dash #next-payout-amount{font-size:36px!important}
+  .dd-dash #disputes-warning-banner,.dd-dash #payout-schedule-banner{padding:16px!important}
+  .dd-dash .payout-item-header{gap:10px}
+}
+
+/* ---------------- Order and ride pages ---------------- */
+.dd-job{padding:20px!important}
+.dd-job .header,.dd-job .info-section,.dd-job .status-update-section{background:var(--dd-surface)!important;border:1px solid var(--dd-line)!important;border-radius:20px!important}
+.dd-job .info-section h2,.dd-job .status-update-section h2{letter-spacing:-.01em}
+.dd-job .info-value a{color:#93c5fd}
+.dd-job .order-details-text,.dd-job .menu-edit-section,.dd-job .history-item{background:#121214!important;border-color:var(--dd-line)!important}
+.dd-job .history-icon{color:var(--dd-text)}
+.dd-job .status-buttons{gap:10px!important}
+.dd-job .status-btn{min-height:54px;border-radius:14px!important;background:var(--dd-raised)!important;border:1px solid var(--dd-line-2)!important;
+  display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px!important}
+.dd-job .status-btn:hover{transform:none!important;border-color:rgba(255,255,255,.3)!important}
+.dd-job .status-btn.active{background:var(--dd-brand)!important;border-color:var(--dd-brand)!important;box-shadow:0 10px 30px rgba(253,45,0,.3)!important}
+.dd-job .claimed-info{border-radius:14px!important}
+.dd-job #menuActionButtons:not([style*="display: none"]),.dd-job #menuEditMode>div:last-child,.dd-job #fareBreakdown>div[style*="display: flex"]{display:flex!important;flex-wrap:wrap;gap:10px}
+.dd-job #menuActionButtons button,.dd-job #menuEditMode>div:last-child button,.dd-job #fareBreakdown button{margin:0!important;flex:1 1 200px}
+.dd-job .menu-item-input{background:var(--dd-bg)!important;border-color:var(--dd-line-2)!important;border-radius:10px!important;min-height:46px}
+.dd-job .remove-item-btn{border-radius:10px!important;min-height:46px}
+.dd-job .add-item-btn{min-height:48px;border-radius:12px!important;display:flex;align-items:center;justify-content:center;gap:8px}
+.dd-job #dashboardButton a{min-height:54px;border-radius:14px!important;display:inline-flex!important;align-items:center;gap:8px;padding:0 24px!important}
+.dd-job .refresh-btn{width:100%;margin-top:4px}
+.dd-job .dd-back{display:inline-flex;align-items:center;gap:6px;color:var(--dd-muted);text-decoration:none;font-weight:600;font-size:15px;margin:0 0 16px;min-height:40px}
+.dd-job .dd-back:hover{color:var(--dd-text)}
+.dd-job #deliveryPhotoImg{border-color:rgba(16,185,129,.6)!important}
+@media (max-width:640px){
+  .dd-job{padding:12px 16px 32px!important}
+  .dd-job .order-id{font-size:24px!important}
+  .dd-job .info-section,.dd-job .status-update-section,.dd-job .header{padding:18px 16px!important}
+  .dd-job .info-value{overflow-wrap:anywhere}
+}
+
+/* ---------------- Contract ---------------- */
+.dd-contract{padding:20px!important}
+.dd-contract .container{background:var(--dd-surface)!important;border:1px solid var(--dd-line);box-shadow:0 24px 70px rgba(0,0,0,.45)!important;border-radius:22px!important}
+.dd-contract .header{background:var(--dd-surface)!important;border-bottom:1px solid var(--dd-line);text-align:left!important;padding:28px 32px!important}
+.dd-contract .header::before{display:none}
+.dd-contract .header h1{text-shadow:none!important;letter-spacing:-.02em}
+.dd-contract .header p{color:var(--dd-muted)!important}
+.dd-contract .step-card,.dd-contract .pdf-viewer-container{background:#121214!important;border-color:var(--dd-line)!important;border-radius:18px!important}
+.dd-contract .step-card h2{color:var(--dd-text)!important}
+.dd-contract .step-badge{background:var(--dd-brand)!important}
+.dd-contract .form-input{background:var(--dd-bg)!important;border:1px solid var(--dd-line-2)!important;border-radius:12px!important;min-height:52px;color-scheme:dark}
+.dd-contract .form-input:focus{border-color:rgba(255,255,255,.42)!important;box-shadow:0 0 0 3px rgba(255,255,255,.07)!important}
+.dd-contract .toolbar{border-bottom-color:var(--dd-line)!important}
+.dd-contract .page-info{color:#fdba74!important;border-color:rgba(253,45,0,.45)!important;background:rgba(253,45,0,.1)!important;border-radius:10px!important}
+.dd-contract .page-nav .btn-secondary{min-height:44px!important;padding:0 12px!important}
+.dd-contract .signature-modal-content{background:var(--dd-surface)!important;border-color:var(--dd-line)!important;border-radius:22px!important}
+.dd-contract .signature-modal h2{color:var(--dd-text)!important}
+.dd-contract #signatureCanvas{width:100%;max-width:500px;height:auto;aspect-ratio:5/2;border-color:var(--dd-line-2)!important;border-radius:12px!important}
+.dd-contract .signature-actions{flex-wrap:wrap}
+.dd-contract .signature-actions .btn{flex:1 1 120px}
+.dd-contract .success-card{background:rgba(16,185,129,.08)!important;border:1px solid rgba(16,185,129,.35);color:var(--dd-text)!important}
+.dd-contract .success-card .dd-success-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.dd-contract .dd-back{display:inline-flex;align-items:center;gap:6px;color:var(--dd-muted);text-decoration:none;font-weight:600;font-size:15px;margin:0 auto 14px;max-width:1000px;width:100%}
+@media (max-width:640px){
+  .dd-contract{padding:12px 16px 32px!important}
+  .dd-contract .header{padding:22px 18px!important}
+  .dd-contract .content{padding:16px!important}
+  .dd-contract .step-card{padding:18px 16px!important}
+  .dd-contract .pdf-viewer-container{padding:12px!important}
+  .dd-contract .signature-modal-content{padding:20px 16px!important;width:calc(100% - 32px)!important}
+  .dd-contract .toolbar .btn-primary{width:100%}
+}
+
+/* Inline "display: none" from the page scripts always wins over the button styles above */
+.dd-driver [style*="display: none"]{display:none!important}
+
+/* Receipt editor on phones: name on its own line, then qty / price / remove */
+@media (max-width:768px){
+  .menu-item-row{grid-template-columns:68px 1fr 46px!important;gap:8px!important;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .menu-item-row:last-child{border-bottom:none}
+  .menu-item-row > .menu-item-input:first-child{grid-column:1 / -1}
+  .menu-item-row .remove-item-btn{width:46px!important;height:46px;min-height:0!important;padding:0!important;display:grid;place-items:center}
+}

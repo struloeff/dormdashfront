@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FD2D00">
+    <meta name="description" content="View your DormDash rideshare order details">
+    <title>Ride Details - DormDash Driver (Demo)</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="stylesheet" href="/static/demo.css">
+    <script src="/static/geo.js"></script>
+    <script src="/static/demo-api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e1a;
+            color: #e4e4e7;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #0a0a0a;
+            border: 1px solid #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .order-id {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .status-pending {
+            background: #fbbf24;
+            color: #000000;
+        }
+
+        .status-claimed {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        .status-picked-up, .status-in-progress {
+            background: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .status-completed {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .status-cancelled {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .status-awaiting-payment {
+            background: #f59e0b;
+            color: #ffffff;
+        }
+
+        .status-payment-successful {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .info-section {
+            background: #0a0a0a;
+            border: 1px solid #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .info-item {
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+
+        .info-value a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+
+        .order-details-text {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-update-section {
+            background: #0a0a0a;
+            border: 1px solid #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .status-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .status-btn {
+            padding: 14px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .status-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            border-color: #ffffff;
+        }
+
+        .status-btn.active {
+            background: linear-gradient(135deg, #FD2D00, #FD2D00);
+            color: #ffffff;
+            border-color: #FD2D00;
+            box-shadow: 0 4px 20px rgba(253, 45, 0, 0.4);
+        }
+
+        .claimed-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a1a1aa;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 10px;
+            padding: 20px;
+            color: #ef4444;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #ffffff;
+            border-radius: 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-4px);
+        }
+
+        .timestamp {
+            font-size: 13px;
+            color: #71717a;
+            margin-top: 8px;
+        }
+
+        .history-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 12px;
+        }
+
+        .history-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .history-icon.status-pending {
+            background: rgba(251, 191, 36, 0.2);
+        }
+
+        .history-icon.status-claimed {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .history-icon.status-picked-up,
+        .history-icon.status-in-progress {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .history-icon.status-completed {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .history-icon.status-awaiting-payment {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-status {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .history-time {
+            font-size: 13px;
+            color: #a1a1aa;
+        }
+
+        .refresh-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            color: #3b82f6;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .edit-btn {
+            padding: 12px 24px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            color: #3b82f6;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .edit-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .confirm-btn {
+            padding: 12px 24px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            border-radius: 10px;
+            color: #10b981;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .confirm-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .order-id {
+                font-size: 24px;
+            }
+
+            .info-section, .status-update-section, .header {
+                padding: 16px;
+            }
+
+            .status-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/static/track.css">
+    <link rel="stylesheet" href="/static/driver.css">
+    <link rel="stylesheet" href="/static/icons.css">
+</head>
+<body class="dd-driver dd-job">
+    <div class="container">
+        <a class="dd-back" href="/driver.html"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-chevron-left"/></svg> Dashboard</a>
+        <div id="loadingState" class="loading">
+            <div style="font-size: 40px; margin-bottom: 16px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg></div>
+            <p>Loading rideshare order details...</p>
+        </div>
+
+        <div id="errorState" class="error" style="display: none;">
+            <div style="font-size: 40px; margin-bottom: 16px;"><svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg></div>
+            <p id="errorMessage">Order not found</p>
+        </div>
+
+        <div id="orderContent" style="display: none;">
+            <div class="header">
+                <div class="order-id">Rideshare Order #<span id="orderId"></span></div>
+                <div id="statusBadge" class="status-badge"></div>
+                <div class="timestamp">
+                    Created: <span id="createdAt"></span>
+                </div>
+                <div class="timestamp">
+                    Last Updated: <span id="updatedAt"></span>
+                </div>
+            </div>
+
+            <!-- Scheduled Ride Countdown -->
+            <div id="scheduledSection" class="info-section" style="display: none; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #f59e0b;">
+                <h2 style="color: #fbbf24;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-alarm-clock"/></svg> Scheduled Ride - Countdown</h2>
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 24px; font-weight: 700; color: #fbbf24; margin-bottom: 12px;">
+                        Pickup in: <span id="driverCountdownTimer">--</span>
+                    </div>
+                    <div style="color: #cbd5e1; font-size: 16px; margin-bottom: 8px;">
+                        Scheduled for: <span id="scheduledTime">--</span>
+                    </div>
+                    <div id="claimCommitmentBanner" style="display:none; background: linear-gradient(135deg, rgba(253,45,0,0.12), rgba(255,107,53,0.08)); border: 2px solid #FD2D00; border-radius: 10px; padding: 14px 16px; margin-top: 16px;">
+                        <div style="color: #FD2D00; font-weight: 700; font-size: 14px; margin-bottom: 8px;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> You have claimed this ride</div>
+                        <div id="claimCommitmentBody" style="color: #d4d4d8; font-size: 13px; line-height: 1.7;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-map-pin"/></svg> Ride Details</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Pickup Location</div>
+                        <div class="info-value" id="pickupLocation"></div>
+                        <div style="margin-top: 8px;">
+                            <a href="#" id="pickupMapsLink" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 14px;">
+                                <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-map"/></svg> Open in Maps
+                            </a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Dropoff Location</div>
+                        <div class="info-value" id="dropoffLocation"></div>
+                        <div style="margin-top: 8px;">
+                            <a href="#" id="dropoffMapsLink" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 14px;">
+                                <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-map"/></svg> Open in Maps
+                            </a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Distance & Duration</div>
+                        <div class="info-value" id="distanceDuration"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-user"/></svg> Passenger Information</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Passenger Name</div>
+                        <div class="info-value" id="passengerName"></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value">
+                            <a href="#" id="phoneLink"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section" id="fareSection">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg> Fare Breakdown</h2>
+                <div id="fareBreakdown" style="color: #e4e4e7; font-size: 14px; line-height: 1.8;"></div>
+            </div>
+
+            <div class="info-section" id="payoutSection">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-banknote"/></svg> Your Payout</h2>
+                <div id="payoutBreakdown"></div>
+            </div>
+
+            <div class="info-section" id="paymentReceiptSection" style="display: none;">
+                <h2><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Payment Confirmed</h2>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; border-radius: 12px; padding: 20px;">
+                    <div style="color: #10b981; font-size: 18px; font-weight: 700; margin-bottom: 12px; text-align: center;">
+                        Payment Successful
+                    </div>
+                    <div id="receiptDetails" style="background: rgba(0, 0, 0, 0.3); padding: 16px; border-radius: 8px; color: #e4e4e7; font-size: 14px; line-height: 1.8;"></div>
+                </div>
+            </div>
+
+            <div class="info-section" id="awaitingPaymentSection" style="display: none;">
+                <div style="padding: 20px; background: rgba(234, 179, 8, 0.15); border: 2px solid #eab308; border-radius: 12px; text-align: center;">
+                    <div style="color: #eab308; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg> AWAITING PAYMENT
+                    </div>
+                    <div style="color: #fde047; font-size: 14px;">
+                        Bill has been sent to passenger. Waiting for payment confirmation.
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-file-text"/></svg> Order Details</h2>
+                <div class="order-details-text" id="orderDetails"></div>
+            </div>
+
+            <div id="claimedSection" class="info-section" style="display: none;">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> Driver Information</h2>
+                <div class="claimed-info">
+                    <div style="font-size: 16px;"><svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Claimed by: <span id="claimedBy"></span></div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2 onclick="toggleStatusHistory()" style="cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center;">
+                    <span><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-clipboard-list"/></svg> Status Timeline</span>
+                    <span id="historyToggleIcon" style="font-size: 20px; transition: transform 0.3s;"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-chevron-down"/></svg></span>
+                </h2>
+                <div id="statusHistory" style="margin-top: 16px; display: none;">
+                    <div style="color: #a1a1aa; text-align: center; padding: 20px;">Loading history...</div>
+                </div>
+            </div>
+
+            <div class="status-update-section">
+                <h2><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-refresh-cw"/></svg> Update Order Status</h2>
+
+                <div id="dashboardButton" style="display: none; margin-bottom: 20px;">
+                    <a href="/driver.html" style="display: inline-block; padding: 16px 32px; background: #10b981; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 16px; text-align: center; transition: all 0.3s ease;">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-house"/></svg> Go to Dashboard
+                    </a>
+                </div>
+
+                <div class="status-buttons">
+                    <button class="status-btn" onclick="updateStatus('Claimed')">
+                        <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Claim Ride
+                    </button>
+                    <button class="status-btn" onclick="sendBillToCustomer()">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg> Awaiting Payment
+                    </button>
+                    <button class="status-btn" onclick="alert('BLOCKED: Payment Successful is set automatically when the customer pays.')" style="opacity: 0.5; cursor: not-allowed;">
+                        <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Payment Successful (Auto)
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('Heading to Pickup')">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg> Heading to Pickup
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('In Progress')">
+                        <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hand"/></svg> Picked Up Passenger
+                    </button>
+                    <button class="status-btn" onclick="updateStatus('Completed')">
+                        <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Drop-off Complete
+                    </button>
+                    <button class="status-btn" onclick="handleCancelClick()">
+                        <svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg> Cancel Ride
+                    </button>
+                </div>
+            </div>
+
+            <button class="refresh-btn" onclick="loadOrder()">
+                <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-refresh-cw"/></svg> Refresh Order
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';  // demo: /api/* is answered by static/demo-api.js
+        const orderId = new URLSearchParams(window.location.search).get('id');
+        let currentOrder = null;
+        let currentDriverUsername = null;
+        let live = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        let reconnectDelay = 1000;
+        let driverCountdownInterval = null;
+
+        function connectLive() {
+            live = liveChannel(API_URL, {
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 30000,
+                reconnectionAttempts: Infinity
+            });
+
+            live.on('connect', () => {
+                console.log('Connected to server');
+                reconnectAttempts = 0;
+                reconnectDelay = 1000;
+                live.emit('join_order', { order_id: parseInt(orderId) });
+            });
+
+            live.on('disconnect', () => {
+                console.log('Disconnected from server');
+            });
+
+            live.on('connect_error', (error) => {
+                console.error('Connection error:', error);
+            });
+
+            live.on('order_update', (data) => {
+                const updatedId = data.order_id || data.id;
+                if (updatedId == orderId) {
+                    console.log('Order updated, reloading...');
+                    loadOrder();
+                }
+            });
+        }
+
+        function attemptReconnect() {
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                console.error('Max reconnection attempts reached');
+                return;
+            }
+
+            reconnectAttempts++;
+            console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}) in ${reconnectDelay}ms...`);
+
+            setTimeout(() => {
+                if (live) {
+                    live.connect();
+                }
+                reconnectDelay *= 2;
+            }, reconnectDelay);
+        }
+
+        function getStatusClass(status) {
+            const statusLower = status.toLowerCase().replace(/\s+/g, '-');
+            return `status-${statusLower}`;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZoneName: 'short'
+            });
+        }
+
+        function startDriverCountdown(scheduledFor) {
+            // Clear any existing interval
+            if (driverCountdownInterval) {
+                clearInterval(driverCountdownInterval);
+            }
+
+            // Update countdown every second
+            driverCountdownInterval = setInterval(() => {
+                const scheduledDate = new Date(scheduledFor);
+                const now = new Date();
+                const diff = scheduledDate - now;
+
+                const timerEl = document.getElementById('driverCountdownTimer');
+                if (!timerEl) {
+                    clearInterval(driverCountdownInterval);
+                    return;
+                }
+
+                if (diff <= 0) {
+                    timerEl.textContent = 'Now! Time to pick up passenger';
+                    timerEl.style.color = '#10b981';
+                    clearInterval(driverCountdownInterval);
+                    // Reload order to get updated status
+                    setTimeout(() => loadOrder(), 1000);
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                timerEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
+            }, 1000);
+        }
+
+        function buildStatusHistory(order) {
+            const history = [];
+
+            // 1. Ride Requested (created_at)
+            if (order.created_at) {
+                history.push({
+                    status: 'Ride Requested',
+                    time: order.created_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-file-text"/></svg>',
+                    class: 'status-pending'
+                });
+            }
+
+            // 2. Driver Assigned (claimed_at)
+            if (order.claimed_at) {
+                history.push({
+                    status: 'Driver Assigned',
+                    time: order.claimed_at,
+                    icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
+                    class: 'status-claimed',
+                    detail: order.claimed_by ? `by ${order.claimed_by}` : ''
+                });
+            }
+
+            // 3. Awaiting Payment (awaiting_payment_at)
+            if (order.awaiting_payment_at) {
+                history.push({
+                    status: 'Awaiting Payment',
+                    time: order.awaiting_payment_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg>',
+                    class: 'status-awaiting-payment'
+                });
+            }
+
+            // 4. Payment Complete (payment_confirmed_at)
+            if (order.payment_confirmed_at) {
+                history.push({
+                    status: 'Payment Complete',
+                    time: order.payment_confirmed_at,
+                    icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
+                    class: 'status-completed'
+                });
+            }
+
+            // 5. Heading to Pickup (heading_to_pickup_at)
+            if (order.heading_to_pickup_at) {
+                history.push({
+                    status: 'Heading to Pickup',
+                    time: order.heading_to_pickup_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-car"/></svg>',
+                    class: 'status-claimed'
+                });
+            }
+
+            // 6. In Progress (picked_up_at or in_progress_at)
+            if (order.picked_up_at || order.in_progress_at) {
+                history.push({
+                    status: 'In Progress',
+                    time: order.picked_up_at || order.in_progress_at,
+                    icon: '<svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hand"/></svg>',
+                    class: 'status-in-progress'
+                });
+            }
+
+            // 7. Completed (delivered_at or completed_at)
+            if (order.delivered_at || order.completed_at) {
+                history.push({
+                    status: 'Completed',
+                    time: order.delivered_at || order.completed_at,
+                    icon: '<svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg>',
+                    class: 'status-completed'
+                });
+            }
+
+            const historyContainer = document.getElementById('statusHistory');
+
+            if (history.length === 0) {
+                historyContainer.innerHTML = '<div style="color: #a1a1aa; text-align: center; padding: 20px;">No status updates yet</div>';
+                return;
+            }
+
+            history.reverse();
+
+            historyContainer.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div class="history-icon ${item.class}">
+                        ${item.icon}
+                    </div>
+                    <div class="history-content">
+                        <div class="history-status">${item.status}${item.detail ? ' ' + item.detail : ''}</div>
+                        <div class="history-time">${formatDate(item.time)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadOrder() {
+            // Fetch driver profile once to know who's logged in
+            if (!currentDriverUsername) {
+                try {
+                    const profileResp = await fetch(`${API_URL}/api/driver/profile`, { credentials: 'same-origin' });
+                    if (profileResp.ok) {
+                        const profile = await profileResp.json();
+                        currentDriverUsername = profile.username || null;
+                    }
+                } catch (e) { /* not logged in, ignore */ }
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}`);
+
+                if (response.status === 401) {
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-ride.html?id=' + orderId)}`;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Order not found');
+                }
+
+                currentOrder = await response.json();
+                displayOrder(currentOrder);
+
+            } catch (error) {
+                console.error('Error loading order:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+            }
+        }
+
+        function displayOrder(order) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('orderContent').style.display = 'block';
+
+            document.getElementById('orderId').textContent = order.id;
+
+            const statusBadge = document.getElementById('statusBadge');
+
+            // Check if this is a scheduled ride for later
+            const scheduledFor = order.scheduled_for;
+            const isScheduled = scheduledFor && new Date(scheduledFor) > new Date();
+
+            if (isScheduled) {
+                statusBadge.textContent = 'Scheduled Ride';
+                statusBadge.className = 'status-badge status-pending';
+            } else {
+                statusBadge.textContent = order.status;
+                statusBadge.className = 'status-badge ' + getStatusClass(order.status);
+            }
+
+            document.getElementById('createdAt').textContent = formatDate(order.created_at);
+            document.getElementById('updatedAt').textContent = formatDate(order.updated_at || order.created_at);
+
+            // Show/hide scheduled section and start countdown if needed
+            const scheduledSection = document.getElementById('scheduledSection');
+            if (isScheduled && scheduledSection) {
+                scheduledSection.style.display = 'block';
+                const scheduledDate = new Date(scheduledFor);
+                document.getElementById('scheduledTime').textContent = scheduledDate.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: 'America/Los_Angeles',
+                    timeZoneName: 'short'
+                });
+                startDriverCountdown(scheduledFor);
+            } else if (scheduledSection) {
+                scheduledSection.style.display = 'none';
+                if (driverCountdownInterval) {
+                    clearInterval(driverCountdownInterval);
+                }
+            }
+
+            document.getElementById('pickupLocation').textContent = order.restaurant_address || 'Not specified';
+            document.getElementById('dropoffLocation').textContent = order.delivery_address || 'Not specified';
+
+            if (order.restaurant_address) {
+                const pickupEncoded = encodeURIComponent(order.restaurant_address);
+                document.getElementById('pickupMapsLink').href = `https://www.openstreetmap.org/search?query=${pickupEncoded}`;
+            }
+            if (order.delivery_address) {
+                const dropoffEncoded = encodeURIComponent(order.delivery_address);
+                document.getElementById('dropoffMapsLink').href = `https://www.openstreetmap.org/search?query=${dropoffEncoded}`;
+            }
+
+            let costBreakdown = null;
+            try {
+                if (typeof order.cost_breakdown === 'string') {
+                    costBreakdown = JSON.parse(order.cost_breakdown);
+                } else if (typeof order.cost_breakdown === 'object') {
+                    costBreakdown = order.cost_breakdown;
+                }
+            } catch (e) {
+                console.warn('Could not parse cost_breakdown:', e);
+            }
+
+            if (costBreakdown) {
+                const miles = parseFloat(costBreakdown.distance_miles || 0);
+                const durationMinutes = costBreakdown.duration_minutes || 0;
+                const duration = durationMinutes > 0 ? durationMinutes + ' min' : 'Unknown';
+                document.getElementById('distanceDuration').innerHTML = `
+                    <strong>${miles.toFixed(1)} miles</strong> • ${duration}
+                `;
+            } else {
+                document.getElementById('distanceDuration').textContent = 'Not calculated yet';
+            }
+
+            document.getElementById('passengerName').textContent = order.customer_name || order.passenger_name || 'Not specified';
+
+            const phoneLink = document.getElementById('phoneLink');
+            phoneLink.removeAttribute('href');
+            phoneLink.textContent = order.phone_number || 'Not shared in the demo';
+
+            if (costBreakdown) {
+                const baseFare = parseFloat(costBreakdown.base_fare || 0);
+                const mileageCost = parseFloat(costBreakdown.mileage_cost || 0);
+                const timeCost = parseFloat(costBreakdown.time_cost || 0);
+                const serviceFee = parseFloat(costBreakdown.service_fee || 0);
+                const totalFare = parseFloat(costBreakdown.total_fare || costBreakdown.est_total || 0);
+                const tipAmount = parseFloat(order.tip_amount || 0);
+                const miles = parseFloat(costBreakdown.distance_miles || 0);
+                const perMileRate = parseFloat(costBreakdown.per_mile_rate || 0);
+                const durationMinutes = costBreakdown.duration_minutes || 0;
+                const duration = durationMinutes > 0 ? durationMinutes + ' min' : '';
+
+                let fareHtml = `
+                    <div><strong>Base fare:</strong> $${baseFare.toFixed(2)}</div>
+                `;
+
+                if (mileageCost > 0) {
+                    const displayPerMileRate = perMileRate || 0.89;
+                    fareHtml += `<div><strong>Distance cost:</strong> $${mileageCost.toFixed(2)} (${miles.toFixed(1)} mi × $${displayPerMileRate.toFixed(2)}/mi)</div>`;
+                }
+
+                if (timeCost > 0) {
+                    fareHtml += `<div><strong>Time cost:</strong> $${timeCost.toFixed(2)} (${duration})</div>`;
+                }
+
+                if (serviceFee > 0) {
+                    fareHtml += `<div><strong>Service fee:</strong> $${serviceFee.toFixed(2)}</div>`;
+                }
+
+                if (tipAmount > 0) {
+                    fareHtml += `<div><strong>Tip for Driver:</strong> $${tipAmount.toFixed(2)}</div>`;
+                }
+
+                const grandTotal = totalFare + tipAmount;
+                fareHtml += `
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid rgba(255, 255, 255, 0.3); font-size: 16px; color: #10b981;">
+                        <strong>Total Fare: $${grandTotal.toFixed(2)}</strong>
+                    </div>
+                `;
+
+                // Add payment badge, awaiting payment message, or edit/send bill buttons
+                if (order.payment_confirmed) {
+                    // Payment is confirmed - show green badge
+                    fareHtml += `
+                        <div style="margin-top: 16px; padding: 16px; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; border-radius: 12px; text-align: center;">
+                            <div style="color: #10b981; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                                <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> PAYMENT CONFIRMED
+                            </div>
+                            <div style="color: #6ee7b7; font-size: 14px;">
+                                Customer has paid
+                            </div>
+                        </div>
+                    `;
+                } else if (order.status === 'Awaiting Payment') {
+                    // Bill has been sent, awaiting payment - show message
+                    fareHtml += `
+                        <div style="margin-top: 16px; padding: 16px; background: rgba(251, 191, 36, 0.1); border: 2px solid #fbbf24; border-radius: 12px; text-align: center;">
+                            <div style="color: #fbbf24; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                                <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-hourglass"/></svg> AWAITING PAYMENT
+                            </div>
+                            <div style="color: #fcd34d; font-size: 14px;">
+                                Bill has been sent to passenger. Waiting for payment confirmation.
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // No bill sent yet - show edit/send buttons
+                    fareHtml += `
+                        <div style="margin-top: 16px; display: flex; gap: 12px;">
+                            <button class="edit-btn" onclick="toggleFareEdit()"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-pencil"/></svg> Edit Fare</button>
+                            <button class="confirm-btn" onclick="sendBillToCustomer()" id="sendBillBtn"><svg class="ic" aria-hidden="true"><use href="/static/icons.svg#i-wallet"/></svg> Send Bill to Customer</button>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('fareBreakdown').innerHTML = fareHtml;
+
+                // Calculate and display payout breakdown
+                const platformFeeFlat = parseFloat(costBreakdown.platform_fee_flat || 0.49);
+                const platformFee = parseFloat(costBreakdown.platform_fee || totalFare * 0.1732 + platformFeeFlat);
+                const driverPayout = parseFloat(costBreakdown.driver_payout || totalFare * 0.8268);
+                const totalDriverEarnings = driverPayout + tipAmount;
+                const roundTripMinutes = durationMinutes * 2;
+                const hourlyRate = roundTripMinutes > 0 ? (totalDriverEarnings / roundTripMinutes) * 60 : 0;
+
+                const platformPercentOnly = totalFare * 0.1732;
+                let payoutHtml = `
+                    <div style="margin-bottom: 12px;">
+                        <strong>Total Fare:</strong> $${totalFare.toFixed(2)}
+                    </div>
+                    <div style="margin-bottom: 12px; color: #ffffff;">
+                        <strong>Platform Fee (17.32%):</strong> -$${platformPercentOnly.toFixed(2)}
+                    </div>
+                    <div style="margin-bottom: 4px; color: #a1a1aa; font-size: 12px;">
+                        + $0.49 platform fee charged to customer (not deducted from you)
+                    </div>
+                `;
+
+                if (tipAmount > 0) {
+                    payoutHtml += `
+                    <div style="margin-bottom: 12px; color: #10b981;">
+                        <strong>Tip (100% to you):</strong> +$${tipAmount.toFixed(2)}
+                    </div>
+                    `;
+                }
+
+                payoutHtml += `
+                    <div style="margin-bottom: 12px; padding-top: 12px; border-top: 2px solid #3b82f6;">
+                        <strong style="color: #10b981; font-size: 18px;">Your Earnings:</strong>
+                        <span style="color: #10b981; font-size: 18px;">$${totalDriverEarnings.toFixed(2)}</span>
+                    </div>
+                    <div style="margin-top: 12px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                        <div style="font-size: 14px; color: #93c5fd; margin-bottom: 4px;">
+                            Based on ${roundTripMinutes} min round trip
+                        </div>
+                        <div style="font-size: 20px; color: #3b82f6; font-weight: 700;">
+                            ~$${hourlyRate.toFixed(2)}/hour
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('payoutBreakdown').innerHTML = payoutHtml;
+            }
+
+            const paymentConfirmed = order.payment_confirmed || false;
+            const isAwaitingPayment = order.status === 'Awaiting Payment';
+
+            if (paymentConfirmed) {
+                document.getElementById('paymentReceiptSection').style.display = 'block';
+                document.getElementById('awaitingPaymentSection').style.display = 'none';
+
+                if (costBreakdown) {
+                    const totalFare = parseFloat(costBreakdown.total_fare || costBreakdown.est_total || 0);
+                    const baseFare = parseFloat(costBreakdown.base_fare || 0);
+                    const mileageCost = parseFloat(costBreakdown.mileage_cost || 0);
+                    const timeCost = parseFloat(costBreakdown.time_cost || 0);
+                    const serviceFee = parseFloat(costBreakdown.service_fee || 0);
+                    const tipAmount = parseFloat(order.tip_amount || 0);
+
+                    let receiptHtml = `
+                        <div style="margin-bottom: 8px;"><strong>Base Fare:</strong> $${baseFare.toFixed(2)}</div>
+                        <div style="margin-bottom: 8px;"><strong>Distance Cost:</strong> $${mileageCost.toFixed(2)}</div>
+                        <div style="margin-bottom: 8px;"><strong>Time Cost:</strong> $${timeCost.toFixed(2)}</div>
+                        <div style="margin-bottom: 8px;"><strong>Service Fee:</strong> $${serviceFee.toFixed(2)}</div>
+                    `;
+
+                    if (tipAmount > 0) {
+                        receiptHtml += `<div style="margin-bottom: 8px;"><strong>Tip for Driver:</strong> $${tipAmount.toFixed(2)}</div>`;
+                    }
+
+                    const totalPaid = totalFare + tipAmount;
+                    receiptHtml += `
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #10b981; font-size: 16px; color: #10b981;">
+                            <strong>Total Paid: $${totalPaid.toFixed(2)}</strong>
+                        </div>
+                    `;
+
+                    document.getElementById('receiptDetails').innerHTML = receiptHtml;
+                }
+            } else if (isAwaitingPayment) {
+                document.getElementById('awaitingPaymentSection').style.display = 'block';
+                document.getElementById('paymentReceiptSection').style.display = 'none';
+            } else {
+                document.getElementById('awaitingPaymentSection').style.display = 'none';
+                document.getElementById('paymentReceiptSection').style.display = 'none';
+            }
+
+            const orderDetailsText = order.order_details && order.order_details.trim() !== ''
+                ? order.order_details
+                : 'No additional details provided.';
+            document.getElementById('orderDetails').textContent = orderDetailsText;
+
+            if (order.claimed_by) {
+                document.getElementById('claimedSection').style.display = 'block';
+                document.getElementById('claimedBy').textContent = order.claimed_by;
+            }
+
+            // Show personalised commitment banner (in the countdown section) if this driver claimed it
+            const commitBanner = document.getElementById('claimCommitmentBanner');
+            const commitBody = document.getElementById('claimCommitmentBody');
+            const isMyRide = currentDriverUsername && order.claimed_by === currentDriverUsername;
+            if (commitBanner && commitBody) {
+                if (isMyRide) {
+                    let pickupLine = '';
+                    if (order.scheduled_for) {
+                        const sd = new Date(order.scheduled_for);
+                        pickupLine = sd.toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles', timeZoneName: 'short' });
+                    }
+                    const passengerName = order.customer_name || 'the passenger';
+                    commitBody.innerHTML =
+                        `You have committed to picking up <strong style="color:#fff">${passengerName}</strong>` +
+                        (pickupLine ? ` at <strong style="color:#fff">${pickupLine}</strong>` : '') + `.<br><br>` +
+                        `You <strong style="color:#fff">MUST</strong> send the bill to the customer at some point before the pickup time — ` +
+                        `<strong style="color:#fff">YOU choose when</strong>.<br><br>` +
+                        `If there is a change of plans and you can no longer take this order, ` +
+                        `<a href="/support.html" style="color:#FD2D00; text-decoration:underline; font-weight:600;">contact support</a>.`;
+                    commitBanner.style.display = 'block';
+                } else {
+                    commitBanner.style.display = 'none';
+                }
+            }
+
+            buildStatusHistory(order);
+
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const currentStatusBtn = Array.from(document.querySelectorAll('.status-btn'))
+                .find(btn => btn.textContent.includes(order.status));
+            if (currentStatusBtn) {
+                currentStatusBtn.classList.add('active');
+            }
+
+            const dashboardButton = document.getElementById('dashboardButton');
+            if (order.status === 'Completed') {
+                dashboardButton.style.display = 'block';
+            } else {
+                dashboardButton.style.display = 'none';
+            }
+        }
+
+        async function sendBillToCustomer() {
+            if (!confirm('Send bill to customer?\n\nThis will:\n• Update status to "Awaiting Payment"\n• Notify customer via their tracking page\n• Customer can then pay on their tracking page')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/send-bill`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                if (response.ok) {
+                    await loadOrder();
+                    alert('Bill sent to customer!\n\nCustomer will see the bill on their tracking page.');
+                } else if (response.status === 401) {
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-ride.html?id=' + orderId)}`;
+                } else {
+                    const error = await response.json();
+                    alert('Failed to send bill: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error sending bill:', error);
+                alert('Error sending bill: ' + error.message);
+            }
+        }
+
+        let isEditingFare = false;
+
+        function toggleFareEdit() {
+            isEditingFare = !isEditingFare;
+
+            if (isEditingFare) {
+                showFareEditMode();
+            } else {
+                // Cancel edit - reload to restore original values
+                loadOrder();
+            }
+        }
+
+        function showFareEditMode() {
+            const fareSection = document.getElementById('fareBreakdown');
+            if (!fareSection || !currentOrder) return;
+
+            const costBreakdown = typeof currentOrder.cost_breakdown === 'string'
+                ? JSON.parse(currentOrder.cost_breakdown)
+                : currentOrder.cost_breakdown;
+
+            if (!costBreakdown) return;
+
+            const distanceMiles = parseFloat(costBreakdown.distance_miles || 0);
+            const durationMinutes = parseInt(costBreakdown.duration_minutes || 0);
+            const baseFare = parseFloat(costBreakdown.base_fare || 4.99);
+            const perMileRate = 0.89;
+            const perMinuteRate = 0.39;
+
+            fareSection.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; color: #a1a1aa; font-size: 14px; margin-bottom: 8px;">Distance (miles)</label>
+                    <input type="number" id="editDistanceMiles" step="0.1" value="${distanceMiles.toFixed(1)}"
+                           style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 16px;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; color: #a1a1aa; font-size: 14px; margin-bottom: 8px;">Duration (minutes)</label>
+                    <input type="number" id="editDurationMinutes" step="1" value="${durationMinutes}"
+                           style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 16px;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; color: #a1a1aa; font-size: 14px; margin-bottom: 8px;">Base Fare ($)</label>
+                    <input type="number" id="editBaseFare" step="0.01" value="${baseFare.toFixed(2)}"
+                           style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 16px;">
+                </div>
+                <div style="padding: 16px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; margin-bottom: 16px;">
+                    <div style="color: #60a5fa; font-size: 14px; margin-bottom: 8px;">
+                        <strong>Calculated Costs:</strong>
+                    </div>
+                    <div id="editPreview" style="color: #93c5fd; font-size: 14px;"></div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button class="confirm-btn" onclick="saveFareChanges()" style="flex: 1;">
+                        <svg class="ic ic-ok" aria-hidden="true"><use href="/static/icons.svg#i-circle-check"/></svg> Save Changes
+                    </button>
+                    <button class="edit-btn" onclick="toggleFareEdit()" style="flex: 1;">
+                        <svg class="ic ic-bad" aria-hidden="true"><use href="/static/icons.svg#i-circle-x"/></svg> Cancel
+                    </button>
+                </div>
+            `;
+
+            // Add live preview update
+            const updatePreview = () => {
+                const miles = parseFloat(document.getElementById('editDistanceMiles')?.value || 0);
+                const minutes = parseInt(document.getElementById('editDurationMinutes')?.value || 0);
+                const base = parseFloat(document.getElementById('editBaseFare')?.value || 0);
+
+                const mileageCost = miles * perMileRate;
+                const timeCost = minutes * perMinuteRate;
+                const total = base + mileageCost + timeCost;
+
+                const PLATFORM_FEE_FLAT = 0.49;
+                const platformFee = total * 0.1732 + PLATFORM_FEE_FLAT;
+
+                // Get tip amount from current order (driver gets 82.68% of fare + 100% of tip)
+                const tipAmount = currentOrder?.tip_amount ? parseFloat(currentOrder.tip_amount) : 0;
+                const fareEarnings = total * 0.8268;
+                const driverPayout = fareEarnings + tipAmount;
+
+                const roundTripMinutes = minutes * 2;
+                const hourlyRate = roundTripMinutes > 0 ? (driverPayout / roundTripMinutes) * 60 : 0;
+
+                const previewEl = document.getElementById('editPreview');
+                if (previewEl) {
+                    let earningsBreakdown = `Your Earnings: $${fareEarnings.toFixed(2)} (82.68% of fare)`;
+                    if (tipAmount > 0) {
+                        earningsBreakdown += ` + $${tipAmount.toFixed(2)} tip = <strong style="color: #10b981;">$${driverPayout.toFixed(2)}</strong>`;
+                    } else {
+                        earningsBreakdown = `<strong style="color: #10b981;">Your Earnings: $${driverPayout.toFixed(2)}</strong>`;
+                    }
+
+                    previewEl.innerHTML = `
+                        Mileage: $${mileageCost.toFixed(2)} (${miles.toFixed(1)} mi × $${perMileRate}/mi)<br>
+                        Time: $${timeCost.toFixed(2)} (${minutes} min × $${perMinuteRate}/min)<br>
+                        <strong>Total Fare: $${total.toFixed(2)}</strong><br>
+                        <br>
+                        Platform Fee (17.32%): $${(total * 0.1732).toFixed(2)} <span style="color:#a1a1aa;font-size:11px;">(+ $0.49 charged to customer)</span><br>
+                        ${earningsBreakdown}<br>
+                        Hourly Rate: $${hourlyRate.toFixed(2)}/hr (based on ${roundTripMinutes} min round trip)
+                    `;
+                }
+            };
+
+            // Attach listeners
+            document.getElementById('editDistanceMiles')?.addEventListener('input', updatePreview);
+            document.getElementById('editDurationMinutes')?.addEventListener('input', updatePreview);
+            document.getElementById('editBaseFare')?.addEventListener('input', updatePreview);
+
+            // Initial preview
+            updatePreview();
+        }
+
+        async function saveFareChanges() {
+            const miles = parseFloat(document.getElementById('editDistanceMiles')?.value || 0);
+            const minutes = parseInt(document.getElementById('editDurationMinutes')?.value || 0);
+            const baseFare = parseFloat(document.getElementById('editBaseFare')?.value || 0);
+
+            if (miles <= 0 || minutes <= 0 || baseFare <= 0) {
+                alert('All values must be greater than 0');
+                return;
+            }
+
+            if (!confirm(`Save fare changes?\n\nDistance: ${miles.toFixed(1)} miles\nDuration: ${minutes} minutes\nBase Fare: $${baseFare.toFixed(2)}\n\nThis will recalculate the total fare.`)) {
+                return;
+            }
+
+            try {
+                // Calculate new costs
+                const perMileRate = 0.89;
+                const perMinuteRate = 0.39;
+                const mileageCost = miles * perMileRate;
+                const timeCost = minutes * perMinuteRate;
+                const totalFare = baseFare + mileageCost + timeCost;
+                const PLATFORM_FEE_FLAT_SAVE = 0.49;
+                const platformFee = totalFare * 0.1732 + PLATFORM_FEE_FLAT_SAVE;
+
+                // Get tip amount from current order (driver gets 82.68% of fare + 100% of tip)
+                const tipAmount = currentOrder?.tip_amount ? parseFloat(currentOrder.tip_amount) : 0;
+                const driverPayout = (totalFare * 0.8268) + tipAmount;
+
+                const roundTripMinutes = minutes * 2;
+                const hourlyRate = (driverPayout / roundTripMinutes) * 60;
+
+                const newCostBreakdown = {
+                    base_fare: baseFare,
+                    distance_miles: miles,
+                    mileage_cost: mileageCost,
+                    duration_minutes: minutes,
+                    time_cost: timeCost,
+                    total_fare: totalFare,
+                    platform_fee: platformFee,
+                    platform_fee_flat: PLATFORM_FEE_FLAT_SAVE,
+                    driver_payout: driverPayout,
+                    hourly_rate: hourlyRate
+                };
+
+                // Update via the API
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/update-fare`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ cost_breakdown: newCostBreakdown })
+                });
+
+                if (response.ok) {
+                    isEditingFare = false;
+                    await loadOrder();
+                    alert('Fare updated successfully!');
+                } else if (response.status === 404) {
+                    // Endpoint doesn't exist yet - fall back to updating cost_breakdown directly
+                    alert('Fare update API not implemented yet.\n\nPlease ask the developer to create the /api/orders/<id>/update-fare endpoint.');
+                } else {
+                    throw new Error('Failed to update fare');
+                }
+            } catch (error) {
+                console.error('Error updating fare:', error);
+                alert('Error updating fare: ' + error.message);
+            }
+        }
+
+        async function handleCancelClick() {
+            // Check if payment has been confirmed
+            if (currentOrder && currentOrder.payment_confirmed) {
+                const confirmCancel = confirm(
+                    'WARNING: PAYMENT HAS BEEN CONFIRMED\n\n' +
+                    'This ride has been paid by the customer. If you cancel after payment:\n\n' +
+                    '• Your payout will be placed on HOLD for admin review\n' +
+                    '• You may be held RESPONSIBLE for the ride cost\n' +
+                    '• Admin will review before releasing funds\n\n' +
+                    'Are you ABSOLUTELY SURE you want to cancel this paid ride?'
+                );
+
+                if (!confirmCancel) {
+                    return;
+                }
+            }
+
+            const reason = prompt('Reason for cancelling this ride:\n\n(Will be shown to customer)');
+
+            if (!reason || reason.trim() === '') {
+                alert('Cancellation reason is required');
+                return;
+            }
+
+            if (!confirm(`Cancel this ride with reason:\n"${reason}"\n\nThis action will notify the customer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: 'Cancelled',
+                        cancellation_reason: reason
+                    })
+                });
+
+                if (response.ok) {
+                    const updatedOrder = await response.json();
+                    displayOrder(updatedOrder);
+                    alert('Ride cancelled successfully');
+                } else if (response.status === 401) {
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-ride.html?id=' + orderId)}`;
+                    return;
+                } else {
+                    const error = await response.json();
+                    alert('Failed to cancel ride: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error cancelling ride:', error);
+                alert('Error cancelling ride');
+            }
+        }
+
+        async function updateStatus(newStatus, skipConfirmation = false) {
+            // Payment validation - prevent progression beyond Awaiting Payment without payment
+            const progressionStatuses = ['Payment Successful', 'Completed'];
+            if (progressionStatuses.includes(newStatus) && currentOrder && !currentOrder.payment_confirmed) {
+                alert('PAYMENT REQUIRED\n\nCustomer must complete payment before this order can progress to "' + newStatus + '".\n\nCurrent status: ' + (currentOrder.status || 'Unknown'));
+                return;
+            }
+
+            if (!skipConfirmation && !confirm(`Update order status to "${newStatus}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    const updatedOrder = await response.json();
+                    displayOrder(updatedOrder);
+
+                    const btn = Array.from(document.querySelectorAll('.status-btn'))
+                        .find(b => b.textContent.includes(newStatus));
+                    if (btn) {
+                        if (!btn.dataset.label) btn.dataset.label = btn.innerHTML;
+                        const originalText = btn.dataset.label;
+                        clearTimeout(btn._flash);
+                        btn.textContent = '✓ Updated!';
+                        btn.style.background = '#10b981';
+                        btn.style.color = '#ffffff';
+                        btn._flash = setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = '';
+                            btn.style.color = '';
+                        }, 2000);
+                    }
+                } else if (response.status === 401) {
+                    window.location.href = `/driver-login.html?next=${encodeURIComponent('/driver-ride.html?id=' + orderId)}`;
+                    return;
+                } else if (response.status === 403) {
+                    const errorData = await response.json();
+                    alert('PAYMENT REQUIRED\n\n' + errorData.error + '\n\nThe passenger must complete payment before this order can progress.');
+                } else {
+                    console.error('Failed to update status:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
+
+        function toggleStatusHistory() {
+            const historyDiv = document.getElementById('statusHistory');
+            const icon = document.getElementById('historyToggleIcon');
+
+            if (historyDiv.style.display === 'none') {
+                historyDiv.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                historyDiv.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        connectLive();
+        loadOrder();
+
+    </script>
+</body>
+</html>
